@@ -1,5 +1,6 @@
 from typing import Dict, Any
 import requests as r
+import src.model.users.firebase.exceptions as fe
 
 class FirebaseAuth():
    
@@ -27,7 +28,7 @@ class FirebaseClient(FirebaseAuth):
         endpoint = self.host + "/v1/accounts:lookup"
         response = r.post(endpoint, data={"idToken": token}, params={"key": self.api_key})
         if response.status_code != r.codes.ok:
-            raise Exception("Invalid token")
+            raise fe.InvalidToken() 
         return response.json()['users'][0]
     
     def sign_in(self, email: str, password: str) -> Dict[str, Any]:
@@ -36,7 +37,7 @@ class FirebaseClient(FirebaseAuth):
                           data={"email": email, "password": password, "returnSecureToken": True},
                           params={"key": self.api_key})
         if response.status_code != r.codes.ok:
-            raise Exception("Invalid token")
+            raise fe.InvalidToken() 
         return response.json()
 
 class FirebaseMock(FirebaseAuth):
@@ -47,6 +48,6 @@ class FirebaseMock(FirebaseAuth):
     def get_data(self, token: str) -> Dict[str, str]:
         response = self.responses.get(token) 
         if not response:
-            raise Exception("Invalid token")
+            raise fe.InvalidToken() 
         return response
 
