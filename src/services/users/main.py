@@ -1,15 +1,18 @@
 from fastapi import FastAPI, Response, status, Query, Body
-
+from pydantic_settings import BaseSettings
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseClient
 from src.model.users.user_data import UserData
 
 from typing import Annotated, Any, Dict
 
+class Settings(BaseSettings):
+    api_key: str = "ultraSecret"
 
+settings = Settings()
 app = FastAPI()
 
-authenticator = FirebaseClient(key="ultraSecret")
+authenticator = FirebaseClient(key=settings.api_key)
 
 @app.get("/health")
 async def health(response: Response):
