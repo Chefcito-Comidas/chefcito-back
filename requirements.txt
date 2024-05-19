@@ -1,1 +1,2 @@
 fastapi>=0.111.0
+grequests>=0.7.0
