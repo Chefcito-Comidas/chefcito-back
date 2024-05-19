@@ -36,6 +36,7 @@ resource "docker_container" "users" {
   name = "users"
   hostname = "users"
   image = "service-users:latest"
+  env = ["API_KEY=secretApiKey"]
   ports {
     internal = 80
     external = 8001
