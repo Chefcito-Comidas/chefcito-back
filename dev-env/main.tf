@@ -46,3 +46,17 @@ resource "docker_container" "users" {
   }
 }
 
+resource "docker_container" "postgresql" {
+  name = "postgredb"
+  hostname = "reldb"
+  image = "postgres:16.3"
+  env = ["POSTGRES_USER=user", "POSTGRES_PASSWORD=admin123", "POSTGRES_DB=users_db"]
+  ports {
+    internal = 5432
+    external = 5432
+  }
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+  
+}
