@@ -1,42 +1,39 @@
-import argparse as arg
+import typer
 from scripts.build import build_run
 import os
 
-def build(namespace: arg.Namespace):
+app = typer.Typer()
+
+@app.command("build",
+             help="Builds container images defined in containers/")
+def build():
     build_run()
 
-def run(namespace: arg.Namespace):
+@app.command("up",
+             help="Deploys the images in a local environment")
+def run():
     workdir = os.getcwd() 
     os.chdir('dev-env')
-    os.system('tofu apply')
+    os.system('tofu apply -auto-approve')
     os.chdir(workdir)
 
-def destroy(namespace: arg.Namespace):
+@app.command("down",
+             help="Tears down the deployed local environment")
+def destroy():
     workdir = os.getcwd()
     os.chdir('dev-env')
-    os.system('tofu destroy')
+    os.system('tofu destroy -auto-approve')
     os.chdir(workdir)
 
-def build_and_run(namespace: arg.Namespace):
-    build(namespace)
-    run(namespace)
+@app.command("run",
+             help="Builds the images and deploys them locally")
+def build_and_run():
+    build()
+    run()
 
-def default_action(namespace: arg.Namespace):
-    print("Invalid action")
 
-parser = arg.ArgumentParser()
 
-parser.add_argument('action')
 
-actions = {
-        'build': build,
-        'run': run,
-        'destroy': destroy,
-        'build-run': build_and_run        
-        }
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    action = actions.get(args.action, default_action)
-    action(args)
-
+    app()
