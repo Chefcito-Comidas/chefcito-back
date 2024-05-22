@@ -31,6 +31,13 @@ def build_and_run():
     build()
     run()
 
+@app.command("install",
+             help="Installs dependencies, use --no_dev to avoid installing dev dependencies\
+                     if you need to use pip3 instead of pip, use the option --pip_name")
+def install_dependencies(no_dev: bool = False, pip_name: str = "pip"):
+    if not no_dev:
+        os.system(f"{pip_name} install -r dev-requirements.txt")
+    os.system(f"{pip_name} install -r requirements.txt")
 
 
 
