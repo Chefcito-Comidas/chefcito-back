@@ -1,15 +1,14 @@
 from pydantic import BaseModel
-from src.model.users.user_data import UserData, recover_data 
+from src.model.users.permissions.base import Database
+from src.model.users.user_data import UserData, UserToken, recover_data 
 from src.model.users.firebase.api_instance import FirebaseAuth
 
-class AuthRequest(BaseModel):
+class AuthRequest(UserToken):
     endpoint: str
-    id_token: str
     
-    async def get_data(self, firebase: FirebaseAuth) -> 'UserData':
+    async def is_allowed(self, firebase: FirebaseAuth, db: Database) -> bool:
         """
-        Tries to recover user data with the firebase authenticator provided
-        Raise an exception if the user is invalid
+        Returns if the user is allowed to call a certain endpoint
         """
-        return recover_data(self.id_token, firebase) 
-
+        data = await self.get_data(firebase)
+        return data.allowed_to(self.endpoint, db)

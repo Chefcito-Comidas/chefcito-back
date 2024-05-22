@@ -19,6 +19,18 @@ class UserData(BaseModel):
         user = base.get_user(self.localid)
         return User.check_anonymous(user).user_type 
 
+
+class UserToken(BaseModel):
+    id_token: str
+    
+    async def get_data(self, firebase: FirebaseAuth) -> 'UserData':
+        """
+        Tries to recover user data with the firebase authenticator provided
+        Raise an exception if the user is invalid
+        """
+        return recover_data(self.id_token, firebase) 
+    
+
 def recover_data(token: str, auth: FirebaseAuth) -> 'UserData':
     data = auth.get_data(token)
     return UserData(localid=data['localId'],
