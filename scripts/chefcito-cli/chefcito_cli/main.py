@@ -1,5 +1,5 @@
 import typer
-from scripts.build import build_run
+from chefcito_cli.scripts.build import build_run
 import os
 
 app = typer.Typer()
