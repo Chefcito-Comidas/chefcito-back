@@ -25,9 +25,11 @@ class FirebaseClient(FirebaseAuth):
         self.api_key = key
 
     def get_data(self, token: str) -> Dict[str, str]:
+        #TODO: Change requests for aiohttp
         endpoint = self.host + "/v1/accounts:lookup"
         response = r.post(endpoint, data={"idToken": token}, params={"key": self.api_key})
         if response.status_code != r.codes.ok:
+            print(response.text)
             raise fe.InvalidToken() 
         return response.json()['users'][0]
     

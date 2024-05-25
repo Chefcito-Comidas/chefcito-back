@@ -4,6 +4,8 @@ from src.model.users.firebase.api_instance import FirebaseAuth
 from src.model.users.permissions.base import Database
 from src.model.users.permissions.schema import User
 
+ANONYMOUS_TOKEN = 'anonymousToken'
+
 class UserData(BaseModel):
     localid: str
     email: str
@@ -21,7 +23,7 @@ class UserData(BaseModel):
 
 
 class UserToken(BaseModel):
-    id_token: str
+    id_token: str 
     
     async def get_data(self, firebase: FirebaseAuth) -> 'UserData':
         """

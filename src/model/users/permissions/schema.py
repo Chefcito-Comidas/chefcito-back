@@ -4,6 +4,10 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy import ForeignKey, UniqueConstraint
 from typing import Self
 
+ANONYMOUS_UID = 'anonymousUID'
+ANONYMOUS_MAIL = 'anonymous@mail.com'
+ANONYMOUS_TYPE = 'anonymous'
+
 class Base(DeclarativeBase):
     pass
 
@@ -27,7 +31,13 @@ class User(Base):
     
     @classmethod
     def check_anonymous(cls, user: Self | None) -> 'User':
-       return user if user != None else cls(uid='', email='', user_type='anonymous') 
+       return user if user != None else cls.get_anonymous() 
+    
+    @classmethod
+    def get_anonymous(cls) -> 'User':
+       return cls(uid=ANONYMOUS_UID, email=ANONYMOUS_MAIL, user_type=ANONYMOUS_TYPE)
+
+
 
 class Permission(Base):
    __tablename__ = "permissions"
