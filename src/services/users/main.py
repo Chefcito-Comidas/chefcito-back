@@ -16,7 +16,9 @@ app = FastAPI()
 
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
+#TODO: Add Try catch here
 
+#TODO: Check how to manage permissions as a whole
 @app.get("/health")
 async def health(response: Response):
     response.status_code = status.HTTP_200_OK
@@ -40,12 +42,15 @@ async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query
     return authenticator.sign_in(email, password) 
 
 @app.post("/users")
-async def get_data(auth: Annotated[UserToken, Body()]) -> UserData:
+async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | None:
     """
     Returns all data from the user, including its type
     """
-    return await auth.get_data(authenticator) 
-
+    try:
+        return await auth.get_data(authenticator) 
+    except Exception as e:
+        #TODO: check how to return a comprehensive error
+        response.status_code = status.HTTP_400_BAD_REQUEST
 
 @app.post("/users/permissions")
 async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response):
