@@ -36,7 +36,7 @@ resource "docker_container" "users" {
   name = "users"
   hostname = "users"
   image = "service-users:latest"
-  env = ["API_KEY=secretApiKey"]
+  env = ["API_KEY=superSecret", "DB_STRING=postgresql://user:admin123@reldb/users_db"]
   ports {
     internal = 80
     external = 8001
