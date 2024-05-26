@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Response, status, Query, Body
 from pydantic_settings import BaseSettings
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from src.model.commons.error import Error
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseClient
