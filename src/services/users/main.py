@@ -18,7 +18,7 @@ app = FastAPI()
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
 
-#TODO: Check how to manage permissions as a whole
+# TODO: Check how to manage permissions as a whole
 @app.get("/health")
 async def health(response: Response):
     response.status_code = status.HTTP_200_OK

@@ -1,4 +1,3 @@
-from aiohttp.client import ClientResponse
 from starlette.datastructures import MutableHeaders
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint, DispatchFunction
 from starlette.requests import Request
@@ -12,7 +11,10 @@ from src.model.users.user_data import UserToken
 
 class AuthMiddleware(BaseHTTPMiddleware):
     
-    def __init__(self, app: ASGIApp, authUrl: str, avoided_urls: list[str], dispatch: DispatchFunction | None = None) -> None:
+    def __init__(self, app: ASGIApp, 
+                 authUrl: str, 
+                 avoided_urls: list[str],
+                 dispatch: DispatchFunction | None = None) -> None:
         super().__init__(app, dispatch)
         self.authUrl = authUrl
         self.avoided = avoided_urls

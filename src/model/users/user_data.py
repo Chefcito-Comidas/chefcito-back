@@ -4,7 +4,8 @@ from src.model.users.firebase.api_instance import FirebaseAuth
 from src.model.users.permissions.base import Database
 from src.model.users.permissions.schema import User
 
-ANONYMOUS_TOKEN = 'anonymousToken'
+# TODO: How we name this token should be configurable
+ANONYMOUS_TOKEN = 'anonymous'
 
 class UserData(BaseModel):
     localid: str

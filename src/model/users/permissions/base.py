@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from src.model.users.permissions.schema import User, Permission
 
+# TODO: This pool size makes more sense if it is configurable
 DEFAULT_POOL_SIZE = 10
 
 class Database():

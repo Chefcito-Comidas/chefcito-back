@@ -21,6 +21,8 @@ class FirebaseAuth():
 
 class FirebaseClient(FirebaseAuth):
     
+    # TODO: This endpoint should be configurable ? 
+    # make it low priority, since we are probably not going to move away from firebase
     host: str = "https://identitytoolkit.googleapis.com"
 
     def __init__(self, key: str):

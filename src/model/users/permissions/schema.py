@@ -6,6 +6,7 @@ from typing import Self
 
 ANONYMOUS_UID = 'anonymousUID'
 ANONYMOUS_MAIL = 'anonymous@mail.com'
+# TODO: type should be configurable 
 ANONYMOUS_TYPE = 'anonymous'
 
 class Base(DeclarativeBase):
