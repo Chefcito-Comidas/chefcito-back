@@ -33,7 +33,6 @@ class FirebaseClient(FirebaseAuth):
         return response
 
     async def get_data(self, token: str) -> Dict[str, str]:
-        #TODO: Change requests for aiohttp
         endpoint = "/v1/accounts:lookup"
         response = await self.call_endpoint(endpoint, data={"idToken": token}, params={"key": self.api_key})
         if response.status != status.HTTP_200_OK:

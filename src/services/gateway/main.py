@@ -18,7 +18,7 @@ app.add_middleware(AuthMiddleware, authUrl=settings.auth_url)
 
 security = HTTPBearer()
 
-
+# TODO:Add credentials to all endpoints 
 @app.get("/{name}")
 async def hello(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], name: Annotated[str, Path()]) -> HelloResponse:
     return HelloResponse(name=f"Hello, {name}") 

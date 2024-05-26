@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response, status, Query, Body
 from pydantic_settings import BaseSettings
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseClient
 from src.model.users.permissions.base import DBEngine
@@ -16,7 +17,6 @@ app = FastAPI()
 
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
-#TODO: Add Try catch here
 
 #TODO: Check how to manage permissions as a whole
 @app.get("/health")
@@ -24,14 +24,18 @@ async def health(response: Response):
     response.status_code = status.HTTP_200_OK
 
 @app.post("/users/signup/{user_type}")
-async def sign_up(user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
+async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response: Response) -> UserData | None:
     """
     Recieve the token, get the user data for the token and add it
     to the database
     """
-    user = await token.get_data(authenticator)
-    user.insert_into(user_type, database)
-    return user
+    try:
+        user = await token.get_data(authenticator)
+        user.insert_into(user_type, database)
+        return user
+    except Exception:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        
 
 @app.post("/users/signin")
 async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query()]) -> Dict[str, Any]:
@@ -39,7 +43,7 @@ async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query
     Use this to get the when someone is signing in
     Ask for the token only
     """  
-    return authenticator.sign_in(email, password) 
+    return await authenticator.sign_in(email, password) 
 
 @app.post("/users")
 async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | None:
@@ -48,7 +52,7 @@ async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> Us
     """
     try:
         return await auth.get_data(authenticator) 
-    except Exception as e:
+    except Exception:
         #TODO: check how to return a comprehensive error
         response.status_code = status.HTTP_400_BAD_REQUEST
 
@@ -57,5 +61,8 @@ async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response):
     """
     Checks if the user is allowed or not to access a certain endpoint
     """
-    response.status_code = status.HTTP_200_OK if auth.is_allowed(authenticator, database) \
-            else status.HTTP_403_FORBIDDEN
+    try:
+        response.status_code = status.HTTP_200_OK if auth.is_allowed(authenticator, database) \
+                else status.HTTP_403_FORBIDDEN
+    except Exception:
+        response.status_code = HTTP_500_INTERNAL_SERVER_ERROR
