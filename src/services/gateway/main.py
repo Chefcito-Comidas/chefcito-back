@@ -10,11 +10,12 @@ from src.model.gateway.users_middleware import AuthMiddleware
 
 class Settings(BaseSettings):
     auth_url: str = "http://users/users"
+    auth_avoided_urls: list[str] = ["/docs", "/openapi.json"]
 
 settings = Settings()
 app = FastAPI()
 
-app.add_middleware(AuthMiddleware, authUrl=settings.auth_url)
+app.add_middleware(AuthMiddleware, authUrl=settings.auth_url, avoided_urls=settings.auth_avoided_urls)
 
 security = HTTPBearer()
 
