@@ -30,11 +30,11 @@ class UserToken(BaseModel):
         Tries to recover user data with the firebase authenticator provided
         Raise an exception if the user is invalid
         """
-        return recover_data(self.id_token, firebase) 
+        return await recover_data(self.id_token, firebase) 
     
 
-def recover_data(token: str, auth: FirebaseAuth) -> 'UserData':
-    data = auth.get_data(token)
+async def recover_data(token: str, auth: FirebaseAuth) -> 'UserData':
+    data = await auth.get_data(token)
     return UserData(localid=data['localId'],
                     email=data['email'])
 

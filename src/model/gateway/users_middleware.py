@@ -26,7 +26,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     def __parse_token(self, token: str) -> str:
         return token.lstrip('Bearer').lstrip(" ")
     
-    def __unauthorized(self) -> Response:
+    def __not_authorized(self) -> Response:
         response = Response()
         response.status_code = status.HTTP_403_FORBIDDEN
         return response

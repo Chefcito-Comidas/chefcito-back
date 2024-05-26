@@ -1,17 +1,19 @@
 from typing import Dict, Any
-import requests as r
+
+from fastapi import status
 import src.model.users.firebase.exceptions as fe
+import aiohttp
 
 class FirebaseAuth():
    
-    def get_data(self, token: str) -> Dict[str, str]:
+    async def get_data(self, token: str) -> Dict[str, str]:
         """
         Calls the API with the given token and returns the user data.
         If the token is invalid, then raises an exception
         """
         raise Exception("Interface method should not be called") 
     
-    def sign_in(self, email: str, password: str) -> Dict[str, Any]:
+    async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
         """
         Calls Firebase using the email and password provided by the user
         """
@@ -23,31 +25,36 @@ class FirebaseClient(FirebaseAuth):
 
     def __init__(self, key: str):
         self.api_key = key
-
-    def get_data(self, token: str) -> Dict[str, str]:
-        #TODO: Change requests for aiohttp
-        endpoint = self.host + "/v1/accounts:lookup"
-        response = r.post(endpoint, data={"idToken": token}, params={"key": self.api_key})
-        if response.status_code != r.codes.ok:
-            print(response.text)
-            raise fe.InvalidToken() 
-        return response.json()['users'][0]
     
-    def sign_in(self, email: str, password: str) -> Dict[str, Any]:
-        endpoint = self.host + "/v1/accounts:signInWithPassword"
-        response = r.post(endpoint, 
+    async def call_endpoint(self, endpoint: str, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
+        client = aiohttp.ClientSession()
+        endpoint = f"{self.host}{endpoint}"
+        response = await client.post(endpoint, data=data, params=params)
+        return response
+
+    async def get_data(self, token: str) -> Dict[str, str]:
+        #TODO: Change requests for aiohttp
+        endpoint = "/v1/accounts:lookup"
+        response = await self.call_endpoint(endpoint, data={"idToken": token}, params={"key": self.api_key})
+        if response.status != status.HTTP_200_OK:
+            raise fe.InvalidToken() 
+        return (await response.json())['users'][0]
+    
+    async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
+        endpoint = "/v1/accounts:signInWithPassword"
+        response = await self.call_endpoint(endpoint, 
                           data={"email": email, "password": password, "returnSecureToken": True},
                           params={"key": self.api_key})
-        if response.status_code != r.codes.ok:
+        if response.status != status.HTTP_200_OK:
             raise fe.InvalidToken() 
-        return response.json()
+        return await response.json()
 
 class FirebaseMock(FirebaseAuth):
     
     def __init__(self, maped_responses: Dict[str, Dict[str, str]]):
         self.responses = maped_responses
 
-    def get_data(self, token: str) -> Dict[str, str]:
+    async def get_data(self, token: str) -> Dict[str, str]:
         response = self.responses.get(token) 
         if not response:
             raise fe.InvalidToken() 
