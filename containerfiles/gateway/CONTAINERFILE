@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 # 
 COPY ./src/model/gateway /code/src/model/gateway
 COPY ./src/model/users /code/src/model/users
+COPY ./src/model/commons /code/src/model/commons
 
 COPY ./src/services/gateway/main.py /code/main.py
 
