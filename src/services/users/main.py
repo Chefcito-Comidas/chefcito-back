@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Response, status, Query, Body
 from pydantic_settings import BaseSettings
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from src.model.commons.error import Error
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseClient
 from src.model.users.permissions.base import DBEngine
@@ -24,7 +25,7 @@ async def health(response: Response):
     response.status_code = status.HTTP_200_OK
 
 @app.post("/users/signup/{user_type}")
-async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response: Response) -> UserData | None:
+async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
     """
     Recieve the token, get the user data for the token and add it
     to the database
@@ -33,8 +34,9 @@ async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response:
         user = await token.get_data(authenticator)
         user.insert_into(user_type, database)
         return user
-    except Exception:
-        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return Error.from_exception(e, endpoint="/signup") 
         
 
 @app.post("/users/signin")
@@ -46,23 +48,24 @@ async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query
     return await authenticator.sign_in(email, password) 
 
 @app.post("/users")
-async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | None:
+async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
     """
     Returns all data from the user, including its type
     """
     try:
         return await auth.get_data(authenticator) 
-    except Exception:
-        #TODO: check how to return a comprehensive error
+    except Exception as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
+        return Error.from_exception(e, endpoint="/users") 
 
 @app.post("/users/permissions")
-async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response):
+async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response) -> None | Error:
     """
     Checks if the user is allowed or not to access a certain endpoint
     """
     try:
         response.status_code = status.HTTP_200_OK if auth.is_allowed(authenticator, database) \
                 else status.HTTP_403_FORBIDDEN
-    except Exception:
-        response.status_code = HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return Error.from_exception(e, endpoint="/permissions")
