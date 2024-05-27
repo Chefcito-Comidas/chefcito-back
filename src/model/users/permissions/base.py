@@ -47,7 +47,6 @@ class DBEngine(Database):
         JOIN users ON users.user_type = permissions.user_type
         WHERE permissions.endpoint = {endpoint} AND users.user_type = permissions.type"""
         authorization_query = select(Permission)\
-                                .join(User.user_type)\
                                 .where(Permission.endpoint.__eq__(endpoint))\
                                 .where(Permission.user_type.__eq__(user.user_type))
                                 

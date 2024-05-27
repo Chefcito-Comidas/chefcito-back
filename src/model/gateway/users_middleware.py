@@ -7,6 +7,7 @@ from starlette.types import ASGIApp
 import asyncio
 import aiohttp
 
+from src.model.users.auth_request import AuthRequest
 from src.model.users.user_data import UserToken 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -22,7 +23,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if not request.url.path in self.avoided:
             request, token = self.__modify_headers(request) 
-            response = await self.__auth_call(token)
+            response = await self.__auth_call(token, request.url.path)
             return await self.__call_if_authorized(request, response, call_next) 
         return await call_next(request)
 
@@ -43,10 +44,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         return self.__not_authorized()
     
-    async def __auth_call(self, token: str) -> aiohttp.ClientResponse:
+    async def __auth_call(self, token: str, endpoint: str) -> aiohttp.ClientResponse:
         token = self.__parse_token(token)
         session = aiohttp.ClientSession()
-        response = await session.post(self.authUrl, json=UserToken(id_token=token).model_dump())
+        response = await session.post(self.authUrl, json=AuthRequest(id_token=token, endpoint=endpoint).model_dump())
         return response 
 
     def __not_authorized(self) -> Response:

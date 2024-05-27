@@ -18,7 +18,6 @@ app = FastAPI()
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
 
-# TODO: Check how to manage permissions as a whole
 @app.get("/health")
 async def health(response: Response):
     response.status_code = status.HTTP_200_OK
@@ -63,7 +62,7 @@ async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response) -
     Checks if the user is allowed or not to access a certain endpoint
     """
     try:
-        response.status_code = status.HTTP_200_OK if auth.is_allowed(authenticator, database) \
+        response.status_code = status.HTTP_200_OK if await auth.is_allowed(authenticator, database) \
                 else status.HTTP_403_FORBIDDEN
     except Exception as e:
         response.status_code = status.HTTP_400_BAD_REQUEST

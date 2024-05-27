@@ -11,8 +11,8 @@ from src.model.users.user_data import UserData, UserToken
 from src.model.gateway.users_middleware import AuthMiddleware
 
 class Settings(BaseSettings):
-    auth_url: str = "http://users/users"
-    auth_avoided_urls: list[str] = ["/users", "/docs", "/openapi.json"]
+    auth_url: str = "http://users/users/permissions"
+    auth_avoided_urls: list[str] = ["/users"]
     information_prefix: str = "/users"
 
 settings = Settings()

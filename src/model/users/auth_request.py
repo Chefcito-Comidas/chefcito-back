@@ -6,9 +6,6 @@ from src.model.users.firebase.api_instance import FirebaseAuth
 class AuthRequest(UserToken):
     endpoint: str
     
-    def __init__(self, endpoint: str, id_token: str = ANONYMOUS_TOKEN):
-        super().__init__(id_token=id_token)
-        self.endpoint = endpoint
 
     async def is_allowed(self, firebase: FirebaseAuth, db: Database) -> bool:
         """
