@@ -35,14 +35,14 @@ class Permission(Base):
    def __repr__(self) -> str:
        return f"{self.user_type} ==> {self.endpoint}"
 
-#TODO: move this to a config file
+# TODO: move this to a config file
 user_types = [
         UserType(type="registered"), 
         UserType(type="restaurant"),
         UserType(type="anonymous")
               ]
 
-#TODO: move this to a config file
+# TODO: move this to a config file
 permissions = [
         Permission(user_type="registered", endpoint="/profile"),
         Permission(user_type="restaurant", endpoint="/menu"),

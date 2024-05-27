@@ -1,5 +1,6 @@
 import typer
 from chefcito_cli.scripts.build import build_run
+from chefcito_cli.scripts.db_load import run as db_load_run
 import os
 
 app = typer.Typer()
@@ -39,7 +40,10 @@ def install_dependencies(no_dev: bool = False, pip_name: str = "pip"):
         os.system(f"{pip_name} install -r dev-requirements.txt")
     os.system(f"{pip_name} install -r requirements.txt")
 
-
+@app.command("load-db",
+             help="Loads the local database with the information needed from a config.yaml file")
+def load_db(from_file: str = "scripts/config.yaml"):
+    db_load_run(from_file) 
 
 
 if __name__ == "__main__":
