@@ -97,6 +97,9 @@ def insert_data(types: list[UserType], permissions: list[Permission]):
         session.add_all(permissions)
         session.commit()
 
+# TODO: allow this script to impact the real database
+# TODO: add a second command to this script to update the schema instead of
+# just brute forcing the data again
 def run(config_file: str = "config.yaml"):
     types, permissions = generate_user_configuration(config_file)
     insert_data(types, permissions)
