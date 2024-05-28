@@ -7,6 +7,7 @@ from starlette.types import ASGIApp
 import asyncio
 import aiohttp
 
+from src.model.commons.caller import post, recover_json_data
 from src.model.users.auth_request import AuthRequest
 from src.model.users.user_data import UserToken 
 
@@ -35,19 +36,22 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if token:
             return request, token
         headers = MutableHeaders(request._headers)
+        # TODO: Fix this hardcoded values
         headers.append('Authorization', 'Bearer anonymous')
         request._headers = headers
         return request, 'Bearer anonymous'
     
     async def __call_if_authorized(self, request: Request, auth_response: aiohttp.ClientResponse, call_next: RequestResponseEndpoint) -> Response:
         if auth_response.status == status.HTTP_200_OK:
-            return await call_next(request)
-        return self.__not_authorized()
+            result = await call_next(request)
+        else: result =  self.__not_authorized()
+        auth_response.close()
+        return result
     
     async def __auth_call(self, token: str, endpoint: str) -> aiohttp.ClientResponse:
         token = self.__parse_token(token)
-        session = aiohttp.ClientSession()
-        response = await session.post(self.authUrl, json=AuthRequest(id_token=token, endpoint=endpoint).model_dump())
+        body = AuthRequest(id_token=token, endpoint=endpoint).model_dump()
+        response = await post(self.authUrl, body=body)
         return response 
 
     def __not_authorized(self) -> Response:

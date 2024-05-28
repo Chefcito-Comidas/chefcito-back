@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
 from fastapi import status
+from src.model.commons.caller import post, recover_json_data
 import src.model.users.firebase.exceptions as fe
 import aiohttp
 
@@ -29,9 +30,8 @@ class FirebaseClient(FirebaseAuth):
         self.api_key = key
     
     async def call_endpoint(self, endpoint: str, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
-        client = aiohttp.ClientSession()
         endpoint = f"{self.host}{endpoint}"
-        response = await client.post(endpoint, data=data, params=params)
+        response = await post(endpoint, data=data, params=params)
         return response
 
     async def get_data(self, token: str) -> Dict[str, str]:
@@ -39,16 +39,17 @@ class FirebaseClient(FirebaseAuth):
         response = await self.call_endpoint(endpoint, data={"idToken": token}, params={"key": self.api_key})
         if response.status != status.HTTP_200_OK:
             raise fe.InvalidToken() 
-        return (await response.json())['users'][0]
+        return (await recover_json_data(response))['users'][0]
     
     async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
         endpoint = "/v1/accounts:signInWithPassword"
         response = await self.call_endpoint(endpoint, 
                           data={"email": email, "password": password, "returnSecureToken": True},
                           params={"key": self.api_key})
+        
         if response.status != status.HTTP_200_OK:
             raise fe.InvalidToken() 
-        return await response.json()
+        return await recover_json_data(response)
 
 class FirebaseMock(FirebaseAuth):
     

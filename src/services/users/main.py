@@ -18,6 +18,7 @@ app = FastAPI()
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
 
+# TODO: remove all logic from this file and make it testable
 @app.get("/health")
 async def health(response: Response):
     response.status_code = status.HTTP_200_OK
