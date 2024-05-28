@@ -16,8 +16,33 @@ class AuthMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp, 
                  authUrl: str, 
                  avoided_urls: list[str],
+                 dev_mode: bool,
                  dispatch: DispatchFunction | None = None) -> None:
         super().__init__(app, dispatch)
+        self.mid_server =  ProdMiddleware(authUrl, avoided_urls) if not dev_mode \
+                else TestMiddleware()
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+       return await self.mid_server.dispatch(request, call_next)
+
+class Middleware:
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        raise Exception("Interface method should not be called")
+
+
+class TestMiddleware(Middleware):
+    """
+    Dummy middleware that always calls call_next on dispatch
+    """     
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        return await call_next(request) 
+
+class ProdMiddleware(Middleware):
+
+    def __init__(self, 
+                 authUrl: str, 
+                 avoided_urls: list[str]) -> None:
         self.authUrl = authUrl
         self.avoided = avoided_urls
 
@@ -44,7 +69,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def __call_if_authorized(self, request: Request, auth_response: aiohttp.ClientResponse, call_next: RequestResponseEndpoint) -> Response:
         if auth_response.status == status.HTTP_200_OK:
             result = await call_next(request)
-        else: result =  self.__not_authorized()
+        else: 
+            result =  self.__not_authorized()
         auth_response.close()
         return result
     
@@ -58,4 +84,5 @@ class AuthMiddleware(BaseHTTPMiddleware):
         response = Response()
         response.status_code = status.HTTP_403_FORBIDDEN
         return response
-            
+
+
