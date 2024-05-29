@@ -26,6 +26,7 @@ resource "docker_container" "gateway" {
     internal = 80
     external = 8000
   }
+  env = ["DEV=False"]
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
