@@ -7,6 +7,7 @@ from src.model.gateway import HelloResponse
 import requests as r
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.users.auth_request import AuthRequest
+from src.model.users.service import HttpUsersProvider
 from src.model.users.user_data import UserData, UserToken
 from src.model.gateway.users_middleware import AuthMiddleware
 from src.model.gateway.service import GatewayService
@@ -27,7 +28,8 @@ app.add_middleware(AuthMiddleware,
                    dev_mode=settings.dev)
 
 security = HTTPBearer()
-service = GatewayService()
+users = HttpUsersProvider("http://users")
+service = GatewayService(users)
 
 @app.get("/{name}")
 async def hello(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], name: Annotated[str, Path()]) -> HelloResponse:

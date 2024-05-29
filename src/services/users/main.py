@@ -6,7 +6,7 @@ from src.model.users.firebase.api_instance import FirebaseClient
 from src.model.users.permissions.base import DBEngine
 from src.model.users.user_data import UserData, UserToken
 from typing import Annotated, Any, Dict
-from src.model.users.service import UsersService
+from src.model.users.service import LocalUsersProvider, UsersService
 
 class Settings(BaseSettings):
     api_key: str = "ultraSecret"
@@ -17,7 +17,7 @@ app = FastAPI()
 
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
-service = UsersService(authenticator, database)
+service = UsersService(LocalUsersProvider(authenticator, database))
 
 @app.get("/health")
 async def health(response: Response):
@@ -29,7 +29,7 @@ async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response:
 
 @app.post("/users/signin")
 async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query()]) -> Dict[str, Any]:
-    return await service.sign_in(email, password)    
+    return await authenticator.sign_in(email, password)    
 
 @app.post("/users")
 async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
