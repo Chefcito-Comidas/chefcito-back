@@ -88,8 +88,8 @@ def generate_user_configuration(config_file: str) -> tuple[list[UserType], list[
         permissions = generate_permissions(yaml_config, types)
     return map_types(list(types.values())), permissions 
 
-def insert_data(types: list[UserType], permissions: list[Permission]):
-    local_engine = create_engine("postgresql+psycopg2://user:admin123@localhost/users_db")
+def insert_data(types: list[UserType], permissions: list[Permission], conn_string: str):
+    local_engine = create_engine(conn_string)
     Base.metadata.create_all(local_engine)
     with Session(local_engine) as session:
         session.add_all(types)
@@ -100,9 +100,9 @@ def insert_data(types: list[UserType], permissions: list[Permission]):
 # TODO: allow this script to impact the real database
 # TODO: add a second command to this script to update the schema instead of
 # just brute forcing the data again
-def run(config_file: str = "config.yaml"):
+def run(config_file: str = "config.yaml", conn_string: str = "postgresql+psycopg2://user:admin123@localhost/users_db"):
     types, permissions = generate_user_configuration(config_file)
-    insert_data(types, permissions)
+    insert_data(types, permissions, conn_string)
 
 if __name__ == "__main__":
     run("config.yaml")

@@ -42,8 +42,8 @@ def install_dependencies(no_dev: bool = False, pip_name: str = "pip"):
 
 @app.command("load-db",
              help="Loads the local database with the information needed from a config.yaml file")
-def load_db(from_file: str = "scripts/config.yaml"):
-    db_load_run(from_file) 
+def load_db(from_file: str = "scripts/config.yaml", conn_string: str = "postgresql+psycopg2://user:admin123@localhost/users_db"):
+    db_load_run(from_file, conn_string) 
 
 
 if __name__ == "__main__":
