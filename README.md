@@ -17,6 +17,18 @@ alguna herramienta que permita crear un cluster de un unico nodo de Kubernetes. 
 productivo estara deployeado sobre Kubernetes y se utilizara Terraform como herramienta
 de gestion de la infraestructura.
 
+#### Chefcito-CLI
+
+Chefcito cli es un programa de consola que facilita la tarea de desarrollo local del sistema en general. 
+
+##### Instalacion
+
+<Explicar como se instala chefcito cli>
+
+##### Uso de chefcito
+
+<Explicar los comandos de chefcito cli>
+
 ### Repositorios
 
 El repositorio del sistema se encontrara alojado en [github](github.com), utilizando la herramienta
@@ -24,15 +36,10 @@ El repositorio del sistema se encontrara alojado en [github](github.com), utiliz
 
 - src
     - services
-        - Contiene un modulo por servicio construido que implementan la interfaz del mismo.
+        - Contiene un modulo por servicio construido que implementan al servicio integrado con la interfaz de FastAPI.
     - model
-        - Contiene modulos y archivos de codigo que implementan la logica de cada uno de los servicios. Que se implementan
-        utilizando la siguiente estructura de modulos
-            - model
-                - Contiene la logica de negocio del servicio
-            - interfaces
-                - Contiene la implementacion de interfaces que el servicio necesita utilizar como pueden ser
-                Bases de Datos, APIs externas al servicio, etc.
+        - Contiene modulos y archivos de codigo que implementan la logica de cada uno de los servicios. Todo modelo de servicio tiene que contener
+          un modulo service que implemente la interfaz del propio servicio.
 - test
     - Contiene todas las pruebas unitarias de los servicios en *src*, utiliza la misma misma estructura de modulos que *src*
 - containerfiles
@@ -43,24 +50,14 @@ El repositorio del sistema se encontrara alojado en [github](github.com), utiliz
     un ambiente local de desarrollo y la forma de ejecutar el sistema como un servicio en la nube.
 - requirements.txt
     - Contiene todos los requerimientos de librerias del sistema.
+- dev-requirements.txt
+    - Contiene los requerimientos de librerias que no forman parte del sistema pero cumplen algun rol en el desarrollo del mismo.
+
+### Dev Guidelines
+
+Explicar la manera en la que se desarrolla chefcito.
 
 ## Diagrama general del sistema
 
 Diagramar utilizando Excalidraw de la forma mas sencilla posible el sistema desde
-afuera. Voy a usar un patron de Gateway
-
-## Metodologia de autenticacion de usuarios
-
-Voy a ir por Firebase/Existe la posibilidad de usar Amplify
-
-### Creacion de usuarios y storage de contraseñas
-
-La idea es que use un servicio externo para hacer todas estas cosas, tanto identidad 
-federada como identidad por usuario y contraseña
-
-### Autenticacion por identidad federada
-
-## Metodologia de autorizacion de usuarios
-
-Aca tengo que tener una manera de poder obtener el rol que tiene el usuario, segun como
-se haya registrado o incluso si no esta registrado.
+afuera. Voy a usar un patron de Gateway.
