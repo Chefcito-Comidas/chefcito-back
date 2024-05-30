@@ -22,12 +22,34 @@ de gestion de la infraestructura.
 Chefcito cli es un programa de consola que facilita la tarea de desarrollo local del sistema en general. 
 
 ##### Instalacion
+Previo a la la instalacion de chefcito instalar Poetry ejecutando el siguiente comando:
 
-<Explicar como se instala chefcito cli>
+```bash
+pip install poetry
+```
+
+Ejecutar el siguiente comando:
+
+```bash
+cd scripts/chefcito-cli && poetry build && pip install --user dist/chefcito_cli-0.1.0-py3-none-any.whl
+```
 
 ##### Uso de chefcito
 
-<Explicar los comandos de chefcito cli>
+Para hacer uso de chefcito, es necesario que el working directory sea el root del proyecto.
+
+- chefcito build
+    - Construye todos los contenedores de los servicios
+- chefcito up
+    - Realiza el deploy de los servicios en el entorno local
+- chefcito down
+    - Destruye los contenedores del entorno local
+- chefcito run
+    - equivalente a ejecutar build seguido de up
+- chefcito install
+    - instala todas las dependencias de chefcito (tanto dev-requierements.txt como requirements.txt)
+ - chefcito load-db
+    - Carga los permisos definidos en scripts/config.yaml en la base de datos de users local
 
 ### Repositorios
 
@@ -55,7 +77,34 @@ El repositorio del sistema se encontrara alojado en [github](github.com), utiliz
 
 ### Dev Guidelines
 
-Explicar la manera en la que se desarrolla chefcito.
+#### Agregado de un nuevo servicio
+
+Para agregar un nuevo servicio a Chefcito, se tiene que seguir el siguiente flujo de desarrollo:
+
+1. Crear una nueva rama con el nombre del servicio a crear
+2. Construir el nuevo servicio
+3. Abrir un pull request y validarlo
+4. Mergear el nuevo servicio a main
+5. Eliminar la rama del servicio
+
+#### Agregado de una nueva funcionalidad para un servicio existente
+
+En este caso, el flujo es el mismo que para el punto anterior, con la excepcion de que la rama tiene que tener el siguiente formato:
+
+- NobreServicio-Funcionalidad
+
+#### Agregado de nueva funcionalidad a chefcito-cli
+
+En este punto se puede o bien crear una nueva rama, o bien desarrollar la funcionalidad sobre una rama existente. Al momento de pedir un pull-request si la funcionalidad es stand alone, no se requiere validacion para realizar el merge.
+
+#### Bug fix no critico
+
+Cuando el Bug que se intenta agregar no es un bug critico (no impide el funcionamiento del sistema o gran parte del mismo) el flujo de desarrollo es el mismo que para una nueva funcionalidad. El Pull request debe contener, ademas, al menos una prueba en la que se evidencie el Bug.
+
+#### Bug Fix Critico
+
+Se debe seguir el mismo flujo que para un bug fix no critico, con la salvedad de que no se requiere de validacion para mergear el mismo a main.
+
 
 ## Diagrama general del sistema
 
