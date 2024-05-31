@@ -108,5 +108,5 @@ Se debe seguir el mismo flujo que para un bug fix no critico, con la salvedad de
 
 ## Diagrama general del sistema
 
-Diagramar utilizando Excalidraw de la forma mas sencilla posible el sistema desde
-afuera. Voy a usar un patron de Gateway.
+![arquitectura](img/ChefcitoServices.png)
+
