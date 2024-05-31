@@ -1,12 +1,10 @@
 from typing import Annotated
 from fastapi import Body, Depends, FastAPI, Header, Path, Response, status
 from pydantic_settings import BaseSettings
-from src.model.commons.caller import get, post, recover_json_data
 from src.model.commons.error import Error
 from src.model.gateway import HelloResponse
 import requests as r
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.model.users.auth_request import AuthRequest
 from src.model.users.service import HttpUsersProvider
 from src.model.users.user_data import UserData, UserToken
 from src.model.gateway.users_middleware import AuthMiddleware
@@ -48,5 +46,6 @@ async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
 
 @app.post("/users")
 async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                  user_type: Annotated[str, Body()]) -> UserData | Error:
+                  user_type: Annotated[str, Body(embed=True, alias='user_type')]) -> UserData | Error:
+    
     return await service.sign_up(credentials, user_type) 
