@@ -31,7 +31,7 @@ class FirebaseClient(FirebaseAuth):
     
     async def call_endpoint(self, endpoint: str, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
         endpoint = f"{self.host}{endpoint}"
-        response = await post(endpoint, data=data, params=params)
+        response = await post(endpoint, body=data, params=params)
         return response
 
     async def get_data(self, token: str) -> Dict[str, str]:

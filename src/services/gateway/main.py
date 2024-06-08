@@ -29,10 +29,6 @@ security = HTTPBearer()
 users = HttpUsersProvider("http://users")
 service = GatewayService(users)
 
-@app.get("/{name}")
-async def hello(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], name: Annotated[str, Path()]) -> HelloResponse:
-    return HelloResponse(name=f"Hello, {name}") 
-
 @app.get("/users/health")
 async def users_health(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
                                               response: Response):
