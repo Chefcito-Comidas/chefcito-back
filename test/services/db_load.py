@@ -100,9 +100,9 @@ def insert_data(types: list[UserType], permissions: list[Permission], connection
 # TODO: allow this script to impact the real database
 # TODO: add a second command to this script to update the schema instead of
 # just brute forcing the data again
-def run(config_file: str = "config.yaml", connection: str = "postgresql+psycopg2://user:admin123@localhost/users_db"):
+def run(config_file: str = "db_config.yaml", connection: str = "postgresql+psycopg2://user:admin123@localhost/users_db"):
     types, permissions = generate_user_configuration(config_file)
     insert_data(types, permissions, connection)
 
 if __name__ == "__main__":
-    run("config.yaml")
+    run("db_config.yaml")

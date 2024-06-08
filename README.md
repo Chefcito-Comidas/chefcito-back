@@ -48,8 +48,8 @@ Para hacer uso de chefcito, es necesario que el working directory sea el root de
     - equivalente a ejecutar build seguido de up
 - chefcito install
     - instala todas las dependencias de chefcito (tanto dev-requierements.txt como requirements.txt)
- - chefcito load-db
-    - Carga los permisos definidos en scripts/config.yaml en la base de datos de users local
+ - chefcito load-db --from-file db_config.yaml
+    - Carga los permisos definidos en db_config.yaml en la base de datos de users local
 
 ### Repositorios
 
