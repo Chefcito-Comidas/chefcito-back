@@ -34,7 +34,7 @@ jobs:
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }}containerfiles/gateway/CONTAINERFILE 
+          appSourcePath: ${{ github.workspace }}/containerfiles/gateway/CONTAINERFILE 
           registryUrl: chefcitoacr.azurecr.io
           registryUsername: ${{ secrets.GATEWAY_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.GATEWAY_REGISTRY_PASSWORD }}
