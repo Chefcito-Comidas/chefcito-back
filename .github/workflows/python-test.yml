@@ -48,7 +48,7 @@ jobs:
       - name: Log in to Registry
         uses: docker/login-action@v2
         with:
-            registry: ${{ env.REGISTRY_NAME }}
+            registry: chefcitoacr.azurecr.io
             username: ${{ secrets.GATEWAY_REGISTRY_USERNAME }}
             password: ${{ secrets.GATEWAY_REGISTRY_PASSWORD }}
       
@@ -58,7 +58,7 @@ jobs:
           context: .
           file: ./containerfiles/gateway/CONTAINERFILE
           push: true
-          tags: ${{ env.REGISTRY_NAME }}/staging/gateway
+          tags: chefcitoacr.azurecr.io/staging/gateway
 
       - name: build-push users
         uses: docker/build-push-action@v3
@@ -66,7 +66,7 @@ jobs:
           context: .
           file: ./containerfiles/users/CONTAINERFILE
           push: true
-          tags: ${{ env.REGISTRY_NAME }}/staging/users
+          tags: chefcitoacr.azurecr.io/staging/users
 
 
       
