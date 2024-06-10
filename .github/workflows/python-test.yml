@@ -56,7 +56,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./containerfiles/gateway/CONTAINERFILE
+          file: containerfiles/gateway/CONTAINERFILE
           push: true
           tags: chefcitoacr.azurecr.io/staging/gateway
 
@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./containerfiles/users/CONTAINERFILE
+          file: containerfiles/users/CONTAINERFILE
           push: true
           tags: chefcitoacr.azurecr.io/staging/users
 
