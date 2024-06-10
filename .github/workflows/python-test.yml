@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -38,3 +38,36 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+            registry: ${{ env.REGISTRY_NAME }}
+            username: ${{ secrets.GATEWAY_REGISTRY_USERNAME }}
+            password: ${{ secrets.GATEWAY_REGISTRY_PASSWORD }}
+      
+      - name: build-push gateway
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./containerfiles/gateway/CONTAINERFILE
+          push: true
+          tags: ${{ env.REGISTRY_NAME }}/staging/gateway
+
+      - name: build-push users
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./containerfiles/users/CONTAINERFILE
+          push: true
+          tags: ${{ env.REGISTRY_NAME }}/staging/users
+
+
+      
+
