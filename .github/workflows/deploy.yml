@@ -3,8 +3,6 @@ name: Deploy containers to container APPs
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 permissions:
   contents: read
