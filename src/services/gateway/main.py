@@ -12,7 +12,8 @@ from src.model.gateway.service import GatewayService
 
 
 class Settings(BaseSettings):
-    auth_url: str = "http://users/users/permissions"
+    users: str = "http://users"
+    auth_url: str = "/users/permissions"
     auth_avoided_urls: list[str] = ["/users"]
     information_prefix: str = "/users"
     dev: bool = True
@@ -21,18 +22,18 @@ settings = Settings()
 app = FastAPI()
 
 app.add_middleware(AuthMiddleware, 
-                   authUrl=settings.auth_url, 
+                   authUrl=f"{settings.users}{settings.auth_url}", 
                    avoided_urls=settings.auth_avoided_urls,
                    dev_mode=settings.dev)
 
 security = HTTPBearer()
-users = HttpUsersProvider("http://users")
+users = HttpUsersProvider(f"{settings.users}")
 service = GatewayService(users)
 
 @app.get("/users/health")
 async def users_health(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
                                               response: Response):
-    users_response = r.get("http://users/health")
+    users_response = r.get(f"{settings.users}/health")
     response.status_code = users_response.status_code
 
 @app.get("/users")
