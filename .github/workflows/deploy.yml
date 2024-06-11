@@ -49,14 +49,11 @@ jobs:
               with:
                 creds: ${{secrets.AZURE_CREDENTIALS}}
             - name: deploy gateway
-              uses: azure/container-apps-deploy-action@v2
+              uses: azure/cli@v2
               with:
-                imageToDeploy: chefcitoacr.azurecr.io/gateway:latest
-                containerAppName: gateway
-                resourceGroup: chefcito-rg
-                acrName: chefcitoacr
-                acrUsername: ${{secrets.GATEWAY_REGISTRY_USERNAME}}
-                acrPassword: ${{secrets.GATEWAY_REGISTRY_PASSWORD}}
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n gateway -g chefcito-rg
             - name: deploy users
               uses: azure/container-apps-deploy-action@v2
               with:
