@@ -22,18 +22,18 @@ settings = Settings()
 app = FastAPI()
 
 app.add_middleware(AuthMiddleware, 
-                   authUrl=f"{settings.users}{settings.auth_url}", 
+                   authUrl=f"http://{settings.users}{settings.auth_url}", 
                    avoided_urls=settings.auth_avoided_urls,
                    dev_mode=settings.dev)
 
 security = HTTPBearer()
-users = HttpUsersProvider(f"{settings.users}")
+users = HttpUsersProvider(f"http://{settings.users}")
 service = GatewayService(users)
 
 @app.get("/users/health")
 async def users_health(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
                                               response: Response):
-    users_response = r.get(f"{settings.users}/health")
+    users_response = r.get(f"http://{settings.users}/health")
     response.status_code = users_response.status_code
 
 @app.get("/users")

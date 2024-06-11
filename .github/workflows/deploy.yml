@@ -54,11 +54,10 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n gateway -g chefcito-rg --revision-suffix ${{ github.sha }}
-            - name: deploy users
-              uses: azure/container-apps-deploy-action@v2
+            - name: deploy users 
+              uses: azure/cli@v2
               with:
-                imageToDeploy: chefcitoacr.azurecr.io/users:latest
-                containerAppName: users
-                resourceGroup: chefcito-rg
-
-
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n users -g chefcito-rg --revision-suffix ${{ github.sha }}
+            
