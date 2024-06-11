@@ -33,9 +33,9 @@ jobs:
             - name: build-push users
               uses: docker/build-push-action@v3
               with:
-              file: containerfiles/users/CONTAINERFILE
-              push: true
-              tags: chefcitoacr.azurecr.io/users:latest
+                file: containerfiles/users/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/users:latest
 
     deploy:
         needs: build
