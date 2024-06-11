@@ -53,10 +53,12 @@ jobs:
               with:
                 imageToDeploy: chefcitoacr.azurecr.io/gateway:latest
                 containerAppName: gateway
+                resourceGroup: chefcito-rg
             - name: deploy users
               uses: azure/container-apps-deploy-action@v2
               with:
                 imageToDeploy: chefcitoacr.azurecr.io/users:latest
                 containerAppName: users
+                resourceGroup: chefcito-rg
 
 
