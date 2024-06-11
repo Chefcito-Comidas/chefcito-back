@@ -51,9 +51,7 @@ jobs:
             registry: chefcitoacr.azurecr.io
             username: ${{ secrets.GATEWAY_REGISTRY_USERNAME }}
             password: ${{ secrets.GATEWAY_REGISTRY_PASSWORD }}
-      - name: ls pwd
-        run: ls
-        
+      
       - name: build-push gateway
         uses: docker/build-push-action@v3
         with:
