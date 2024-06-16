@@ -47,6 +47,19 @@ resource "docker_container" "users" {
   }
 }
 
+resource "docker_container" "reservations" {
+  name = "reservations"
+  hostname = "reservations"
+  image = "service-reservations:latest"
+  ports {
+    internal = 80
+    external = 8002
+  }
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
 resource "docker_container" "postgresql" {
   name = "postgredb"
   hostname = "reldb"
