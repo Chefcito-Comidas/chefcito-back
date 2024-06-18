@@ -1,8 +1,11 @@
 from pydantic import BaseModel
 
+from src.model.reservations.data.schema import ReservationSchema
+
 
 def create_reservation(user: str, venue: str, time: str, people: int) -> 'Reservation':
-    return Reservation(user=user, 
+    return Reservation(id="",
+                        user=user, 
                         venue=venue, 
                         time=time, 
                         people=people,
@@ -31,7 +34,8 @@ class Accepted(ReservationStatus):
         super().__init__(status="Accepted")
 
 class Reservation(BaseModel):
-
+    
+    id: str
     user: str
     venue: str
     time: str
@@ -50,6 +54,24 @@ class Reservation(BaseModel):
     def reject(self):
         self.status = Canceled() 
 
-    
+    def persistance(self) -> ReservationSchema:
+        if not id:
+            return ReservationSchema.create(
+                    self.user,
+                    self.venue,
+                    self.time,
+                    self.people,
+                    self.status.get_status()
+                    )
+        else:
+            return ReservationSchema(
+                    id=self.id,
+                    user=self.user,
+                    venue=self.venue,
+                    time=self.time,
+                    people=self.people,
+                    status=self.status.get_status()
+                    )
+        
 
 
