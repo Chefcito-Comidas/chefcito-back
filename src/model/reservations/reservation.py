@@ -1,3 +1,4 @@
+from typing import Self
 from pydantic import BaseModel
 
 from src.model.reservations.data.schema import ReservationSchema
@@ -73,5 +74,14 @@ class Reservation(BaseModel):
                     status=self.status.get_status()
                     )
         
+    @classmethod
+    def from_schema(cls, schema: ReservationSchema) -> Self:
+        return cls(id=schema.id,
+                   user=schema.user,
+                   venue=schema.venue,
+                   time=schema.time,
+                   people=schema.people,
+                   status=ReservationStatus(status=schema.status)
+                   )
 
 
