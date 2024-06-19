@@ -1,13 +1,16 @@
 from typing import List
 from sqlalchemy.orm import Session
 from src.model.reservations.data.schema import ReservationSchema
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import Select, create_engine, select, update
 
 # TODO: try to add this to configuration options
 DEFAULT_POOL_SIZE = 10
 
 class ReservationsBase:
     
+    def get_by_eq(self, query: Select) -> List[ReservationSchema]:
+        raise Exception("Interface method should not be used")
+
     def store_reservation(self, reservation: ReservationSchema) -> None:
         """
             Stores a reservation on the base, 
@@ -36,6 +39,10 @@ class RelBase(ReservationsBase):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         self.__engine = create_engine(conn_string, **kwargs)
     
+    def get_by_eq(self, query: Select) -> List[ReservationSchema]:
+        session = Session(self.__engine)
+        return list(session.scalars(query).fetchmany(100))
+
     def store_reservation(self, reservation: ReservationSchema) -> None:
        session = Session(self.__engine)
        session.add(reservation)
@@ -64,7 +71,7 @@ class MockBase(ReservationsBase):
 
     def __init__(self):
         self.base: List[ReservationSchema] = []
-
+    
     def store_reservation(self, reservation: ReservationSchema) -> None:
         for stored in self.base:
             if stored.id == reservation.id:
