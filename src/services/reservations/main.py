@@ -42,7 +42,6 @@ async def get_reservations(response: Response,
                            from_people: int = Query(default=None),
                            to_people: int = Query(default=None),
                            ) -> List[Reservation] | Error:
-    print("Here I Amo")
     query = ReservationQuery(
             id=id,
             user=user,

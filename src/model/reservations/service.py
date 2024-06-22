@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import Response, status
 
-from src.model.commons.caller import post
+from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.commons.error import Error
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
@@ -12,7 +12,7 @@ from src.model.reservations.reservationQuery import ReservationQuery
 
 class ReservationsProvider:
     
-    async def create_reservation(self, reservation: Reservation) -> Reservation:
+    async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         raise Exception("Interface method should not be called")
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
@@ -32,7 +32,7 @@ class ReservationsService:
     
     async def create_reservation(self, reservation: CreateInfo, response: Response) -> Reservation | Error:
         try:
-           return await self.provider.create_reservation(reservation.into_reservation())
+           return await self.provider.create_reservation(reservation)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
            return Error.from_exception(e)
@@ -62,29 +62,33 @@ class HttpReservationsProvider(ReservationsProvider):
     def __init__(self, service_url: str):
         self.url = service_url
 
-    async def create_reservation(self, reservation: Reservation) -> Reservation:
+    async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         endpoint = "/reservations"
-        return await super().create_reservation(reservation)
+        response = await post(f"{self.url}{endpoint}", body=reservation.model_dump())
+        return await recover_json_data(response) 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         endpoint = "/reservations"
-        return await super().update_reservation(reservation_id, reservation_update)
+        response = await put(f"{self.url}{endpoint}/{reservation_id}", body=reservation_update.model_dump())
+        return await recover_json_data(response) 
 
     async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
         endpoint = "/reservations"
-        return await super().get_reservations(query)
+        response = await get(f"{self.url}{endpoint}", params=query.model_dump())
+        return await recover_json_data(response)
 
     async def delete_reservation(self, reservation_id: str) -> None:
         endpoint = "/reservations"
-        return await super().delete_reservation(reservation_id)
+        await delete(f"{self.url}{endpoint}/{reservation_id}")
+        return  
 
 class LocalReservationsProvider(ReservationsProvider):
     
     def __init__(self, base: ReservationsBase):
         self.db = base
 
-    async def create_reservation(self, reservation: Reservation) -> Reservation:
-        persistance = reservation.persistance()
+    async def create_reservation(self, reservation: CreateInfo) -> Reservation:
+        persistance = reservation.into_reservation().persistance()
         self.db.store_reservation(persistance)
         return Reservation.from_schema(persistance)
 
