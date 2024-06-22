@@ -1,7 +1,6 @@
 import uuid
-from chefcito_cli.scripts.db_load import mapped_column
 import sqlalchemy
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, mapped_column
 from sqlalchemy.orm import Mapped
 from typing import Self
 
@@ -25,5 +24,5 @@ class ReservationSchema(ReservationsBase):
     @classmethod
     def create(cls, user: str, venue: str, time: str, people: int, status: str) -> Self:
         uid = uuid.uuid1()
-        return cls(id=uid, user=user, venue=venue, time=time, people=people, status=status)
+        return cls(id=uid.__str__(), user=user, venue=venue, time=time, people=people, status=status)
 

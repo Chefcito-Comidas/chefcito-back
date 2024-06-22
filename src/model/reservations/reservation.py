@@ -35,6 +35,16 @@ class Accepted(ReservationStatus):
     def __init__(self):
         super().__init__(status="Accepted")
 
+class CreateInfo(BaseModel):
+    user: str
+    venue: str
+    time: str
+    people: int
+
+    def into_reservation(self) -> 'Reservation':
+        return create_reservation(self.user, self.venue, self.time, self.people) 
+
+
 class Reservation(BaseModel):
     
     id: str
@@ -57,14 +67,17 @@ class Reservation(BaseModel):
         self.status = Canceled() 
 
     def persistance(self) -> ReservationSchema:
-        if not id:
-            return ReservationSchema.create(
+        if not self.id:
+            schema = ReservationSchema.create(
                     self.user,
                     self.venue,
                     self.time,
                     self.people,
                     self.status.get_status()
                     )
+            self.id = schema.id.__str__()
+            return schema
+            
         else:
             return ReservationSchema(
                     id=self.id,
@@ -81,7 +94,7 @@ class Reservation(BaseModel):
 
     @classmethod
     def from_schema(cls, schema: ReservationSchema) -> Self:
-        return cls(id=schema.id,
+        return cls(id=schema.id.__str__(),
                    user=schema.user,
                    venue=schema.venue,
                    time=schema.time,

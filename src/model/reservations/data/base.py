@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 from sqlalchemy.orm import Session
 from src.model.reservations.data.schema import ReservationSchema
 from sqlalchemy import Select, create_engine, delete, select, update
@@ -99,6 +100,7 @@ class MockBase(ReservationsBase):
                 return
 
     def get_reservation_by_id(self, id: str) -> ReservationSchema | None:
+    
         for stored in self.base:
             if stored.id == id:
                 return stored
