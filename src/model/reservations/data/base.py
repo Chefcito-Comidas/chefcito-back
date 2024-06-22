@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from src.model.reservations.data.schema import ReservationSchema
-from sqlalchemy import Select, create_engine, select, update
+from sqlalchemy import Select, create_engine, delete, select, update
 
 # TODO: try to add this to configuration options
 DEFAULT_POOL_SIZE = 10
@@ -32,7 +32,12 @@ class ReservationsBase:
         """
         raise Exception("Interface method should not be called")
 
-
+    def delete_reservation(self, id: str) -> None:
+        """
+            Deletes a reservation
+        """
+        raise Exception("Interface method should not be called")
+    
 class RelBase(ReservationsBase):
 
     def __init__(self, conn_string: str, **kwargs):
@@ -66,6 +71,14 @@ class RelBase(ReservationsBase):
        result = session.scalar(query)
        session.close()
        return result
+    
+    def delete_reservation(self, id: str) -> None:
+        session = Session(self.__engine)
+        query = delete(ReservationSchema).where(ReservationSchema.id.__eq__(id))
+        session.execute(query)
+        session.commit()
+        session.close()
+        return
 
 class MockBase(ReservationsBase):
 
@@ -89,3 +102,11 @@ class MockBase(ReservationsBase):
         for stored in self.base:
             if stored.id == id:
                 return stored
+
+    def delete_reservation(self, id: str) -> None:
+        for index, stored in enumerate(self.base):
+            if stored.id == id:
+                self.base.pop(index)
+                return
+        return
+

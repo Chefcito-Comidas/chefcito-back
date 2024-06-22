@@ -1,6 +1,7 @@
 from typing import Self
 from pydantic import BaseModel
 
+from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
 
 
@@ -73,7 +74,11 @@ class Reservation(BaseModel):
                     people=self.people,
                     status=self.status.get_status()
                     )
-        
+    
+    @staticmethod
+    def delete(id: str, database: ReservationsBase) -> None:
+        return database.delete_reservation(id)
+
     @classmethod
     def from_schema(cls, schema: ReservationSchema) -> Self:
         return cls(id=schema.id,

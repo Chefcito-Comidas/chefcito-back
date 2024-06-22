@@ -1,6 +1,7 @@
 import pytest
 from src.model.reservations.data.base import MockBase
-from src.model.reservations.reservation import Accepted, Canceled, Uncomfirmed, create_reservation
+from src.model.reservations.data.schema import ReservationSchema
+from src.model.reservations.reservation import Accepted, Canceled, Reservation, Uncomfirmed, create_reservation
 from src.model.reservations.update import Update
 
 
@@ -50,3 +51,12 @@ def after_persisting_a_reservation_it_can_be_recovered_with_its_id():
     base = MockBase()
     base.store_reservation(reservation.persistance())
     assert base.get_reservation_by_id(reservation.id) == reservation
+
+def after_deleting_a_reservation_it_can_no_longer_be_recovered():
+    reservation = create_reservation("user", "venue", "at", 2)
+    base = MockBase()
+    base.store_reservation(reservation.persistance())
+
+    #Deleting the reservation
+    Reservation.delete(reservation.id, base)
+    assert base.get_reservation_by_id(reservation.id) == None
