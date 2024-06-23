@@ -55,6 +55,7 @@ resource "docker_container" "reservations" {
     internal = 80
     external = 8002
   }
+  env=["DB_STRING=postgresql://user:admin123@reldb/users_db"]
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
