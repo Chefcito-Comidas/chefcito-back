@@ -7,7 +7,6 @@ from typing import Self
 class ReservationsBase(DeclarativeBase):
     pass
 
-
 class ReservationSchema(ReservationsBase):
     __tablename__ = "reservations"
 
