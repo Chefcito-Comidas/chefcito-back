@@ -1,5 +1,5 @@
-from docker.tls import os
-from sqlalchemy import create_engine
+from typing import List
+from sqlalchemy import create_engine, delete, insert, update
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -88,14 +88,36 @@ def generate_user_configuration(config_file: str) -> tuple[list[UserType], list[
         permissions = generate_permissions(yaml_config, types)
     return map_types(list(types.values())), permissions 
 
+def try_adding_user_types(types: List[UserType], session: Session) -> None:
+    for value in types:
+        try:
+            insert_query = insert(UserType).values(type=value.type)
+            session.execute(insert_query)
+            session.commit()
+        except Exception:
+            session.rollback()
+            print(f"{value.type} ==> Already in db")
+
+def try_adding_permissions(permissions: List[Permission], session: Session):
+    for permission in permissions:
+        insert_query = insert(Permission).values(endpoint=permission.endpoint, 
+                                                 user_type=permission.user_type)
+        delete_query = delete(Permission).where(Permission.endpoint == permission.endpoint)
+        try:
+            session.execute(insert_query)
+            session.commit()
+        except Exception:
+            session.rollback()
+            session.execute(delete_query)
+            session.execute(insert_query)
+            session.commit()
+
 def insert_data(types: list[UserType], permissions: list[Permission], conn_string: str):
     local_engine = create_engine(conn_string)
     Base.metadata.create_all(local_engine)
     with Session(local_engine) as session:
-        session.add_all(types)
-        session.commit()
-        session.add_all(permissions)
-        session.commit()
+        try_adding_user_types(types, session)
+        try_adding_permissions(permissions, session)
 
 # TODO: allow this script to impact the real database
 # TODO: add a second command to this script to update the schema instead of
