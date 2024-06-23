@@ -1,0 +1,22 @@
+# 
+FROM python:3.12-alpine
+
+# 
+WORKDIR /code
+
+# 
+COPY ./requirements.txt /code/requirements.txt
+
+# 
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+# 
+COPY ./src/model/users /code/src/model/search
+COPY ./src/model/commons /code/src/model/commons
+
+COPY ./src/services/users/main.py /code/main.py
+
+
+
+# 
+CMD ["fastapi", "run", "main.py", "--port", "80"]
