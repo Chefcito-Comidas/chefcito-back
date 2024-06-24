@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import BinaryExpression, Column, create_engine, select
 from sqlalchemy.orm import Session
 from src.model.users.permissions.schema import User, Permission
 
@@ -7,6 +7,10 @@ DEFAULT_POOL_SIZE = 10
 
 class Database():
     
+    def __add_param_at(self, endpoint: str, position: int = -1) -> str:
+        splitted = endpoint.split("/")
+        splitted[position] = "param"
+        return "/".join(splitted)
 
     def get_user(self, uid: str) -> User | None:
         """
@@ -40,18 +44,18 @@ class DBEngine(Database):
         session.close()
         return result 
     
+    def __get_condition(self, endpoint: str) -> BinaryExpression[bool]:
+        endpoints = [endpoint, self.__add_param_at(endpoint)]
+        return Permission.endpoint.in_(endpoints)
+
     def is_allowed(self, user: User, endpoint: str) -> bool:
         session = Session(self.__engine)
         """SELECT *
         FROM permissions
         JOIN users ON users.user_type = permissions.user_type
         WHERE permissions.endpoint = {endpoint} AND users.user_type = permissions.type"""
-        param_endpoint = endpoint.split("/")
-        param_endpoint[-1] = 'param'
-        param_endpoint = '/'.join(param_endpoint)
         authorization_query = select(Permission)\
-                                .where(Permission.endpoint.__eq__(endpoint)\
-                                | Permission.endpoint.__eq__(param_endpoint))\
+                                .where(self.__get_condition(endpoint))\
                                 .where(Permission.user_type.__eq__(user.user_type))
                                 
         result = session.scalar(authorization_query) != None
