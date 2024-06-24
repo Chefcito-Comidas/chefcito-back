@@ -2,7 +2,9 @@ import pytest
 from testcontainers.postgres import PostgresContainer
 from src.model.reservations.data.base import RelBase
 from src.model.reservations.reservation import Accepted, Reservation, create_reservation
+from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.update import Update
+from test.reservations.test_query import all_different, create_reservations
 from test.services.db_load import run
 
 
@@ -41,3 +43,26 @@ async def test_reservation_deletion():
         
         Reservation.delete(reservation.id, database)
         assert database.get_reservation_by_id(reservation.id) == None
+
+@pytest.mark.asyncio
+async def test_reservation_pagination():
+    with PostgresContainer('postgres:16') as postgres:
+        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        reservations = create_reservations(99) 
+        database = RelBase(conn_string=postgres.get_connection_url())
+        for reservation in reservations:
+            database.store_reservation(reservation)
+        
+        query = ReservationQuery(
+                user="user_1",
+                limit=5
+                )
+        result_1 = query.query(database)
+        query.start=5
+        result_2 = query.query(database)
+        query.start=10
+        result_3= query.query(database)
+        assert len(result_1) == len(result_2) == len(result_3) == 5
+        assert all_different(result_1, result_2)
+        assert all_different(result_1, result_3)
+        assert all_different(result_2, result_3)

@@ -42,8 +42,8 @@ class QueryBuilder:
         raise Exception("Interface method should not be called")
 
 class RelBuilder(QueryBuilder):
-    def __filter_by_eq(self, user: Optional[str], venue: Optional[str]) -> List[ReservationSchema]:
-        query = select(ReservationSchema)
+    def __filter_by_eq(self, user: Optional[str], venue: Optional[str], limit: int, start: int) -> List[ReservationSchema]:
+        query = select(ReservationSchema).order_by(ReservationSchema.id).limit(limit).offset(start)
         if user:
             query = query.where(ReservationSchema.user.__eq__(user))
         if venue:
@@ -58,7 +58,7 @@ class RelBuilder(QueryBuilder):
         if id:
             return self.__get_by_id(id)
         
-        return self.__filter_by_eq(user, venue)        
+        return self.__filter_by_eq(user, venue, limit, start)        
 
 
 

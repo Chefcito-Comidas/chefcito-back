@@ -43,11 +43,13 @@ class RelBase(ReservationsBase):
 
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
-        self.__engine = create_engine(conn_string, **kwargs)
+        self.__engine = create_engine(conn_string, pool_pre_ping=True, **kwargs)
     
     def get_by_eq(self, query: Select) -> List[ReservationSchema]:
         session = Session(self.__engine)
-        return list(session.scalars(query).fetchmany(100))
+        result = list(session.execute(query).scalars())
+        session.close()
+        return result
 
     def store_reservation(self, reservation: ReservationSchema) -> None:
        session = Session(self.__engine)
