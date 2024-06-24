@@ -7,6 +7,8 @@ from src.model.reservations.reservation import Reservation
 
 class ReservationQuery(BaseModel):
     
+    limit: int = 10
+    start: int = 0
     id: Optional[str] = None
     user: Optional[str] = None
     venue: Optional[str] = None
@@ -15,5 +17,5 @@ class ReservationQuery(BaseModel):
 
     def query(self, db: ReservationsBase) -> List[Reservation]:
         builder = get_builder(db) 
-        result = builder.get(self.id, self.user, self.venue, self.time, self.people)
+        result = builder.get(self.id, self.user, self.venue, self.time, self.people, self.limit, self.start)
         return [Reservation.from_schema(value) for value in result]
