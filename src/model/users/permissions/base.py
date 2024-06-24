@@ -81,9 +81,17 @@ class DBMock(Database):
 
         return None 
     
+    def __check_all(self, endpoint: str, user_type: str) -> bool:
+        endpoints = [endpoint, self.__add_param_at(endpoint)]
+        return any(
+                map(lambda endpoint: self.base.get('permissions', {}).get(f"{user_type}:{endpoint}", None) != None,
+                endpoints)
+                )
+
+
     def  is_allowed(self, user: User, endpoint: str) -> bool:
         
-        return self.base.get('permissions', {}).get(f"{user.user_type}:{endpoint}", None) != None
+        return self.__check_all(endpoint, user.user_type) 
 
     def insert_user(self, user: User) -> None:
         users = self.base.get('users', {})
