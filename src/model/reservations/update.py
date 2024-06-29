@@ -10,6 +10,9 @@ class Update(BaseModel):
     cancel: Optional[bool] = False 
     time: Optional[str] = None 
     people: Optional[int] = None 
+    
+    def change_user(self, new_user: str):
+        self.user = f"user/{new_user}"
 
     def modify(self, reservation: Reservation) -> Reservation:
         

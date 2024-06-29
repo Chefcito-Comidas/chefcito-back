@@ -5,7 +5,7 @@ from src.model.commons.error import Error
 from src.model.gateway import HelloResponse
 import requests as r
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.model.reservations.reservation import CreateInfo, Reservation
+from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.service import HttpReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
@@ -13,7 +13,7 @@ from src.model.users.service import HttpUsersProvider
 from src.model.users.user_data import UserData, UserToken
 from src.model.gateway.users_middleware import AuthMiddleware
 from src.model.gateway.service import GatewayService
-
+from src.model.gateway.create_reservation import CreateInfo
 
 class Settings(BaseSettings):
     proto: str = "http://"
@@ -58,7 +58,7 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
 async def create_reservation(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              reservation: Annotated[CreateInfo, Body()],
                              response: Response) -> Reservation | Error:
-    return await service.create_reservation(reservation, response)
+    return await service.create_reservation(credentials, reservation, response)
 
 @app.put("/reservations/{reservation_id}")
 async def update_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
@@ -66,16 +66,17 @@ async def update_reservations(credentials: Annotated[HTTPAuthorizationCredential
                               reservation_id: Annotated[str, Path()],
                               response: Response
                               ) -> Reservation | Error:
-    return await service.update_reservation(reservation_id, reservation, response)
+    return await service.update_reservation(credentials, reservation_id, reservation, response)
 
 @app.delete("/reservations/{reservation_id}")
 async def delete_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               reservation_id: Annotated[str, Path()],
                               response: Response) -> None:
-    return await service.delete_reservation(reservation_id, response)
+    return await service.delete_reservation(credentials, reservation_id, response)
 
 @app.get("/reservations")
-async def get_reservations(response: Response,
+async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                           response: Response,
                            id: str = Query(default=None),
                            user: str = Query(default=None),
                            venue: str = Query(default=None),
@@ -95,5 +96,5 @@ async def get_reservations(response: Response,
             limit=limit,
             start=start
             )
-    return await service.get_reservations(query, response)
+    return await service.get_reservations(credentials, query, response)
  

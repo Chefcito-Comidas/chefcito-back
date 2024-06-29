@@ -14,6 +14,9 @@ class ReservationQuery(BaseModel):
     venue: Optional[str] = None
     time: Optional[Tuple[str, str]] = None # TODO: Need to enforce datetime for this
     people: Optional[Tuple[int, int]] = None
+    
+    def change_user(self, user: str):
+        self.user = f"user/{user}"
 
     def query(self, db: ReservationsBase) -> List[Reservation]:
         builder = get_builder(db) 

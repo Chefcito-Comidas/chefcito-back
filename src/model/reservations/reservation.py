@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Optional, Self
 from pydantic import BaseModel
 
 from src.model.reservations.data.base import ReservationsBase
@@ -44,6 +44,8 @@ class CreateInfo(BaseModel):
     def into_reservation(self) -> 'Reservation':
         return create_reservation(self.user, self.venue, self.time, self.people) 
 
+    def change_user(self, new_user: str):
+        self.user = f"user/{new_user}"
 
 class Reservation(BaseModel):
     
@@ -102,4 +104,5 @@ class Reservation(BaseModel):
                    status=ReservationStatus(status=schema.status)
                    )
 
-
+    def change_user(self, new_user: str):
+        self.user = f"user/{new_user}"
