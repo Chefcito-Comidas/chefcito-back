@@ -22,7 +22,7 @@ class QueryBuilder:
     def __init__(self, db: ReservationsBase) -> None:
         self.db = db
 
-    def __get_by_id(self, id: str) -> List[ReservationSchema]:
+    def _get_by_id(self, id: str) -> List[ReservationSchema]:
         value = self.db.get_reservation_by_id(id)
         return [value] if value else []
     
@@ -56,7 +56,7 @@ class RelBuilder(QueryBuilder):
             raise Exception("Timed and people query not implemented")
 
         if id:
-            return self.__get_by_id(id)
+            return self._get_by_id(id)
         
         return self.__filter_by_eq(user, venue, limit, start)        
 
@@ -89,7 +89,7 @@ class MockedBuilder(QueryBuilder):
             raise Exception("Timed and people query not implemented")
 
         if id:
-            return self.__get_by_id(id)
+            return self._get_by_id(id)
         
         return self.__filter_by_eq(user, venue, limit, start)        
 
