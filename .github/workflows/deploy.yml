@@ -36,6 +36,13 @@ jobs:
                 push: true
                 tags: chefcitoacr.azurecr.io/users:latest
 
+            - name: build-push reservations
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/reservations/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/reservations:latest
+
     deploy:
         needs: build
         runs-on: ubuntu-latest
@@ -58,4 +65,11 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n users -g chefcito-rg --revision-suffix ${{ github.sha }}
+ 
+            - name: deploy reservations 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n reservations -g chefcito-rg --revision-suffix ${{ github.sha }}
             

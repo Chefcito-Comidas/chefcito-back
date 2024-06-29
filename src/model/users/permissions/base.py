@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import BinaryExpression, Column, create_engine, select
 from sqlalchemy.orm import Session
 from src.model.users.permissions.schema import User, Permission
 
@@ -7,6 +7,10 @@ DEFAULT_POOL_SIZE = 10
 
 class Database():
     
+    def _add_param_at(self, endpoint: str, position: int = -1) -> str:
+        splitted = endpoint.split("/")
+        splitted[position] = "param"
+        return "/".join(splitted)
 
     def get_user(self, uid: str) -> User | None:
         """
@@ -29,6 +33,7 @@ class Database():
 class DBEngine(Database):
 
     def __init__(self, conn_string: str, **kwargs):
+        super().__init__()
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         self.__engine = create_engine(conn_string, **kwargs)
     
@@ -40,6 +45,10 @@ class DBEngine(Database):
         session.close()
         return result 
     
+    def __get_condition(self, endpoint: str) -> BinaryExpression[bool]:
+        endpoints = [endpoint, super()._add_param_at(endpoint)]
+        return Permission.endpoint.in_(endpoints)
+
     def is_allowed(self, user: User, endpoint: str) -> bool:
         session = Session(self.__engine)
         """SELECT *
@@ -47,7 +56,7 @@ class DBEngine(Database):
         JOIN users ON users.user_type = permissions.user_type
         WHERE permissions.endpoint = {endpoint} AND users.user_type = permissions.type"""
         authorization_query = select(Permission)\
-                                .where(Permission.endpoint.__eq__(endpoint))\
+                                .where(self.__get_condition(endpoint))\
                                 .where(Permission.user_type.__eq__(user.user_type))
                                 
         result = session.scalar(authorization_query) != None
@@ -64,6 +73,7 @@ class DBEngine(Database):
 class DBMock(Database):
    
     def __init__(self, base_mock: dict[str, dict[str, str]]) -> None:
+       super().__init__()
        self.base = base_mock
 
     def get_user(self, uid: str) -> User | None:
@@ -73,9 +83,17 @@ class DBMock(Database):
 
         return None 
     
+    def __check_all(self, endpoint: str, user_type: str) -> bool:
+        endpoints = [endpoint, self._add_param_at(endpoint)]
+        return any(
+                map(lambda endpoint: self.base.get('permissions', {}).get(f"{user_type}:{endpoint}", None) != None,
+                endpoints)
+                )
+
+
     def  is_allowed(self, user: User, endpoint: str) -> bool:
         
-        return self.base.get('permissions', {}).get(f"{user.user_type}:{endpoint}", None) != None
+        return self.__check_all(endpoint, user.user_type) 
 
     def insert_user(self, user: User) -> None:
         users = self.base.get('users', {})

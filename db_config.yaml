@@ -12,4 +12,7 @@ endpoints:
     allowed: ["anonymous"]
   - name: "/openapi.json"
     allowed: ["anonymous"]
-
+  - name: "/reservations"
+    allowed: ["anonymous"]
+  - name: "/reservations/param"
+    allowed: ["anonymous"]
