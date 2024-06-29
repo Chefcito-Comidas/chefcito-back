@@ -20,6 +20,21 @@ ENDPOINT_PERMISSIONS = 'allowed'
 class Base(DeclarativeBase):
     pass
 
+
+class VenueSchema(Base):
+
+    __tablename__ = "venues"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    location: Mapped[str] = mapped_column()
+    capacity: Mapped[int] = mapped_column()
+    status: Mapped[str] = mapped_column()
+
+    def __repr__(self) -> str:
+        return f"{self.id}:{self.name}/{self.location}/capacity:{self.capacity}/{self.status}"
+
+
 class UserType(Base):
     __tablename__ = "user_types"
 
