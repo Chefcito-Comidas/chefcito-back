@@ -35,7 +35,7 @@ class ReservationsService:
            return await self.provider.create_reservation(reservation)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
-           return Error.from_exception(e)
+           return Error.from_exception(e, endpoint="/reservations")
     
     async def update_reservation(self, reservation: str, update: Update, response: Response) -> Reservation | Error:
         try:
@@ -89,8 +89,9 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         persistance = reservation.into_reservation().persistance()
+        response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
-        return Reservation.from_schema(persistance)
+        return response 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         schema = self.db.get_reservation_by_id(reservation_id)
