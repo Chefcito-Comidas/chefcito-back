@@ -83,13 +83,17 @@ async def get_reservations(response: Response,
                            to_time: str = Query(default=None),
                            from_people: int = Query(default=None),
                            to_people: int = Query(default=None),
+                           limit: int = Query(default=10),
+                           start: int = Query(default=0)
                            ) -> List[Reservation] | Error:
     query = ReservationQuery(
             id=id,
             user=user,
             venue=venue,
             time=(from_time, to_time) if from_time != None and to_time != None else None,
-            people=(from_people, to_people) if from_people != None and to_people != None else None
+            people=(from_people, to_people) if from_people != None and to_people != None else None,
+            limit=limit,
+            start=start
             )
     return await service.get_reservations(query, response)
  
