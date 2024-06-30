@@ -42,12 +42,6 @@ users = HttpUsersProvider(f"{settings.proto}{settings.users}")
 reservations = HttpReservationsProvider(f"{settings.proto}{settings.reservations}")
 service = GatewayService(users, ReservationsService(reservations))
 
-@app.get("/users/health")
-async def users_health(_: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
-                                              response: Response):
-    users_response = r.get(f"{settings.proto}{settings.users}/health")
-    response.status_code = users_response.status_code
-
 @app.get("/users")
 async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                   response: Response) -> UserData | Error:
