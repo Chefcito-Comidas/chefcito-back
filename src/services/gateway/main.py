@@ -2,8 +2,7 @@ from typing import Annotated, List
 from fastapi import Body, Depends, FastAPI, Header, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
-from src.model.gateway import HelloResponse
-import requests as r
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQuery
@@ -26,6 +25,12 @@ class Settings(BaseSettings):
 
 settings = Settings()
 app = FastAPI()
+
+app.add_middleware(CORSMiddleware,
+                   allow_origins=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"])
 
 app.add_middleware(AuthMiddleware, 
                    authUrl=f"{settings.proto}{settings.users}{settings.auth_url}", 
