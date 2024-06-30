@@ -1,5 +1,5 @@
 from typing import Annotated, List, Tuple
-from fastapi import Body, FastAPI, Path, Query, Response
+from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 
 from src.model.commons.error import Error
@@ -19,20 +19,20 @@ database =  RelBase(settings.db_string)
 service = ReservationsService(LocalReservationsProvider(database))
 
 
-@app.post("/reservations")
+@app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_reservation(reservation: Annotated[CreateInfo, Body()], response: Response) -> Reservation | Error:
     return await service.create_reservation(reservation, response)
 
-@app.put("/reservations/{reservation}")
+@app.put("/reservations/{reservation}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def update_reservation(reservation: Annotated[str, Path()], update: Annotated[Update, Body()], response: Response) -> Reservation | Error:
     print(reservation)
     return await service.update_reservation(reservation, update, response)
 
-@app.delete("/reservations/{reservation}")
+@app.delete("/reservations/{reservation}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def delete_reservation(reservation: Annotated[str, Path()]) -> None:
     return await service.delete_reservation(reservation)
 
-@app.get("/reservations/")
+@app.get("/reservations/", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_reservations(response: Response,
                            id: str = Query(default=None),
                            user: str = Query(default=None),

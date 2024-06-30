@@ -42,24 +42,24 @@ users = HttpUsersProvider(f"{settings.proto}{settings.users}")
 reservations = HttpReservationsProvider(f"{settings.proto}{settings.reservations}")
 service = GatewayService(users, ReservationsService(reservations))
 
-@app.get("/users")
+@app.get("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                   response: Response) -> UserData | Error:
     return await service.sign_in(credentials, response)
 
-@app.post("/users")
+@app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                   user_type: Annotated[str, Body(embed=True, alias='user_type')]) -> UserData | Error:
     
     return await service.sign_up(credentials, user_type)
 
-@app.post("/reservations")
+@app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_reservation(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              reservation: Annotated[CreateInfo, Body()],
                              response: Response) -> Reservation | Error:
     return await service.create_reservation(credentials, reservation, response)
 
-@app.put("/reservations/{reservation_id}")
+@app.put("/reservations/{reservation_id}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def update_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               reservation: Annotated[Update, Body()],
                               reservation_id: Annotated[str, Path()],
@@ -67,13 +67,13 @@ async def update_reservations(credentials: Annotated[HTTPAuthorizationCredential
                               ) -> Reservation | Error:
     return await service.update_reservation(credentials, reservation_id, reservation, response)
 
-@app.delete("/reservations/{reservation_id}")
+@app.delete("/reservations/{reservation_id}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def delete_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               reservation_id: Annotated[str, Path()],
                               response: Response) -> None:
     return await service.delete_reservation(credentials, reservation_id, response)
 
-@app.get("/reservations")
+@app.get("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                            response: Response,
                            id: str = Query(default=None),

@@ -23,7 +23,7 @@ service = UsersService(LocalUsersProvider(authenticator, database))
 async def health(response: Response):
     response.status_code = status.HTTP_200_OK
 
-@app.post("/users/signup/{user_type}")
+@app.post("/users/signup/{user_type}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
     return await service.sign_up(user_type, token, response)       
 
@@ -31,10 +31,10 @@ async def sign_up(user_type: str, token: Annotated[UserToken, Body()], response:
 async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query()]) -> Dict[str, Any]:
     return await authenticator.sign_in(email, password)    
 
-@app.post("/users")
+@app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
     return await service.get_data(auth, response)
 
-@app.post("/users/permissions")
+@app.post("/users/permissions",responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response) -> None | Error:
     return await service.is_allowed(auth, response)
