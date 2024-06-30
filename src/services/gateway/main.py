@@ -5,14 +5,12 @@ from src.model.commons.error import Error
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.reservations.reservation import Reservation
-from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.service import HttpReservationsProvider, ReservationsService
-from src.model.reservations.update import Update
 from src.model.users.service import HttpUsersProvider
 from src.model.users.user_data import UserData, UserToken
 from src.model.gateway.users_middleware import AuthMiddleware
 from src.model.gateway.service import GatewayService
-from src.model.gateway.create_reservation import CreateInfo
+from src.model.gateway.reservations_stubs import CreateInfo, Update, ReservationQuery
 
 class Settings(BaseSettings):
     proto: str = "http://"
@@ -77,7 +75,6 @@ async def delete_reservations(credentials: Annotated[HTTPAuthorizationCredential
 async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                            response: Response,
                            id: str = Query(default=None),
-                           user: str = Query(default=None),
                            venue: str = Query(default=None),
                            from_time: str = Query(default=None),
                            to_time: str = Query(default=None),
@@ -88,7 +85,6 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
                            ) -> List[Reservation] | Error:
     query = ReservationQuery(
             id=id,
-            user=user,
             venue=venue,
             time=(from_time, to_time) if from_time != None and to_time != None else None,
             people=(from_people, to_people) if from_people != None and to_people != None else None,

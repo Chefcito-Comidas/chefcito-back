@@ -9,7 +9,7 @@ from src.model.reservations.service import ReservationsProvider, ReservationsSer
 from src.model.reservations.update import Update
 from src.model.users.service import UsersProvider, UsersService
 from src.model.users.user_data import UserData, UserToken
-import src.model.gateway.create_reservation as cr
+import src.model.gateway.reservations_stubs as r_stubs 
 
 class GatewayService:
     
@@ -43,19 +43,19 @@ class GatewayService:
         except Exception as e:
             return Error.from_exception(e, endpoint="/users")
     
-    async def create_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation: cr.CreateInfo, response: Response) -> Reservation | Error:
+    async def create_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation: r_stubs.CreateInfo, response: Response) -> Reservation | Error:
         user = await self.users.get_data(UserToken(id_token=credentials.credentials))
         return await self.reservations.create_reservation(reservation.with_user(user.localid), response)
 
-    async def update_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, reservation_update: Update, response: Response) -> Reservation | Error:
+    async def update_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, reservation_update: r_stubs.Update, response: Response) -> Reservation | Error:
         user = await self.users.get_data(UserToken(id_token=credentials.credentials))
-        reservation_update.change_user(user.localid) 
-        return await self.reservations.update_reservation(reservation_id, reservation_update, response)
+        update = reservation_update.with_user(user.localid) 
+        return await self.reservations.update_reservation(reservation_id, update, response)
 
-    async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: ReservationQuery, response: Response) -> List[Reservation] | Error:
+    async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> List[Reservation] | Error:
         user = await self.users.get_data(UserToken(id_token=credentials.credentials))
-        reservation_query.change_user(user.localid)
-        return await self.reservations.get_reservations(reservation_query, response)
+        r_query = reservation_query.with_user(user.localid)
+        return await self.reservations.get_reservations(r_query, response)
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
