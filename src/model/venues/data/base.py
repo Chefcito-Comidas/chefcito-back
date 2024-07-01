@@ -1,12 +1,15 @@
 from typing import List
 from src.model.venues.data.schema import VenueSchema
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import Select, create_engine, select, update
 from sqlalchemy.orm import Session
 
 # TODO: try to add this to configuration options
 DEFAULT_POOL_SIZE = 10
 
 class VenuesBase:
+
+    def get_by_eq(self, query: Select) -> List[VenueSchema]:
+        raise Exception("Interface method should not be used")
 
     def store_venue(self, venue: VenueSchema) -> None:
         """
@@ -16,6 +19,10 @@ class VenuesBase:
         """
         raise Exception("Interface method should not be called")
 
+    def get_by_eq(self, query: Select) -> List[VenueSchema]:
+        session = Session(self.__engine)
+        return list(session.scalars(query).fetchmany(100))
+    
     def update_venue(self, reservation: VenueSchema) -> None:
         """
             Updates information about a reservation

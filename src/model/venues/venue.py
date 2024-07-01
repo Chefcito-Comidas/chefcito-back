@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from src.model.venues.data.schema import VenueSchema
+from typing import Self
 
 def create_venue(name: str, location: str, capacity: int) -> 'Venue':
     return Venue(id="",
@@ -74,3 +75,12 @@ class Venue(BaseModel):
                     capacity=self.capacity,
                     status=self.status.get_status()
                     )
+
+    @classmethod
+    def from_schema(cls, schema: VenueSchema) -> Self:
+        return cls(id=schema.id,
+                   name=schema.name,
+                   location=schema.location,
+                   capacity=schema.capacity,
+                   status=VenueStatus(status=schema.status)
+                   )

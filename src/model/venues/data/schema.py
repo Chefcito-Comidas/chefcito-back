@@ -24,4 +24,5 @@ class VenueSchema(VenuesBase):
     @classmethod
     def create(cls, name: str, location: str, capacity: int, status: str) -> Self:
         uid = uuid.uuid1()
-        return cls(id=uid, name=name, location=location, capacity=capacity, status=status)
+        uid_string=uid.__str__()
+        return cls(id=uid_string, name=name, location=location, capacity=capacity, status=status)
