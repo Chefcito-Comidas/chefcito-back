@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Self
 from pydantic import BaseModel
 
@@ -5,7 +6,7 @@ from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
 
 
-def create_reservation(user: str, venue: str, time: str, people: int) -> 'Reservation':
+def create_reservation(user: str, venue: str, time: datetime, people: int) -> 'Reservation':
     return Reservation(id="",
                         user=user, 
                         venue=venue, 
@@ -38,7 +39,7 @@ class Accepted(ReservationStatus):
 class CreateInfo(BaseModel):
     user: str
     venue: str
-    time: str
+    time: datetime 
     people: int
 
     def into_reservation(self) -> 'Reservation':
@@ -52,7 +53,7 @@ class Reservation(BaseModel):
     id: str
     user: str
     venue: str
-    time: str
+    time: datetime
     people: int
     status: ReservationStatus
 
