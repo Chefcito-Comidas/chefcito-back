@@ -34,6 +34,7 @@ class QueryBuilder:
     def get(self,
             id: Optional[str],
             user: Optional[str],
+            status: Optional[str],
             venue: Optional[str],
             time: Optional[Tuple[datetime, datetime]],
             people: Optional[Tuple[int, int]],
@@ -52,6 +53,12 @@ class RelBuilder(QueryBuilder):
         if venue:
             query = query.where(ReservationSchema.venue.__eq__(venue))
         return query
+    
+    def __add_status_filter(self, query: Select, status: Optional[str]) -> Select:
+        if status:
+            query = query.where(ReservationSchema.status.__eq__(status))
+
+        return query
 
     def __add_time_filter(self, query: Select, limits: Optional[Tuple[datetime, datetime]]) -> Select:
         if limits:
@@ -68,13 +75,14 @@ class RelBuilder(QueryBuilder):
     def __get_initial(self, limit: int, start: int) -> Select:
         return select(ReservationSchema).limit(limit).offset(start)
 
-    def get(self, id: Optional[str], user: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
 
         if id:
             return self._get_by_id(id)
     
         query = self.__get_initial(limit, start)
         query = self.__add_user_filter(query, user)
+        query = self.__add_status_filter(query, status)
         query = self.__add_venue_filter(query, venue)
         query = self.__add_time_filter(query, time)
         query = self.__add_people_filter(query, people)
@@ -103,7 +111,7 @@ class MockedBuilder(QueryBuilder):
             return value.venue == venue
         return filter
     
-    def get(self, id: Optional[str], user: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
         if time != None or people != None:
             raise Exception("Timed and people query not implemented")
 

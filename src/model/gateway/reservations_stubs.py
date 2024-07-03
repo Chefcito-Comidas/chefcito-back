@@ -38,9 +38,10 @@ class ReservationQuery(BaseModel):
     
     limit: int = 10
     start: int = 0
+    status: Optional[str] = None
     id: Optional[str] = None
     venue: Optional[str] = None
-    time: Optional[Tuple[datetime, datetime]] = None # TODO: Need to enforce datetime for this
+    time: Optional[Tuple[datetime, datetime]] = None 
     people: Optional[Tuple[int, int]] = None
 
     def with_user(self, user: str) -> query.ReservationQuery:
