@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest
 from testcontainers.postgres import PostgresContainer
 from src.model.reservations.data.base import RelBase
@@ -12,7 +13,7 @@ from test.services.db_load import run
 async def test_reservation_persistance():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        reservation = create_reservation(user="user",venue="venus",time="at",people=3)
+        reservation = create_reservation(user="user",venue="venus",time=datetime.now(),people=3)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
         result = database.get_reservation_by_id(reservation.id)
@@ -23,7 +24,7 @@ async def test_reservation_persistance():
 async def test_reservation_update():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        reservation = create_reservation(user="user", venue="venue",time="at",people=4)
+        reservation = create_reservation(user="user", venue="venue",time=datetime.now(),people=4)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
         update = Update(user="venue", accept=True)
@@ -37,7 +38,7 @@ async def test_reservation_update():
 async def test_reservation_deletion():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        reservation = create_reservation(user="user", venue="venue",time="at",people=4)
+        reservation = create_reservation(user="user", venue="venue",time=datetime.now(),people=4)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
         
