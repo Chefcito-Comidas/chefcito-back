@@ -103,8 +103,8 @@ async def get_venues(response: Response,
 async def create_reservation(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              reservation: Annotated[CreateInfo, Body()],
                              response: Response) -> Reservation | Error:
-    return await service.create_reservation(credentials, reservation, response)
-
+    result = await service.create_reservation(credentials, reservation, response)
+    return result
 @app.put("/reservations/{reservation_id}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def update_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               reservation: Annotated[Update, Body()],
