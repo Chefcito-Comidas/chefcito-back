@@ -1,5 +1,6 @@
 
 
+from datetime import datetime
 from typing import List
 from src.model.reservations.data.base import MockBase
 from src.model.reservations.data.schema import ReservationSchema
@@ -18,7 +19,7 @@ def create_reservations(amount: int) -> List[ReservationSchema]:
             id=f"{i}",
             user=f"user_{i%3}",
             venue=f"venue_{i%2}",
-            time=f"{i%28}/{i%12}/2024",
+            time=datetime(year=2024, month=i%12 + 1, day=i%28 + 1) ,
             people=f"{i%5}",
             status=Uncomfirmed().get_status()
             )

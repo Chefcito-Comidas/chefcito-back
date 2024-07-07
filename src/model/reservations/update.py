@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ class Update(BaseModel):
     user: str 
     accept: Optional[bool] = False
     cancel: Optional[bool] = False 
-    time: Optional[str] = None 
+    time: Optional[datetime] = None 
     people: Optional[int] = None 
     
     def change_user(self, new_user: str):

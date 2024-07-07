@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, List, Tuple
 from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
@@ -37,8 +38,9 @@ async def get_reservations(response: Response,
                            id: str = Query(default=None),
                            user: str = Query(default=None),
                            venue: str = Query(default=None),
-                           from_time: str = Query(default=None),
-                           to_time: str = Query(default=None),
+                           status: str = Query(default=None),
+                           from_time: datetime = Query(default=None),
+                           to_time: datetime = Query(default=None),
                            from_people: int = Query(default=None),
                            to_people: int = Query(default=None),
                            limit: int = Query(default=10),
@@ -47,6 +49,7 @@ async def get_reservations(response: Response,
     query = ReservationQuery(
             id=id,
             user=user,
+            status=status,
             venue=venue,
             time=(from_time, to_time) if from_time != None and to_time != None else None,
             people=(from_people, to_people) if from_people != None and to_people != None else None,

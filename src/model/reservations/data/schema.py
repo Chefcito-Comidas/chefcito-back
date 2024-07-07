@@ -1,3 +1,4 @@
+from datetime import datetime
 import uuid
 import sqlalchemy
 from sqlalchemy.orm import DeclarativeBase, mapped_column
@@ -13,7 +14,7 @@ class ReservationSchema(ReservationsBase):
     id: Mapped[str] = mapped_column(primary_key=True)
     user: Mapped[str] = mapped_column()
     venue: Mapped[str] = mapped_column()
-    time: Mapped[str] = mapped_column()
+    time: Mapped[datetime] = mapped_column()
     people: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
 
@@ -21,7 +22,7 @@ class ReservationSchema(ReservationsBase):
         return f"{self.id}:{self.user}:{self.venue}/at:{self.time}/for:{self.people}/{self.status}"
     
     @classmethod
-    def create(cls, user: str, venue: str, time: str, people: int, status: str) -> Self:
+    def create(cls, user: str, venue: str, time: datetime, people: int, status: str) -> Self:
         uid = uuid.uuid1()
         return cls(id=uid.__str__(), user=user, venue=venue, time=time, people=people, status=status)
 

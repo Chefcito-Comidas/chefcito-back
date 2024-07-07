@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Tuple
 from pydantic import BaseModel
 from src.model.reservations.data.base import ReservationsBase
@@ -9,10 +10,11 @@ class ReservationQuery(BaseModel):
     
     limit: int = 10
     start: int = 0
+    status: Optional[str] = None
     id: Optional[str] = None
     user: Optional[str] = None
     venue: Optional[str] = None
-    time: Optional[Tuple[str, str]] = None # TODO: Need to enforce datetime for this
+    time: Optional[Tuple[datetime, datetime]] = None 
     people: Optional[Tuple[int, int]] = None
     
     def change_user(self, user: str):
@@ -20,5 +22,5 @@ class ReservationQuery(BaseModel):
 
     def query(self, db: ReservationsBase) -> List[Reservation]:
         builder = get_builder(db) 
-        result = builder.get(self.id, self.user, self.venue, self.time, self.people, self.limit, self.start)
+        result = builder.get(self.id, self.user, self.status, self.venue, self.time, self.people, self.limit, self.start)
         return [Reservation.from_schema(value) for value in result]
