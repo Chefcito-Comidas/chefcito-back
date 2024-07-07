@@ -1,6 +1,8 @@
+from collections.abc import Callable
 from typing import List
 from uuid import UUID
 from sqlalchemy.orm import Session
+from src.model.commons.session import with_no_commit, with_session
 from src.model.reservations.data.schema import ReservationSchema
 from sqlalchemy import Select, create_engine, delete, select, update
 
@@ -45,43 +47,63 @@ class RelBase(ReservationsBase):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         self.__engine = create_engine(conn_string, pool_pre_ping=True, **kwargs)
     
+    def __get_by_eq(self, query: Select) -> Callable[[Session], List[ReservationSchema]]:
+        def call(session: Session):
+            result = list(session.execute(query).scalars())
+            return result
+        return call
+
     def get_by_eq(self, query: Select) -> List[ReservationSchema]:
-        session = Session(self.__engine)
-        result = list(session.execute(query).scalars())
-        session.close()
-        return result
+        call = with_no_commit(self.__get_by_eq(query)) 
+        return call(self.__engine)
+    
+    def __store_reservation(self, reservation: ReservationSchema) -> Callable[[Session], None]:
+        def call(session: Session) -> None:
+            session.add(reservation)
+
+        return call
 
     def store_reservation(self, reservation: ReservationSchema) -> None:
-       session = Session(self.__engine)
-       session.add(reservation)
-       session.commit()
-       session.close()
+        call = with_session(self.__store_reservation(reservation))
+        return call(self.__engine)
+    
+    def __update_reservation(self, reservation: ReservationSchema) -> Callable[[Session], None]:
+        def call(session: Session) -> None:
+            value = session.get(ReservationSchema, reservation.id)
+            if not value:
+                return
+            value.status = reservation.status
+            value.time = reservation.time
+            value.people = reservation.people
+        return call
 
     def update_reservation(self, reservation: ReservationSchema) -> None:
-        session = Session(self.__engine)
-        value = session.get(ReservationSchema, reservation.id)
-        if not value:
-            return
-        value.status = reservation.status
-        value.time = reservation.time
-        value.people = reservation.people
-        session.commit()
-        session.close()
+        call = with_session(self.__update_reservation(reservation))
+        return call(self.__engine)
+    
+    def __get_reservation_by_id(self, id: str) -> Callable[[Session], ReservationSchema | None]:
+        def call(session: Session) -> ReservationSchema | None:
+            query = select(ReservationSchema).where(ReservationSchema.id.__eq__(id))
+            result = session.scalar(query)
+            return result
+        return call
 
     def get_reservation_by_id(self, id: str) -> ReservationSchema | None:
-       session = Session(self.__engine)
-       query = select(ReservationSchema).where(ReservationSchema.id.__eq__(id))
-       result = session.scalar(query)
-       session.close()
-       return result
+        call = with_no_commit(self.__get_reservation_by_id(id))
+
+        return call(self.__engine)
     
+    def __delete_reservation(self, id: str) -> Callable[[Session], None]:
+        def call(session: Session) -> None:
+            query = delete(ReservationSchema).where(ReservationSchema.id.__eq__(id))
+            session.execute(query)
+
+        return call
+
+
     def delete_reservation(self, id: str) -> None:
-        session = Session(self.__engine)
-        query = delete(ReservationSchema).where(ReservationSchema.id.__eq__(id))
-        session.execute(query)
-        session.commit()
-        session.close()
-        return
+        call = with_session(self.__delete_reservation(id))
+        call(self.__engine)
 
 class MockBase(ReservationsBase):
 
