@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import Body, Depends, FastAPI, Header, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
@@ -122,13 +122,13 @@ async def delete_reservations(credentials: Annotated[HTTPAuthorizationCredential
 @app.get("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                            response: Response,
-                           id: str = Query(default=None),
-                           status: str = Query(default=None),
-                           venue: str = Query(default=None),
-                           from_time: datetime = Query(default=None),
-                           to_time: datetime = Query(default=None),
-                           from_people: int = Query(default=None),
-                           to_people: int = Query(default=None),
+                           id: Optional[str] = Query(default=None),
+                           status: Optional[str] = Query(default=None),
+                           venue: Optional[str] = Query(default=None),
+                           from_time: Optional[datetime] = Query(default=None),
+                           to_time: Optional[datetime] = Query(default=None),
+                           from_people: Optional[int] = Query(default=None),
+                           to_people: Optional[int] = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> List[Reservation] | Error:
