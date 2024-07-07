@@ -17,3 +17,7 @@ endpoints:
   - name: "/venues/param"
     allowed: ["anonymous"]
 
+  - name: "/reservations"
+    allowed: ["anonymous"]
+  - name: "/reservations/param"
+    allowed: ["anonymous"]

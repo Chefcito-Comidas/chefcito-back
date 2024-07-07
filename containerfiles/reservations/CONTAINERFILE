@@ -1,4 +1,3 @@
-# 
 FROM python:3.12-alpine
 
 # 
@@ -11,13 +10,10 @@ COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 # 
-COPY ./src/model/gateway /code/src/model/gateway
-COPY ./src/model/users /code/src/model/users
-COPY ./src/model/commons /code/src/model/commons
-COPY ./src/model/venues /code/src/model/venues
 COPY ./src/model/reservations /code/src/model/reservations
+COPY ./src/model/commons /code/src/model/commons
 
-COPY ./src/services/gateway/main.py /code/main.py
+COPY ./src/services/reservations/main.py /code/main.py
 
 
 

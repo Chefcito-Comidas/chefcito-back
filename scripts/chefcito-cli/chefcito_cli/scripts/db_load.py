@@ -20,6 +20,7 @@ ENDPOINT_PERMISSIONS = 'allowed'
 class Base(DeclarativeBase):
     pass
 
+<<<<<<< HEAD
 
 class VenueSchema(Base):
 
@@ -35,6 +36,21 @@ class VenueSchema(Base):
         return f"{self.id}:{self.name}/{self.location}/capacity:{self.capacity}/{self.status}"
 
 
+=======
+class ReservationSchema(Base):
+    __tablename__ = "reservations"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    user: Mapped[str] = mapped_column()
+    venue: Mapped[str] = mapped_column()
+    time: Mapped[str] = mapped_column()
+    people: Mapped[int] = mapped_column()
+    status: Mapped[str] = mapped_column()
+
+    def __repr__(self) -> str:
+        return f"{self.id}:{self.user}:{self.venue}/at:{self.time}/for:{self.people}/{self.status}"
+ 
+>>>>>>> origin/main
 class UserType(Base):
     __tablename__ = "user_types"
 
