@@ -1,3 +1,5 @@
 __pycache__/
 .terraform/
 .terraform.lock.hcl
+dev-env/terraform.tfstate
+dev-env/terraform.tfstate.backup

@@ -36,6 +36,12 @@ jobs:
                 push: true
                 tags: chefcitoacr.azurecr.io/users:latest
 
+            - name: build-push venues
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/venues/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/venues:latest
             - name: build-push reservations
               uses: docker/build-push-action@v3
               with:
@@ -65,11 +71,16 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n users -g chefcito-rg --revision-suffix ${{ github.sha }}
- 
             - name: deploy reservations 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n reservations -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy venues 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n venues -g chefcito-rg --revision-suffix ${{ github.sha }}
             

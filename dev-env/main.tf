@@ -26,7 +26,7 @@ resource "docker_container" "gateway" {
     internal = 80
     external = 8000
   }
-  env = ["DEV=False"]
+  env = ["DEV=True"]
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
@@ -42,6 +42,21 @@ resource "docker_container" "users" {
     internal = 80
     external = 8001
   }
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
+
+resource "docker_container" "venues" {
+  name = "venues"
+  hostname = "venues"
+  image = "service-venues:latest"
+  ports {
+    internal = 80
+    external = 8003
+  }
+  env=["DB_STRING=postgresql://user:admin123@reldb/users_db"]
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
