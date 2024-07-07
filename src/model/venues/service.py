@@ -34,7 +34,7 @@ class VenuesService:
             return await self.provider.create_venue(venue)
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
-            return Error.from_exception(e)
+            return Error.from_exception(e, endpoint="/venues")
 
     async def update_venue(self, venue: str, update: Update, response: Response) -> Venue | Error:
         try:
@@ -82,8 +82,9 @@ class LocalVenuesProvider(VenuesProvider):
 
     async def create_venue(self, venue: CreateInfo) -> Venue:
         persistance = venue.into_venue().persistance()
+        response=Venue.from_schema(persistance)
         self.db.store_venue(persistance)
-        return Venue.from_schema(persistance)
+        return response
 
     async def update_venue(self, venue_id: str, venue_update: Update) -> Venue:
         schema = self.db.get_venue_by_id(venue_id)

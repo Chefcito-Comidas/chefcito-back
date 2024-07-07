@@ -24,7 +24,7 @@ class QueryBuilder:
 
 
 
-    def get_by_id(self, id: str) -> List[VenueSchema]:
+    def _get_by_id(self, id: str) -> List[VenueSchema]:
         value = self.db.get_venue_by_id(id)
         return [value] if value else []
 
@@ -52,7 +52,7 @@ class RelBuilder(QueryBuilder):
         if capacity != None or location != None:
             raise Exception("Capacity and location query not implemented")
         if id:
-            return self.__get_by_id(id)
+            return self._get_by_id(id)
 
         return self.__filter_by_eq(name)        
 
@@ -79,7 +79,7 @@ class MockedBuilder(QueryBuilder):
             raise Exception("Capacity and location query not implemented")
 
         if id:
-            return self.__get_by_id(id)
+            return self._get_by_id(id)
 
         return self.__filter_by_eq(name)        
 
