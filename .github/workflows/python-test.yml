@@ -65,6 +65,13 @@ jobs:
           file: containerfiles/users/CONTAINERFILE
           push: true
           tags: chefcitoacr.azurecr.io/staging/users:latest
+      
+      - name: build-push venues 
+        uses: docker/build-push-action@v3
+        with:
+          file: containerfiles/venues/CONTAINERFILE
+          push: true
+          tags: chefcitoacr.azurecr.io/staging/venues:latest
 
       - name: build-push reservations 
         uses: docker/build-push-action@v3
