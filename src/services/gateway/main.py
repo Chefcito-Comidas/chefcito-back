@@ -81,11 +81,15 @@ async def get_venues(response: Response,
                            name: str = Query(default=None),
                            location: str = Query(default=None),
                            capacity: int = Query(default=None),
+                           limit: int = Query(default=10),
+                           start: int = Query(default=0)
                            ) -> List[Venue] | Error:
     query = VenueQuery(
             id=id,
             name=name,
             location=location,
-            capacity=capacity
+            capacity=capacity,
+            limit=limit,
+            start=start
             )
     return await service.get_venues(query, response)

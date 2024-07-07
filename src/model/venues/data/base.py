@@ -20,9 +20,7 @@ class VenuesBase:
         """
         raise Exception("Interface method should not be called")
 
-    def get_by_eq(self, query: Select) -> List[VenueSchema]:
-        session = Session(self.__engine)
-        return list(session.scalars(query).fetchmany(100))
+   
     
     def update_venue(self, venue: VenueSchema) -> None:
         """
@@ -42,7 +40,13 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 class RelBase(VenuesBase):
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
-        self.__engine = create_engine(conn_string, **kwargs)
+        self.__engine = create_engine(conn_string, pool_pre_ping=True,**kwargs)
+
+    def get_by_eq(self, query: Select) -> List[VenueSchema]:
+        session = Session(self.__engine)
+        result = list(session.execute(query).scalars())
+        session.close()
+        return result
 
     def store_venue(self, venue: VenueSchema) -> None:
         session = Session(self.__engine)

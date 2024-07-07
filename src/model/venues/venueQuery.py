@@ -7,6 +7,8 @@ from typing import List, Optional, Tuple
 
 class VenueQuery(BaseModel):
 
+    limit: int = 10
+    start: int = 0
     id: Optional[str] = None
     name: Optional[str] = None
     location: Optional[str] = None
@@ -15,6 +17,6 @@ class VenueQuery(BaseModel):
 
     def query(self, db: VenuesBase) -> List[Venue]:
         builder = get_builder(db) 
-        result = builder.get(self.id, self.name, self.location, self.capacity)
+        result = builder.get(self.id, self.name, self.location, self.capacity, self.limit, self.start)
 
         return [Venue.from_schema(value) for value in result]

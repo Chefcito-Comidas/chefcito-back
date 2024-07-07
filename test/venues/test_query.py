@@ -2,7 +2,7 @@ from typing import List
 from src.model.venues.data.base import MockBase  
 from src.model.venues.data.schema import VenueSchema 
 from src.model.venues.venueQuery import VenueQuery
-from src.model.venues.venue import Venue, Available
+from src.model.venues.venue import Venue, Available, create_venue
 
 def create_venues(amount: int) -> List[VenueSchema]:
     """
@@ -12,12 +12,20 @@ def create_venues(amount: int) -> List[VenueSchema]:
     for i in range(amount):
         venues.append(VenueSchema(
             id=f"{i}",
-            name=f"Venue {i}",
-            location=f"Location {i % 2}",
+            name=f"name_{i%3}",
+            location=f"location_{i % 2}",
             capacity=f"{i%5}",
             status=Available().get_status()
         ))
     return venues
+
+def all_different(list_1: List[Venue], list_2: List[Venue]) -> bool:
+    return not any(
+            map(
+                lambda x: x in list_2,
+                list_1
+            )
+        )
 
 def all_same_name(name: str, result: List[VenueSchema]) -> bool:
     """
@@ -45,11 +53,11 @@ def test_get_all_by_same_name():
     for venue in create_venues(9):
         database.store_venue(venue)
     query = VenueQuery(
-        name="Venue 5"  
+        name="name_1"  
     )
     result = query.query(database)
-    assert len(result) == 1  #should be only one
-    assert all_same_name("Venue 5", result)
+    assert len(result) == 3  #should be 3
+    assert all_same_name("name_1", result)
 
 # TODO: TODAVIA NO IMPLEMENTADO por location o por status
 # def test_get_all_by_same_location():
@@ -65,3 +73,31 @@ def test_get_all_by_same_name():
 #     result = query.query(database)
 #     assert len(result) == 5  
 #     assert all_same_location("Location 1", result)
+
+
+def test_limiting_the_amount_of_venues():
+    database = MockBase()
+    for venue in create_venues(9):
+        database.store_venue(venue)
+    query = VenueQuery(
+            name="name_1",
+            limit=2
+            )
+    result = query.query(database)
+    assert len(result) == 2
+    # assert all_same_venue("venue_1", result)
+
+def test_stepping_with_limit_the_amount_of_venues():
+    database = MockBase()
+    for venue in create_venues(9):
+        database.store_venue(venue)
+    query = VenueQuery(
+            name="name_1",
+            limit=2
+            )
+    result_1 = query.query(database)
+    query.start = 2
+    result_2 = query.query(database)
+    assert len(result_1) == 2
+    assert len(result_2) == 1
+    assert all_different(result_1, result_2)
