@@ -26,12 +26,12 @@ class HttpUsersProvider(UsersProvider):
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
         endpoint = f"{self.host}/users/signup/{user_type}"
         users_response = await post(endpoint, body=token.model_dump())
-        return await recover_json_data(users_response)
+        return UserData(**await recover_json_data(users_response))
     
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         endpoint = f"{self.host}/users"
         users_response = await post(endpoint, body=auth.model_dump())
-        return await recover_json_data(users_response)
+        return UserData(**await recover_json_data(users_response))
     
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
         endpoint = f"{self.host}/users/permissions"
