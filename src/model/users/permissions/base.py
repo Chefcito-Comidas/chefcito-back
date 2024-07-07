@@ -55,6 +55,9 @@ class DBEngine(Database):
         FROM permissions
         JOIN users ON users.user_type = permissions.user_type
         WHERE permissions.endpoint = {endpoint} AND users.user_type = permissions.type"""
+        param_endpoint = endpoint.split("/")
+        param_endpoint[-1] = 'param'
+        param_endpoint = '/'.join(param_endpoint)
         authorization_query = select(Permission)\
                                 .where(self.__get_condition(endpoint))\
                                 .where(Permission.user_type.__eq__(user.user_type))
