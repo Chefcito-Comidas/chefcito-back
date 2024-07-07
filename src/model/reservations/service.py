@@ -74,7 +74,7 @@ class HttpReservationsProvider(ReservationsProvider):
 
     async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
         endpoint = "/reservations"
-        response = await get(f"{self.url}{endpoint}", params=query.model_dump())
+        response = await get(f"{self.url}{endpoint}", params=query.model_dump(exclude_none=True))
         return await recover_json_data(response)
 
     async def delete_reservation(self, reservation_id: str) -> None:

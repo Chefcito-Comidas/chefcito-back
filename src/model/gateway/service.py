@@ -73,6 +73,7 @@ class GatewayService:
     async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> List[Reservation] | Error:
         user = await self.users.get_data(UserToken(id_token=credentials.credentials))
         r_query = reservation_query.with_user(user.localid)
+        print(r_query)
         return await self.reservations.get_reservations(r_query, response)
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:

@@ -72,7 +72,7 @@ class HttpVenuesProvider(VenuesProvider):
 
     async def get_venues(self, query: VenueQuery) -> List[Venue]:
         endpoint = "/venues"
-        response = await get(f"{self.url}{endpoint}", params=query.model_dump())
+        response = await get(f"{self.url}{endpoint}", params=query.model_dump(exclude_none=True))
         return await recover_json_data(response)
         
 

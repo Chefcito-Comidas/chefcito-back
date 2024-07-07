@@ -33,7 +33,7 @@ async def update_reservation(reservation: Annotated[str, Path()], update: Annota
 async def delete_reservation(reservation: Annotated[str, Path()]) -> None:
     return await service.delete_reservation(reservation)
 
-@app.get("/reservations/", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+@app.get("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_reservations(response: Response,
                            id: str = Query(default=None),
                            user: str = Query(default=None),

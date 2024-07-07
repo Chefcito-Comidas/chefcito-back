@@ -17,7 +17,7 @@ async def recover_json_data(response: aiohttp.ClientResponse) -> Any:
     response.close()
     return data
 
-async def get(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
+async def get(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:  
     return await __call(aiohttp.ClientSession.get, url, body, data, params) 
 
 async def put(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
