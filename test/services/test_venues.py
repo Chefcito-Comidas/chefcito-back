@@ -15,9 +15,9 @@ async def test_venue_persistance():
         database = RelBase(conn_string=postgres.get_connection_url())
         venue_with_id=venue.persistance()
         database.store_venue(venue_with_id)
-        result = database.get_venue_by_id(venue_with_id.id)
+        result = database.get_venue_by_id(venue.id)
         assert result != None
-        assert result.id == venue_with_id.id
+        assert result.id == venue.id
 
 @pytest.mark.asyncio
 async def test_venue_update():
@@ -26,7 +26,7 @@ async def test_venue_update():
         venue = create_venue(name="La Pizzerias", location="126 Main St", capacity=51)
         database = RelBase(conn_string=postgres.get_connection_url())
         venue_with_id=venue.persistance()
-        database.store_venue(venue_with_id)        
+        database.store_venue(venue_with_id)
         update = Update(name="La Pizzeria Updated")
         venue = update.modify(venue)
         venue_with_id=venue.persistance()

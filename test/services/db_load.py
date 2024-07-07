@@ -20,7 +20,6 @@ ENDPOINT_PERMISSIONS = 'allowed'
 class Base(DeclarativeBase):
     pass
 
-<<<<<<< HEAD
 
 class VenueSchema(Base):
 
@@ -36,7 +35,6 @@ class VenueSchema(Base):
         return f"{self.id}:{self.name}/{self.location}/capacity:{self.capacity}/{self.status}"
 
 
-=======
 class ReservationSchema(Base):
     __tablename__ = "reservations"
 
@@ -50,7 +48,6 @@ class ReservationSchema(Base):
     def __repr__(self) -> str:
         return f"{self.id}:{self.user}:{self.venue}/at:{self.time}/for:{self.people}/{self.status}"
  
->>>>>>> origin/main
 class UserType(Base):
     __tablename__ = "user_types"
 
