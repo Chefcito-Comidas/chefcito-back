@@ -31,7 +31,7 @@ async def update_venue(venue: Annotated[str, Path()], update: Annotated[Update, 
     return await service.update_venue(venue, update, response)
 
 
-@app.get("/venues/")
+@app.get("/venues")
 async def get_venues(response: Response,
                            id: str = Query(default=None),
                            name: str = Query(default=None),

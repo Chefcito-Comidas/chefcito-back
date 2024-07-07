@@ -64,17 +64,24 @@ class HttpReservationsProvider(ReservationsProvider):
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         endpoint = "/reservations"
-        response = await post(f"{self.url}{endpoint}", body=reservation.model_dump())
+        body = reservation.model_dump()
+        body['time'] = body['time'].__str__()
+        response = await post(f"{self.url}{endpoint}", body=body)
         return await recover_json_data(response) 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         endpoint = "/reservations"
-        response = await put(f"{self.url}{endpoint}/{reservation_id}", body=reservation_update.model_dump())
+        body = reservation_update.model_dump(exclude_none=True)
+        body['time'] = body['time'].__str__()
+        response = await put(f"{self.url}{endpoint}/{reservation_id}", body=body)
         return await recover_json_data(response) 
 
     async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
         endpoint = "/reservations"
-        response = await get(f"{self.url}{endpoint}", params=query.model_dump(exclude_none=True))
+        body = query.model_dump(exclude_none=True)
+        body['from_time'] = body['from_time'].__str__() if body.get('from_time') else None
+        body['to_time'] = body['to_time'].__str__() if body.get('to_time') else None
+        response = await get(f"{self.url}{endpoint}", params=body)
         return await recover_json_data(response)
 
     async def delete_reservation(self, reservation_id: str) -> None:
