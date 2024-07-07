@@ -2,6 +2,7 @@ from typing import List
 from src.model.venues.data.schema import VenueSchema
 from sqlalchemy import Select, create_engine, select, update
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 # TODO: try to add this to configuration options
 DEFAULT_POOL_SIZE = 10
@@ -23,16 +24,16 @@ class VenuesBase:
         session = Session(self.__engine)
         return list(session.scalars(query).fetchmany(100))
     
-    def update_venue(self, reservation: VenueSchema) -> None:
+    def update_venue(self, venue: VenueSchema) -> None:
         """
-            Updates information about a reservation
+            Updates information about a venue
         """
         raise Exception("Interface method should not be called")
     
     def get_venue_by_id(self, id: str) -> VenueSchema | None:
 
         """
-            Searches for a reservation based on the id 
+            Searches for a venue based on the id 
             given
         """
         raise Exception("Interface method should not be called")

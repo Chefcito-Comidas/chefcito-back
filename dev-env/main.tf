@@ -56,6 +56,7 @@ resource "docker_container" "venues" {
     internal = 80
     external = 8003
   }
+  env=["DB_STRING=postgresql://user:admin123@reldb/users_db"]
   networks_advanced {
     name = docker_network.chefcito_network.id
   }

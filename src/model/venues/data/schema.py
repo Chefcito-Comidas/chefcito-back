@@ -1,7 +1,7 @@
 import uuid
-from chefcito_cli.scripts.db_load import mapped_column
+
 import sqlalchemy
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, mapped_column
 from sqlalchemy.orm import Mapped
 from typing import Self
 

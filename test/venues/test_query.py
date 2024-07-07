@@ -48,7 +48,7 @@ def test_get_all_by_same_name():
         name="Venue 5"  
     )
     result = query.query(database)
-    assert len(result) == 1  
+    assert len(result) == 1  #should be only one
     assert all_same_name("Venue 5", result)
 
 # TODO: TODAVIA NO IMPLEMENTADO por location o por status

@@ -36,6 +36,16 @@ class Unconfirmed(VenueStatus):
     def __init__(self):
         super().__init__(status="Unconfirmed")
 
+
+class CreateInfo(BaseModel):
+    name: str
+    location: str
+    capacity: int
+
+    def into_venue(self) -> 'Venue':
+        return create_venue(self.name, self.location, self.capacity) 
+
+
 class Venue(BaseModel):
 
     id: str
@@ -61,12 +71,14 @@ class Venue(BaseModel):
     
     def persistance(self) -> VenueSchema:
         if not self.id:
-            return VenueSchema.create(
+            schema = VenueSchema.create(
                     self.name,
                     self.location,
                     self.capacity,
                     self.status.get_status()
                     )
+            self.id = schema.id.__str__()
+            return schema
         else:
             return VenueSchema(
                     id=self.id,
@@ -78,7 +90,7 @@ class Venue(BaseModel):
 
     @classmethod
     def from_schema(cls, schema: VenueSchema) -> Self:
-        return cls(id=schema.id,
+        return cls(id=schema.id.__str__(),
                    name=schema.name,
                    location=schema.location,
                    capacity=schema.capacity,

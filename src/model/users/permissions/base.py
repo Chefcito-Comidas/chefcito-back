@@ -46,8 +46,12 @@ class DBEngine(Database):
         FROM permissions
         JOIN users ON users.user_type = permissions.user_type
         WHERE permissions.endpoint = {endpoint} AND users.user_type = permissions.type"""
+        param_endpoint = endpoint.split("/")
+        param_endpoint[-1] = 'param'
+        param_endpoint = '/'.join(param_endpoint)
         authorization_query = select(Permission)\
-                                .where(Permission.endpoint.__eq__(endpoint))\
+                                .where(Permission.endpoint.__eq__(endpoint)\
+                                | Permission.endpoint.__eq__(param_endpoint))\
                                 .where(Permission.user_type.__eq__(user.user_type))
                                 
         result = session.scalar(authorization_query) != None

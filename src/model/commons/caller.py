@@ -20,5 +20,11 @@ async def recover_json_data(response: aiohttp.ClientResponse) -> Any:
 async def get(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
     return await __call(aiohttp.ClientSession.get, url, body, data, params) 
 
+async def put(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
+    return await __call(aiohttp.ClientSession.put, url, body, data, params)
+
+async def delete(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
+    return await __call(aiohttp.ClientSession.delete, url, body, data, params)
+
 async def post(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
    return await __call(aiohttp.ClientSession.post, url, body, data, params) 
