@@ -14,7 +14,7 @@ from src.model.venues.venue import CreateInfo, Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import VenuesProvider, VenuesService
 from src.model.venues.update import Update      
-import src.model.gateway.create_reservation as cr
+
 
 
 class GatewayService:
