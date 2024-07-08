@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 app = FastAPI()
-
+print(settings.db_string)
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
 service = UsersService(LocalUsersProvider(authenticator, database))
