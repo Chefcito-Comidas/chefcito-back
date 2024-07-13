@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from sqlalchemy import create_engine, delete, insert, update
 from sqlalchemy.orm import Session
@@ -41,7 +42,7 @@ class ReservationSchema(Base):
     id: Mapped[str] = mapped_column(primary_key=True)
     user: Mapped[str] = mapped_column()
     venue: Mapped[str] = mapped_column()
-    time: Mapped[str] = mapped_column()
+    time: Mapped[datetime] = mapped_column()
     people: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
 
