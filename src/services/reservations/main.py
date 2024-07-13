@@ -13,7 +13,7 @@ from src.model.venues.service import HttpVenuesProvider
 
 class Settings(BaseSettings):
     db_string: str = "database_conn_string"
-    venues: str = "htpp://venues"
+    venues: str = "http://venues"
 
 
 settings = Settings()

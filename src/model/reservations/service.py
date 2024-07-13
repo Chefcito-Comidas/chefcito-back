@@ -112,7 +112,6 @@ class LocalReservationsProvider(ReservationsProvider):
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
             raise Exception("Venue does not exist")
-
         persistance = reservation.into_reservation().persistance()
         response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
