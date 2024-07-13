@@ -9,6 +9,8 @@ from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery
+from src.model.venues.service import VenuesProvider
+from src.model.venues.venueQuery import VenueQuery
 
 
 class ReservationsProvider:
@@ -98,10 +100,19 @@ class HttpReservationsProvider(ReservationsProvider):
 
 class LocalReservationsProvider(ReservationsProvider):
     
-    def __init__(self, base: ReservationsBase):
+    def __init__(self, base: ReservationsBase, venues: VenuesProvider):
         self.db = base
+        self.venues = venues
+    
+    async def _find_venue(self, venue_id: str) -> bool:
+        query = VenueQuery(id=venue_id)
+        result = await self.venues.get_venues(query)
+        return len(result) != 0
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
+        if not await self._find_venue(reservation.venue):
+            raise Exception("Venue does not exist")
+
         persistance = reservation.into_reservation().persistance()
         response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
