@@ -86,6 +86,9 @@ async def get_venues(response: Response,
                            name: str = Query(default=None),
                            location: str = Query(default=None),
                            capacity: int = Query(default=None),
+                           logo: str = Query(default=None),
+                           pictures: List[str] = Query(default=None),
+                           slots: List[datetime.datetime] = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> List[Venue] | Error:
@@ -94,6 +97,9 @@ async def get_venues(response: Response,
             name=name,
             location=location,
             capacity=capacity,
+            logo=logo,
+            pictures=pictures,
+            slots=slots,
             limit=limit,
             start=start
             )

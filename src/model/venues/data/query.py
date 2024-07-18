@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from src.model.venues.data.base import MockBase, RelBase, VenuesBase
 from src.model.venues.data.schema import VenueSchema
+import datetime
 
 
 def get_builder(db: VenuesBase) -> 'QueryBuilder':
@@ -28,7 +29,7 @@ class QueryBuilder:
         value = self.db.get_venue_by_id(id)
         return [value] if value else []
 
-    def __filter_by_eq(self, user: Optional[str], venue: Optional[str]) -> List[VenueSchema]:
+    def __filter_by_eq(self, name: Optional[str]) -> List[VenueSchema]:
         raise Exception("Interface method should not be called")
 
     def get(self,
@@ -36,6 +37,9 @@ class QueryBuilder:
             name: Optional[str],
             location: Optional[str],
             capacity: Optional[int],
+            logo: Optional[str],
+            pictures: Optional[List[str]],
+            slots: Optional[List[datetime.datetime]],
             limit: int,
             start: int) -> List[VenueSchema]:
 
@@ -50,9 +54,9 @@ class RelBuilder(QueryBuilder):
 
         return self.db.get_by_eq(query)
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None:
-            raise Exception("Capacity and location query not implemented")
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], limit: int, start: int) -> List[VenueSchema]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None:
+            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
             return self._get_by_id(id)
 
@@ -76,9 +80,9 @@ class MockedBuilder(QueryBuilder):
         return filter
 
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None:
-            raise Exception("Capacity and location query not implemented")
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], limit: int, start: int) -> List[VenueSchema]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None:
+            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
 
         if id:
             return self._get_by_id(id)

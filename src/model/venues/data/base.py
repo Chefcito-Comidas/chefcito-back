@@ -1,6 +1,6 @@
 from typing import List
 from src.model.venues.data.schema import VenueSchema
-from sqlalchemy import Select, create_engine, select, update
+from sqlalchemy import Select, create_engine, select, update, delete
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -25,6 +25,12 @@ class VenuesBase:
     def update_venue(self, venue: VenueSchema) -> None:
         """
             Updates information about a venue
+        """
+        raise Exception("Interface method should not be called")
+    
+    def delete_venue(self, id: str) -> None:
+        """
+            Deletes a venue
         """
         raise Exception("Interface method should not be called")
     
@@ -62,6 +68,9 @@ class RelBase(VenuesBase):
         value.name = venue.name
         value.location = venue.location
         value.capacity = venue.capacity
+        value.logo = venue.logo
+        value.pictures = venue.pictures
+        value.slots = venue.slots
         value.status = venue.status
         session.commit()
         session.close()
@@ -72,6 +81,14 @@ class RelBase(VenuesBase):
         result = session.scalar(query)
         session.close()
         return result
+    
+    def delete_venue(self, id: str) -> None:
+        session = Session(self.__engine)
+        query = delete(VenueSchema).where(VenueSchema.id.__eq__(id))
+        session.execute(query)
+        session.commit()
+        session.close()
+        return
 
 
 
@@ -98,3 +115,10 @@ class MockBase(VenuesBase):
         for stored in self.base:
             if stored.id == id:
                 return stored
+    
+    def delete_venue(self, id: str) -> None:
+        for index, stored in enumerate(self.base):
+            if stored.id == id:
+                self.base.pop(index)
+                return
+        return
