@@ -16,9 +16,9 @@ async def test_venue_persistance():
         database = RelBase(conn_string=postgres.get_connection_url())
         venue_with_id=venue.persistance()
         database.store_venue(venue_with_id)
-        #result = database.get_venue_by_id(venue.id)
-        # assert result != None
-        # assert result.id == venue.id
+        result = database.get_venue_by_id(venue.id)
+        assert result != None
+        assert result.id == venue.id
 
 @pytest.mark.asyncio
 async def test_venue_update():
