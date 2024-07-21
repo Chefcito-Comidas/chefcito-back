@@ -61,20 +61,24 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
     return await service.sign_up(credentials, user_type)
 
 
-@app.post("/venues")
+@app.post("/venues", response_model=Venue)
 async def create_venue(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              venue: Annotated[v_stubs.CreateInfo, Body()],
                              response: Response) -> Venue | Error:
-    return await service.create_venue(credentials, venue, response)
+    answer = await service.create_venue(credentials, venue, response)
+    print(f"Created: {answer}")
+    return answer
 
-@app.put("/venues/{venue_id}")
+@app.put("/venues/{venue_id}",response_model=Venue)
 async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               venue: Annotated[v.update.Update, Body()],
                               venue_id: Annotated[str, Path()],
                               response: Response
-                              ) -> Venue | Error:
+                              ) -> Venue:
     
-    return await service.update_venue(credentials,venue_id, venue, response)
+    answer = await service.update_venue(credentials,venue_id, venue, response)
+    print(f"Answering: {answer}")
+    return answer
 
 @app.delete("/venues/{venue_id}")
 async def delete_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],

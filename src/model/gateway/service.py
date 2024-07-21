@@ -72,10 +72,11 @@ class GatewayService:
     async def create_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue: v_stubs.CreateInfo, response: Response) -> Venue | Error:
         
         id = await self.users.get_data(UserToken(id_token=credentials.credentials)) 
-        return await self.venues.create_venue(venue.into_create_info(id.localid), response)
+        new_venue = await self.venues.create_venue(venue.into_create_info(id.localid), response)
+        return new_venue 
 
     async def update_venue(self,credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, venue_update: Update, response: Response) -> Venue | Error:
-        if not self.__check_user(credentials, venue_id, response):
+        if not await self.__check_user(credentials, venue_id, response):
             return Error(description="Invalid user")
         return await self.venues.update_venue(venue_id, venue_update, response)
 
@@ -83,22 +84,22 @@ class GatewayService:
         return await self.venues.get_venues(venue_query, response)
 
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
-        if not self.__check_user(credentials, venue_id, response):
+        if not await self.__check_user(credentials, venue_id, response):
             return
         await self.venues.delete_venue(venue_id, response)
 
     async def create_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation: r_stubs.CreateInfo, response: Response) -> Reservation | Error:
-        user = await self.users.get_data(UserToken(id_token=credentials.credentials))
-        return await self.reservations.create_reservation(reservation.with_user(user.localid), response)
+        user = await self.__get_user(credentials)
+        return await self.reservations.create_reservation(reservation.with_user(user), response)
 
     async def update_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, reservation_update: r_stubs.Update, response: Response) -> Reservation | Error:
-        user = await self.users.get_data(UserToken(id_token=credentials.credentials))
-        update = reservation_update.with_user(user.localid) 
+        user = await self.__get_user(credentials) 
+        update = reservation_update.with_user(user) 
         return await self.reservations.update_reservation(reservation_id, update, response)
 
     async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> List[Reservation] | Error:
-        user = await self.users.get_data(UserToken(id_token=credentials.credentials))
-        r_query = reservation_query.with_user(user.localid)
+        user = await self.__get_user(credentials) 
+        r_query = reservation_query.with_user(user)
         return await self.reservations.get_reservations(r_query, response)
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:

@@ -53,7 +53,14 @@ class CreateInfo(BaseModel):
     slots: List[datetime.datetime]
 
     def into_venue(self) -> 'Venue':
-        return create_venue(self.name, self.location, self.capacity, self.logo, self.pictures, self.slots) 
+        return Venue(id=self.id, 
+                     name=self.name, 
+                     location=self.location, 
+                     capacity=self.capacity, 
+                     logo=self.logo, 
+                     pictures=self.pictures, 
+                     slots=self.slots,
+                     status=Available()) 
 
 
 class Venue(BaseModel):
