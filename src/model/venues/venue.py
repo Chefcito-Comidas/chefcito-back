@@ -44,6 +44,7 @@ class Unconfirmed(VenueStatus):
 
 
 class CreateInfo(BaseModel):
+    id: str
     name: str
     location: str
     capacity: int
