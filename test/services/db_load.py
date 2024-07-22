@@ -6,7 +6,9 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import ForeignKey, UniqueConstraint
 import yaml
-
+from sqlalchemy import String, ARRAY, DateTime
+import datetime
+from typing import List
 TYPES_KEY = 'usertypes'
 ENDPOINTS_KEY = 'endpoints'
 
@@ -29,10 +31,16 @@ class VenueSchema(Base):
     name: Mapped[str] = mapped_column()
     location: Mapped[str] = mapped_column()
     capacity: Mapped[int] = mapped_column()
+    logo: Mapped[str] = mapped_column()
+    pictures: Mapped[List[str]] = mapped_column(ARRAY(String))
+    slots: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
     status: Mapped[str] = mapped_column()
 
     def __repr__(self) -> str:
-        return f"{self.id}:{self.name}/{self.location}/capacity:{self.capacity}/{self.status}"
+        return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
+                f"capacity={self.capacity}, "
+                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}, status={self.status})")
+
 
 
 class ReservationSchema(Base):

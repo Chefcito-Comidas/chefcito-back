@@ -2,7 +2,8 @@ from typing import List
 from src.model.venues.data.base import MockBase  
 from src.model.venues.data.schema import VenueSchema 
 from src.model.venues.venueQuery import VenueQuery
-from src.model.venues.venue import Venue, Available, create_venue
+from src.model.venues.venue import Venue, Available
+from datetime import datetime
 
 def create_venues(amount: int) -> List[VenueSchema]:
     """
@@ -15,6 +16,9 @@ def create_venues(amount: int) -> List[VenueSchema]:
             name=f"name_{i%3}",
             location=f"location_{i % 2}",
             capacity=f"{i%5}",
+            logo=f"logo_{i}.png",
+            pictures=[f"picture_{i}_1.jpg", f"picture_{i}_2.jpg"],
+            slots=[datetime(year=2024, month=i%12 + 1, day=i%28 + 1)],
             status=Available().get_status()
         ))
     return venues

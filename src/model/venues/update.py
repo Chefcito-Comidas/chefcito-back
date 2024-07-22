@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
-
+from typing import List
+import datetime
 from src.model.venues.venue import Venue
 
 
@@ -8,6 +9,9 @@ class Update(BaseModel):
     name: Optional[str] = None
     location: Optional[str] = None
     capacity: Optional[int] = None
+    logo: Optional[str] = None
+    pictures: Optional[List[str]] = None
+    slots: Optional[List[datetime.datetime]] = None
     open: Optional[bool] = False
     close: Optional[bool] = False
     occupy: Optional[bool] = False  
@@ -36,6 +40,18 @@ class Update(BaseModel):
 
         if self.capacity:
             venue.capacity = self.capacity
+            venue.unconfirm()
+
+        if self.logo:
+            venue.logo = self.logo
+            venue.unconfirm()
+        
+        if self.pictures:
+            venue.pictures = self.pictures
+            venue.unconfirm()
+
+        if self.slots:
+            venue.slots = self.slots
             venue.unconfirm()
 
         return venue
