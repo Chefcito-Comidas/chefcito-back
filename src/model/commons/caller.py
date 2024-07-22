@@ -5,6 +5,8 @@ Caller provides a simple interface to manage aihttp calls
 
 from typing import Any
 import aiohttp
+import asyncio
+
 
 async def __call(method, url: str, body: dict, headers: dict, params: dict) -> aiohttp.ClientResponse:
     client = aiohttp.ClientSession()
@@ -13,7 +15,7 @@ async def __call(method, url: str, body: dict, headers: dict, params: dict) -> a
     return response
 
 async def recover_json_data(response: aiohttp.ClientResponse) -> Any:
-    data = await response.json()
+    data = await asyncio.wait_for(response.json(), 0.5)
     response.close()
     return data
 

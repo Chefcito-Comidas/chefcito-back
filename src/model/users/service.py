@@ -31,8 +31,14 @@ class HttpUsersProvider(UsersProvider):
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         endpoint = f"{self.host}/users"
         users_response = await post(endpoint, body=auth.model_dump())
-        return UserData(**await recover_json_data(users_response))
-    
+        content = users_response.headers.get('content-type', 'invalid')
+        if 'json' not in content:
+            raise Exception("Invalid response from users") 
+        try:
+            return UserData(**await recover_json_data(users_response))
+        except:
+            raise Exception("Could not recover user data")
+
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
         endpoint = f"{self.host}/users/permissions"
         users_response = await post(endpoint, body=auth.model_dump())
