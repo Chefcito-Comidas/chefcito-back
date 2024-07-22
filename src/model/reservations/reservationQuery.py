@@ -14,13 +14,15 @@ class ReservationQuery(BaseModel):
     id: Optional[str] = None
     user: Optional[str] = None
     venue: Optional[str] = None
-    time: Optional[Tuple[datetime, datetime]] = None 
+    from_time: Optional[datetime] = None
+    to_time: Optional[datetime] = None
     people: Optional[Tuple[int, int]] = None
     
     def change_user(self, user: str):
         self.user = f"user/{user}"
 
     def query(self, db: ReservationsBase) -> List[Reservation]:
-        builder = get_builder(db) 
-        result = builder.get(self.id, self.user, self.status, self.venue, self.time, self.people, self.limit, self.start)
+        builder = get_builder(db)
+        time = (self.from_time, self.to_time) if self.from_time != None and self.to_time != None else None
+        result = builder.get(self.id, self.user, self.status, self.venue, time, self.people, self.limit, self.start)
         return [Reservation.from_schema(value) for value in result]
