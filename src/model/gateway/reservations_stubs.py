@@ -41,16 +41,19 @@ class ReservationQuery(BaseModel):
     status: Optional[str] = None
     id: Optional[str] = None
     venue: Optional[str] = None
-    time: Optional[Tuple[datetime, datetime]] = None 
+    from_time: Optional[datetime] = None 
+    to_time: Optional[datetime] = None
     people: Optional[Tuple[int, int]] = None
 
     def with_user(self, user: str) -> query.ReservationQuery:
         value = query.ReservationQuery(
                 limit=self.limit,
                 start=self.start,
+                status=self.status,
                 id=self.id,
                 venue=self.venue,
-                time=self.time,
+                from_time=self.from_time,
+                to_time=self.to_time,
                 people=self.people
                 )
         value.change_user(user)
