@@ -1,12 +1,18 @@
 from pydantic import BaseModel
 from src.model.venues.data.schema import VenueSchema
 from typing import Self
+from typing import List
+from src.model.venues.data.base import VenuesBase
+import datetime
 
-def create_venue(name: str, location: str, capacity: int) -> 'Venue':
+def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime]) -> 'Venue':
     return Venue(id="",
                  name=name, 
                  location=location, 
                  capacity=capacity,
+                 logo=logo,
+                 pictures=pictures,
+                 slots=slots,
                  status=Available())
 
 class VenueStatus(BaseModel):
@@ -38,12 +44,23 @@ class Unconfirmed(VenueStatus):
 
 
 class CreateInfo(BaseModel):
+    id: str
     name: str
     location: str
     capacity: int
+    logo: str
+    pictures: List[str]
+    slots: List[datetime.datetime]
 
     def into_venue(self) -> 'Venue':
-        return create_venue(self.name, self.location, self.capacity) 
+        return Venue(id=self.id, 
+                     name=self.name, 
+                     location=self.location, 
+                     capacity=self.capacity, 
+                     logo=self.logo, 
+                     pictures=self.pictures, 
+                     slots=self.slots,
+                     status=Available()) 
 
 
 class Venue(BaseModel):
@@ -52,6 +69,9 @@ class Venue(BaseModel):
     name: str
     location: str
     capacity: int
+    logo: str
+    pictures: List[str]
+    slots: List[datetime.datetime]
     status: VenueStatus
 
     def get_status(self) -> str:
@@ -75,6 +95,9 @@ class Venue(BaseModel):
                     self.name,
                     self.location,
                     self.capacity,
+                    self.logo, 
+                    self.pictures, 
+                    self.slots,
                     self.status.get_status()
                     )
             self.id = schema.id.__str__()
@@ -85,14 +108,24 @@ class Venue(BaseModel):
                     name=self.name,
                     location=self.location,
                     capacity=self.capacity,
+                    logo=self.logo, 
+                    pictures=self.pictures, 
+                    slots=self.slots,
                     status=self.status.get_status()
                     )
 
+    @staticmethod
+    def delete(id: str, database: VenuesBase) -> None:
+        return database.delete_venue(id)
+    
     @classmethod
     def from_schema(cls, schema: VenueSchema) -> Self:
         return cls(id=schema.id.__str__(),
                    name=schema.name,
                    location=schema.location,
                    capacity=schema.capacity,
+                   logo=schema.logo, 
+                   pictures=schema.pictures, 
+                   slots=schema.slots,
                    status=VenueStatus(status=schema.status)
                    )

@@ -49,6 +49,7 @@ class ReservationsService:
     
     async def get_reservations(self, query: ReservationQuery, response: Response) -> List[Reservation] | Error:
         try:
+           print(f"SEARCHING WITH: {query}")
            return await self.provider.get_reservations(query)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST

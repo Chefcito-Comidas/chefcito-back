@@ -12,11 +12,12 @@ from src.model.venues.service import HttpVenuesProvider, VenuesService
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.service import HttpReservationsProvider, ReservationsService
 from src.model.users.service import HttpUsersProvider
-from src.model.users.user_data import UserData, UserToken
+from src.model.users.user_data import UserData
 from src.model.gateway.users_middleware import AuthMiddleware
 from src.model.gateway.service import GatewayService
 from src.model.gateway.reservations_stubs import CreateInfo, Update, ReservationQuery
 import src.model.venues as v
+import src.model.gateway.venues_stubs as v_stubs
 
 class Settings(BaseSettings):
     proto: str = "http://"
@@ -60,19 +61,24 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
     return await service.sign_up(credentials, user_type)
 
 
-@app.post("/venues")
+@app.post("/venues", response_model=Venue)
 async def create_venue(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                             venue: Annotated[v.venue.CreateInfo, Body()],
+                             venue: Annotated[v_stubs.CreateInfo, Body()],
                              response: Response) -> Venue | Error:
-    return await service.create_venue(venue, response)
+    answer = await service.create_venue(credentials, venue, response)
+    print(f"Created: {answer}")
+    return answer
 
-@app.put("/venues/{venue_id}")
+@app.put("/venues/{venue_id}",response_model=Venue)
 async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               venue: Annotated[v.update.Update, Body()],
                               venue_id: Annotated[str, Path()],
                               response: Response
-                              ) -> Venue | Error:
-    return await service.update_venue(venue_id, venue, response)
+                              ) -> Venue:
+    
+    answer = await service.update_venue(credentials,venue_id, venue, response)
+    print(f"Answering: {answer}")
+    return answer
 
 @app.delete("/venues/{venue_id}")
 async def delete_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
@@ -86,6 +92,9 @@ async def get_venues(response: Response,
                            name: str = Query(default=None),
                            location: str = Query(default=None),
                            capacity: int = Query(default=None),
+                           logo: str = Query(default=None),
+                           pictures: List[str] = Query(default=None),
+                           slots: List[datetime] = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> List[Venue] | Error:
@@ -94,6 +103,9 @@ async def get_venues(response: Response,
             name=name,
             location=location,
             capacity=capacity,
+            logo=logo,
+            pictures=pictures,
+            slots=slots,
             limit=limit,
             start=start
             )
@@ -136,7 +148,8 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
             id=id,
             venue=venue,
             status=status,
-            time=(from_time, to_time) if from_time != None and to_time != None else None,
+            from_time=from_time,
+            to_time=to_time,
             people=(from_people, to_people) if from_people != None and to_people != None else None,
             limit=limit,
             start=start

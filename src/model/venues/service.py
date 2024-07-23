@@ -31,7 +31,8 @@ class VenuesService:
 
     async def create_venue(self, venue: CreateInfo, response: Response) -> Venue | Error:
         try:
-            return await self.provider.create_venue(venue)
+            value = await self.provider.create_venue(venue)
+            return value
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, endpoint="/venues")
@@ -60,13 +61,18 @@ class HttpVenuesProvider(VenuesProvider):
 
     async def create_venue(self, venue: CreateInfo) -> Venue:
         endpoint = "/venues"
-        response = await post(f"{self.url}{endpoint}", body=venue.model_dump())
+        model = venue.model_dump()
+        model['slots'] = [slot.__str__() for slot in model['slots']]
+        response = await post(f"{self.url}{endpoint}", body=model)
         return await recover_json_data(response) 
         
 
     async def update_venue(self, venue_id: str, venue_update: Update) -> Venue:
         endpoint = "/venues"
-        response = await put(f"{self.url}{endpoint}/{venue_id}", body=venue_update.model_dump())
+        model = venue_update.model_dump()
+        if model.get('slots'):
+            model['slots'] = [slot.__str__() for slot in model['slots']]
+        response = await put(f"{self.url}{endpoint}/{venue_id}", body=model)
         return await recover_json_data(response) 
         
 

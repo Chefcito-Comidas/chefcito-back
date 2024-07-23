@@ -58,10 +58,12 @@ def test_a_schema_has_an_id():
 def test_after_persisting_a_reservation_it_can_be_recovered_with_its_id():
     reservation = create_reservation("user", "venue", datetime.now(), 9)
     base = MockBase()
+
     base.store_reservation(reservation.persistance())
     result = base.get_reservation_by_id(reservation.id)
     assert result != None
     assert result.id == reservation.id
+
 
 def test_after_deleting_a_reservation_it_can_no_longer_be_recovered():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
