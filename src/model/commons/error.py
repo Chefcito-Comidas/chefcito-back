@@ -7,4 +7,4 @@ class Error(BaseModel):
     
     @classmethod
     def from_exception(cls, exception: Exception, endpoint: str = "/api/call") -> Self:
-        return cls(endpoint=endpoint, description=exception.__str__())
+        return cls(endpoint=endpoint, description=f"{exception}")

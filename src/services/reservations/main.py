@@ -9,15 +9,19 @@ from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
+from src.model.venues.service import HttpVenuesProvider
 
 class Settings(BaseSettings):
     db_string: str = "database_conn_string"
+    venues: str = "http://venues"
+
 
 settings = Settings()
 
 app = FastAPI()
-database =  RelBase(settings.db_string) 
-service = ReservationsService(LocalReservationsProvider(database))
+database =  RelBase(settings.db_string)
+venues = HttpVenuesProvider(settings.venues) 
+service = ReservationsService(LocalReservationsProvider(database, venues))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
