@@ -92,7 +92,14 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
     service = LocalReservationsProvider(database, venues)
-    asyncio.run(venues.create_venue(v.CreateInfo(name="Lo de Carlitos", location="almendra 270", capacity=150)))
+    asyncio.run(venues.create_venue(v.CreateInfo(
+                                                 id="ADSAF",
+                                                 name="Lo de Carlitos",
+                                                 logo="SomeCoolLogo",
+                                                 pictures=[],
+                                                 slots=[],
+                                                 location="almendra 270",
+                                                 capacity=150)))
     id = asyncio.run(venues.get_venues(VenueQuery())).pop().id
     
     reservation = CreateInfo(user="juanCarlos",
