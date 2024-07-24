@@ -31,11 +31,12 @@ class MongoOpinionsDB(OpinionsDB):
         await schema.insert()
     
     async def get(self, query: OpinionQuery) -> List[Opinion]:
-        result = await OpinionSchema.find(OpinionSchema.venue == query.venue).to_list()
+        result = query.query() 
+        
         return list(map(
             lambda x: x.into_opinion(),
-            result
-            ))
+            await result.to_list()
+            )) if result else []
 
 class MockedOpinionsDB(OpinionsDB):
     
