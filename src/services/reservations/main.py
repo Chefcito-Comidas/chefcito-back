@@ -30,7 +30,6 @@ async def create_reservation(reservation: Annotated[CreateInfo, Body()], respons
 
 @app.put("/reservations/{reservation}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def update_reservation(reservation: Annotated[str, Path()], update: Annotated[Update, Body()], response: Response) -> Reservation | Error:
-    print(reservation)
     return await service.update_reservation(reservation, update, response)
 
 @app.delete("/reservations/{reservation}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})

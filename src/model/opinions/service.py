@@ -1,5 +1,6 @@
 from typing import Any, List
 
+from src.model.commons.error import Error
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
@@ -23,13 +24,20 @@ class OpinionsProvider:
 class OpinionsService:
     
     def __init__(self, provider: OpinionsProvider):
-        self.provider = provider
-    
-    async def create_opinion(self, opinion) -> Any:
-        raise Exception("TODO")
+        self.provider = provider 
 
-    async def query_opinions(self, query) -> List[Any]:
-        raise Exception("TODO")
+    async def create_opinion(self, opinion: Opinion) -> Opinion | Error:
+        try:
+            await self.provider.create_opinion(opinion)
+            return opinion
+        except Exception as e:
+            return Error.from_exception(e) 
+
+    async def query_opinions(self, query: OpinionQuery) -> List[Opinion] | Error:
+        try:
+            return await self.provider.query_opinions(query)
+        except Exception as e:
+            return Error.from_exception(e)
 
     async def get_summary(self, restaurant) -> Any:
         raise Exception("TODO")

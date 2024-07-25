@@ -76,6 +76,20 @@ resource "docker_container" "reservations" {
   }
 }
 
+resource "docker_container" "opinions" {
+  name = "opinions"
+  hostname = "opinions"
+  image = "service-opinions:latest"
+  ports {
+    internal = 80
+    external = 8004
+  }
+  env = ["CONN_STRING=mongodb://nsqldb/"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
 resource "docker_container" "postgresql" {
   name = "postgredb"
   hostname = "reldb"
@@ -88,5 +102,17 @@ resource "docker_container" "postgresql" {
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
-  
+}
+
+resource "docker_container" "mongo" {
+  name = "mongodb"
+  hostname = "nsqldb"
+  image = "mongo:8.0-rc"
+  ports {
+    internal = 27017
+    external = 27017
+  }
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
 }

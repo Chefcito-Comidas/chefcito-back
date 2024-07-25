@@ -1,17 +1,28 @@
+import asyncio
+from contextlib import asynccontextmanager
 from typing import Annotated
 from fastapi import Body, FastAPI, Path
 from pydantic_settings import BaseSettings
 
+from src.model.opinions.data.base import MongoOpinionsDB
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery
 from src.model.opinions.service import LocalOpinionsProvider, OpinionsService
 
 
 class Settings(BaseSettings):
-    pass
+    conn_string: str
 
 settings = Settings()
 
-app = FastAPI()
-opinions = OpinionsService(LocalOpinionsProvider())
+database = MongoOpinionsDB(settings.conn_string)
+@asynccontextmanager
+async def init_database(app: FastAPI):
+    await database.init()
+    yield
+
+app = FastAPI(lifespan=init_database)
+opinions = OpinionsService(LocalOpinionsProvider(database))
 
 
 """
@@ -29,13 +40,14 @@ Endpoints:
         - POST => Ask to create a summary 
         of opinions of a restaurant
 """
+    
 
 @app.post("/opinions")
-async def create_opinion(opinion: Annotated[str, Body()]):
+async def create_opinion(opinion: Annotated[Opinion, Body()]):
     return await opinions.create_opinion(opinion)
 
 @app.get("/opinions")
-async def query_opinions(query: Annotated[str, Body()]):
+async def query_opinions(query: Annotated[OpinionQuery, Body()]):
     return await opinions.query_opinions(query)
 
 @app.get("/summaries/{restaurant}")
