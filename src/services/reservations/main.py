@@ -4,24 +4,29 @@ from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 
 from src.model.commons.error import Error
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
 from src.model.venues.service import HttpVenuesProvider
+from src.model.opinions.service import HttpOpinionsProvider
 
 class Settings(BaseSettings):
     db_string: str = "database_conn_string"
     venues: str = "http://venues"
+    opinions: str = "http://opinions"
 
 
 settings = Settings()
 
 app = FastAPI()
 database =  RelBase(settings.db_string)
-venues = HttpVenuesProvider(settings.venues) 
-service = ReservationsService(LocalReservationsProvider(database, venues))
+venues = HttpVenuesProvider(settings.venues)
+opinions = HttpOpinionsProvider(settings.opinions) 
+service = ReservationsService(LocalReservationsProvider(database, venues, opinions))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -60,3 +65,24 @@ async def get_reservations(response: Response,
             start=start
             )
     return await service.get_reservations(query, response)
+
+@app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def query_opinions(venue: Annotated[str, Query(default=None)],
+                         from_date: Annotated[datetime, Query(default=None)],
+                         to_date: Annotated[datetime, Query(default=None)],
+                         limit: Annotated[int, Query(default=10)],
+                         start: Annotated[int, Query(default=0)],
+                         response: Response):
+    query = OpinionQuery(
+        venue=venue,
+        from_date=from_date,
+        to_date=to_date,
+        limit=limit,
+        start=start
+    )
+    return await service.get_opinions(query, response)
+
+@app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_opinion(opinion: Annotated[Opinion, Body()], response: Response):
+    return await service.create_opinion(opinion, response)
+

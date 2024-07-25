@@ -78,7 +78,7 @@ def test_a_reservation_cannot_be_done_if_the_venue_does_not_exists():
     database = MockBase()
     venues_db = v_base.MockBase() 
     venues = LocalVenuesProvider(venues_db)
-    service = LocalReservationsProvider(database, venues)
+    service = LocalReservationsProvider(database, venues, None)
     
     reservation = CreateInfo(user="juanCarlos",
                              venue="Lo de Carlitos",
@@ -91,7 +91,7 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     database = MockBase()
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
-    service = LocalReservationsProvider(database, venues)
+    service = LocalReservationsProvider(database, venues, None)
     asyncio.run(venues.create_venue(v.CreateInfo(
                                                  id="ADSAF",
                                                  name="Lo de Carlitos",
