@@ -3,6 +3,8 @@ from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.service import  ReservationsService
 from src.model.reservations.update import Update
@@ -104,3 +106,14 @@ class GatewayService:
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
+
+    async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+                             opinion: Opinion,
+                             response: Response) -> Opinion | Error:
+        user = await self.__get_user(credentials)
+        return await self.reservations.create_opinion(opinion, user, response)
+
+    async def get_reservations(self,
+                               query: OpinionQuery,
+                               response: Response) -> List[Opinion] | Error:
+        return await self.reservations.get_opinions(query, response)

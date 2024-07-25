@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -155,4 +157,25 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
             start=start
             )
     return await service.get_reservations(credentials, query, response)
+
+@app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def query_opinions(venue: Annotated[str, Query(default=None)],
+                         from_date: Annotated[datetime, Query(default=None)],
+                         to_date: Annotated[datetime, Query(default=None)],
+                         limit: Annotated[int, Query(default=10)],
+                         start: Annotated[int, Query(default=0)],
+                         response: Response):
+    query = OpinionQuery(
+        venue=venue,
+        from_date=from_date,
+        to_date=to_date,
+        limit=limit,
+        start=start
+    )
+
+    return await service.get_reservations(query, response)
+
+@app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None], opinion: Opinion, response: Response) -> Opinion | Error:
+    return await service.create_opinion(credentials, opinion, response)
  

@@ -82,7 +82,9 @@ async def query_opinions(venue: Annotated[str, Query(default=None)],
     )
     return await service.get_opinions(query, response)
 
-@app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def create_opinion(opinion: Annotated[Opinion, Body()], response: Response):
+@app.post("/opinions/{user}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_opinion(opinion: Annotated[Opinion, Body()], 
+                         user: Annotated[str, Path()],
+                         response: Response):
     return await service.create_opinion(opinion, response)
 

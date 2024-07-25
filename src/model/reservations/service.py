@@ -30,7 +30,7 @@ class ReservationsProvider:
     async def delete_reservation(self, reservation_id: str) -> None:
         raise Exception("Interface method should not be called")
 
-    async def create_opinion(self, opinion: Opinion) -> Opinion:
+    async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         raise Exception("Interface method should not be called")
 
     async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
@@ -70,9 +70,9 @@ class ReservationsService:
         finally:
             return
 
-    async def create_opinion(self, opinion: Opinion, response: Response) -> Opinion | Error:
+    async def create_opinion(self, opinion: Opinion, user: str, response: Response) -> Opinion | Error:
         try:
-            return await self.provider.create_opinion(opinion)
+            return await self.provider.create_opinion(opinion, user)
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
@@ -123,9 +123,9 @@ class HttpReservationsProvider(ReservationsProvider):
         await delete(f"{self.url}{endpoint}/{reservation_id}")
         return  
 
-    async def create_opinion(self, opinion: Opinion) -> Opinion:
+    async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         endpoint = "/opinions"
-        response = await post(f"{self.url}{endpoint}", body=opinion.model_dump())
+        response = await post(f"{self.url}{endpoint}/{user}", body=opinion.model_dump())
         return await recover_json_data(response)
 
     async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
@@ -174,7 +174,13 @@ class LocalReservationsProvider(ReservationsProvider):
     async def delete_reservation(self, reservation_id: str) -> None:
         Reservation.delete(reservation_id, self.db)
 
-    async def create_opinion(self, opinion: Opinion) -> Opinion:
+    async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
+        query = ReservationQuery(
+            id=opinion.reservation
+        )
+        result = await self.get_reservations(query)
+        if len(result) == 0 and user not in result[0].user:
+            raise Exception("Reservation was not done by user")
         return await self.opinions.create_opinion(opinion)
 
     async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
