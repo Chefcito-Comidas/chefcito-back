@@ -106,6 +106,18 @@ class GatewayService:
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
+    
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> List[Reservation] | Error:
+        user = await self.__get_user(credentials)
+        venue_id = None
+        if venue:
+            venue_id = user
+            user = None
+        query = r_stubs.ReservationQuery(venue=venue_id, limit=limit, start=start).with_user('')
+        query.user = user
+        return await self.reservations.get_reservations(query, response)
+        
+
 
     async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
                              opinion: Opinion,

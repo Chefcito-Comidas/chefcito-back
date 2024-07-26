@@ -16,8 +16,13 @@ endpoints:
     allowed: ["anonymous"]
   - name: "/venues/param"
     allowed: ["anonymous"]
-
   - name: "/reservations"
     allowed: ["anonymous"]
   - name: "/reservations/param"
+    allowed: ["anonymous"]
+  - name: "/reservations/history"
+    allowed: ["client"]
+  - name: "/reservations/venue"
+    allowed: ["restaurant"]
+  - name: "/opinions"
     allowed: ["anonymous"]
