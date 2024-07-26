@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./src/model/reservations /code/src/model/reservations
 COPY ./src/model/commons /code/src/model/commons
 COPY ./src/model/venues /code/src/model/venues
+COPY ./src/model/opinions /code/src/model/opinions
 COPY ./src/services/reservations/main.py /code/main.py
-
 
 
 # 

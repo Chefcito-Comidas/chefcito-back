@@ -1,5 +1,6 @@
 from typing import Any, List
 
+from src.model.commons.caller import get, post, recover_json_data
 from src.model.commons.error import Error
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
@@ -46,7 +47,24 @@ class OpinionsService:
         raise Exception("TODO")
 
 class HttpOpinionsProvider(OpinionsProvider):
-    pass
+
+    def __init__(self, url: str):
+        self.url = url
+
+    async def create_opinion(self, opinion: Opinion) -> Opinion:
+        endpoint = "/opinions"
+        response = await post(f"{self.url}{endpoint}", body=opinion.model_dump())
+        return await recover_json_data(response)
+
+    async def query_opinions(self, query: OpinionQuery) -> List[Opinion]:
+        endpoint = "/opinions"
+        params = query.model_dump(exclude_none=True)
+        if params.get("from_time"):
+            params['from_time'] = params['from_time'].__str__()
+        if params.get('to_time'):
+            params['to_time'] = params['to_time'].__str__()
+        response = await get(f"{self.url}{endpoint}", params=params)
+        return await recover_json_data(response)
 
 class LocalOpinionsProvider(OpinionsProvider):
 

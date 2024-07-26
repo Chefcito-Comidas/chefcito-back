@@ -113,7 +113,7 @@ class GatewayService:
         user = await self.__get_user(credentials)
         return await self.reservations.create_opinion(opinion, user, response)
 
-    async def get_reservations(self,
+    async def get_opinions(self,
                                query: OpinionQuery,
                                response: Response) -> List[Opinion] | Error:
         return await self.reservations.get_opinions(query, response)

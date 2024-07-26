@@ -76,17 +76,16 @@ async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Dep
                               venue: Annotated[v.update.Update, Body()],
                               venue_id: Annotated[str, Path()],
                               response: Response
-                              ) -> Venue:
+                              ) -> Venue | Error:
     
     answer = await service.update_venue(credentials,venue_id, venue, response)
-    print(f"Answering: {answer}")
     return answer
 
 @app.delete("/venues/{venue_id}")
 async def delete_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               venue_id: Annotated[str, Path()],
                               response: Response) -> None:
-    return await service.delete_venue(venue_id, response)
+    return await service.delete_venue(credentials, venue_id, response)
 
 @app.get("/venues")
 async def get_venues(response: Response,
@@ -159,12 +158,13 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
     return await service.get_reservations(credentials, query, response)
 
 @app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def query_opinions(venue: Annotated[str, Query(default=None)],
-                         from_date: Annotated[datetime, Query(default=None)],
-                         to_date: Annotated[datetime, Query(default=None)],
-                         limit: Annotated[int, Query(default=10)],
-                         start: Annotated[int, Query(default=0)],
-                         response: Response):
+async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                         response: Response,
+                         venue: Optional[str] = Query(default=None),
+                         from_date: Optional[datetime] = Query(default=None),
+                         to_date: Optional[datetime] = Query(default=None),
+                         limit: int = Query(default=10),
+                         start: int = Query(default=0)):
     query = OpinionQuery(
         venue=venue,
         from_date=from_date,
@@ -173,9 +173,9 @@ async def query_opinions(venue: Annotated[str, Query(default=None)],
         start=start
     )
 
-    return await service.get_reservations(query, response)
+    return await service.get_opinions(query, response)
 
 @app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None], opinion: Opinion, response: Response) -> Opinion | Error:
+async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
     return await service.create_opinion(credentials, opinion, response)
  

@@ -1,6 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import Body, FastAPI, Path, Query
 from pydantic_settings import BaseSettings
 from datetime import datetime
@@ -47,11 +47,11 @@ async def create_opinion(opinion: Annotated[Opinion, Body()]):
     return await opinions.create_opinion(opinion)
 
 @app.get("/opinions")
-async def query_opinions(venue: Annotated[str, Query(default=None)],
-                         from_date: Annotated[datetime, Query(default=None)],
-                         to_date: Annotated[datetime, Query(default=None)],
-                         limit: Annotated[int, Query(default=10)],
-                         start: Annotated[int, Query(default=0)]):
+async def query_opinions(venue: Optional[str] = Query(default=None),
+                         from_date: Optional[datetime] = Query(default=None),
+                         to_date: Optional[datetime] = Query(default=None),
+                         limit: int = Query(default=10),
+                         start: int = Query(default=0)):
     query = OpinionQuery(
         venue=venue,
         from_date=from_date,

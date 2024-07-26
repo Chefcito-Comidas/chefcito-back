@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, List, Tuple
+from typing import Annotated, List, Optional, Tuple
 from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 
@@ -59,7 +59,8 @@ async def get_reservations(response: Response,
             user=user,
             status=status,
             venue=venue,
-            time=(from_time, to_time) if from_time != None and to_time != None else None,
+            from_time=from_time,
+            to_time=to_time,
             people=(from_people, to_people) if from_people != None and to_people != None else None,
             limit=limit,
             start=start
@@ -67,12 +68,13 @@ async def get_reservations(response: Response,
     return await service.get_reservations(query, response)
 
 @app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def query_opinions(venue: Annotated[str, Query(default=None)],
-                         from_date: Annotated[datetime, Query(default=None)],
-                         to_date: Annotated[datetime, Query(default=None)],
-                         limit: Annotated[int, Query(default=10)],
-                         start: Annotated[int, Query(default=0)],
-                         response: Response):
+async def query_opinions(
+                         response: Response,
+                         venue: Optional[str] = Query(default=None),
+                         from_date: Optional[datetime] = Query(default=None),
+                         to_date: Optional[datetime] = Query(default=None),
+                         limit: int = Query(default=10),
+                         start: int = Query(default=0)):
     query = OpinionQuery(
         venue=venue,
         from_date=from_date,
@@ -86,5 +88,6 @@ async def query_opinions(venue: Annotated[str, Query(default=None)],
 async def create_opinion(opinion: Annotated[Opinion, Body()], 
                          user: Annotated[str, Path()],
                          response: Response):
-    return await service.create_opinion(opinion, response)
+    return await service.create_opinion(opinion, user, response)
+
 
