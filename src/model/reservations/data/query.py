@@ -86,6 +86,7 @@ class RelBuilder(QueryBuilder):
         query = self.__add_venue_filter(query, venue)
         query = self.__add_time_filter(query, time)
         query = self.__add_people_filter(query, people)
+        query = query.order_by(ReservationSchema.time.desc())
         return self.db.get_by_eq(query)
 
 

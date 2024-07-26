@@ -32,5 +32,5 @@ class OpinionQuery(BaseModel):
                     OpinionSchema.date.__le__(self.to_date)
                     )
 
-        return query.limit(self.limit).sort("-date")
+        return query.limit(self.limit).skip(self.start).sort("-date")
 

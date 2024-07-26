@@ -53,7 +53,9 @@ class HttpOpinionsProvider(OpinionsProvider):
 
     async def create_opinion(self, opinion: Opinion) -> Opinion:
         endpoint = "/opinions"
-        response = await post(f"{self.url}{endpoint}", body=opinion.model_dump())
+        body = opinion.model_dump()
+        body['date'] = body['date'].__str__()
+        response = await post(f"{self.url}{endpoint}", body=body)
         return await recover_json_data(response)
 
     async def query_opinions(self, query: OpinionQuery) -> List[Opinion]:
