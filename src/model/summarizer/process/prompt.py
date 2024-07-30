@@ -1,6 +1,5 @@
 from typing import List
 
-from pydantic import SecretStr
 from src.model.opinions.opinion import Opinion
 from src.model.summarizer.summary import Summary
 from langchain_core.prompts import PromptTemplate 
