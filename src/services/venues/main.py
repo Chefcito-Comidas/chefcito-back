@@ -2,7 +2,7 @@ from src.model.commons.error import Error
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.update import Update
 from typing import Annotated, List, Tuple
-from fastapi import Body, FastAPI, Path, Query, Response
+from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 from src.model.venues.data.base import MockBase, RelBase
 from src.model.venues.venue import CreateInfo, Venue
@@ -30,6 +30,9 @@ async def update_venue(venue: Annotated[str, Path()], update: Annotated[Update, 
     print(venue)
     return await service.update_venue(venue, update, response)
 
+@app.delete("/venues/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def delete_venue(venue: Annotated[str, Path()]) -> None:
+    return await service.delete_venue(venue)
 
 @app.get("/venues")
 async def get_venues(response: Response,
