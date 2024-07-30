@@ -83,4 +83,10 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n venues -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy opinions 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${{ github.sha }}
             
