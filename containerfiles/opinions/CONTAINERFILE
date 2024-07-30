@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./src/model/opinions /code/src/model/opinions
 COPY ./src/model/commons /code/src/model/commons
 COPY ./src/services/opinions/main.py /code/main.py
+COPY ./src/model/summarizer /code/src/model/summarizer
 
 
 
