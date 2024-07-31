@@ -37,4 +37,6 @@ opinions = list(
 for index, opinion in enumerate(opinions):
     opinion.date = initial_date - timedelta(days=index)
 
-result = prompt.create_prompt(opinions, summaries)
+result = prompt.create_prompt(opinions, summaries)['output_text']
+
+print(result)
