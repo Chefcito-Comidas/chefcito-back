@@ -48,9 +48,10 @@ class ProdMiddleware(Middleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if not request.url.path in self.avoided:
+            
             request, token = self.__modify_headers(request) 
             response = await self.__auth_call(token, request.url.path)
-            return await self.__call_if_authorized(request, response, call_next) 
+            return await self.__call_if_authorized(request, response, call_next)
         return await call_next(request)
 
     def __parse_token(self, token: str) -> str:
