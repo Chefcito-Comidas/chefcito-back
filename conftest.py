@@ -8,11 +8,24 @@ private_key_id = ""
 
 prompt.init(private_key, private_key_id)
 
-opinions = []
-summaries = []
+opinions = ["Muy buen lugar, luminoso y espacioso. Quiza un poco caro",
+            "Una lastima que los baños esten tan sucios, por que la comida es excelente",
+            "De la mejor atencion que e tenido en mucho tiempo.",
+            "Nada mejor que el pollo a la plancha",
+            "Es increiblemente caro para lo que ofrece el lugar",
+            "Precios accesibles y comida rica, lo mejor es la atencion que le dan a uno"]
+summaries = [Summary(
+        venue="LoDeCarlitos",
+        date=datetime.today() - timedelta(days=14),
+        text="El lugar deberia mejorar su atencion, muchos clientes se quejan del mozo con bigote. Sin embargo, la comida es de calidad y los baños se encuentran limpios"
+    ),
+             Summary(
+                 venue="LoDeCarlitos",
+                 date=datetime.today() - timedelta(days=28),
+                 text="El lugar es caro y eso no se refleja en la calidad de la comida, un mozo con bigote suele molestar a los clientes. Los baños y la atencion del resto de los mozos es destacable."
+                 )]
 initial_date = datetime.today()
 
-base_opinion = Opinion(venue="LoDeCarlitos", date=datetime.today(), opinion="", reservation="")
 
 opinions = list(
         map(
