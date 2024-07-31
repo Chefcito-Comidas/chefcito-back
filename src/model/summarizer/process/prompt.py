@@ -1,10 +1,15 @@
 import json
 from typing import Any, Dict, List, Tuple
 
+from langchain_core.documents import Document
+
 from src.model.opinions.opinion import Opinion
 from src.model.summarizer.summary import Summary
 from langchain_core.prompts import PromptTemplate 
 from langchain.chains.llm import LLMChain
+from langchain.chains.combine_documents.map_reduce import MapReduceDocumentsChain, ReduceDocumentsChain 
+from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+from langchain_text_splitters import CharacterTextSplitter
 from langchain_google_vertexai.llms import VertexAI
 import google.auth as auth
 
@@ -52,9 +57,44 @@ def get_llm() -> VertexAI:
     if llm == None:
         raise Exception("Prompt model not yet initialized")
     return llm
-    
+
+def turn_opinions_to_text(opinions: List[Opinion]) -> List[str]:
+    return list(
+            map(lambda opinion: f"opinion from {opinion.date}: {opinion.opinion}",
+               opinions)
+            )
+
+def turn_summaries_to_text(summaries: List[Summary]) -> List[str]:
+    return list(
+            map(lambda summ: f"Summary of opinions up to {summ.date}: {summ.text}",
+                summaries)
+            )  
+
+def get_documents(opinions: List[Opinion], summaries: List[Summary]) -> List[str]:
+    docs = turn_opinions_to_text(opinions) + turn_summaries_to_text(summaries)
+    return docs 
 
 def create_prompt(opinions: List[Opinion], summaries: List[Summary]):
     llm = get_llm() 
-    chain = LLMChain(llm=llm, prompt=get_template())
+    map_chain = LLMChain(llm=llm, prompt=get_template())
+    reduce_chain = LLMChain(llm=llm, prompt=get_template())
+    combine_chain = StuffDocumentsChain(
+            llm_chain=reduce_chain,
+            document_variable_name="opinions"
+            )
+    reduce_documents_chain = ReduceDocumentsChain(
+            combine_documents_chain=combine_chain,
+            collapse_documents_chain=combine_chain,
+            token_max=2000
+            )
+    map_reduce_chain = MapReduceDocumentsChain(
+            llm_chain=map_chain,
+            reduce_documents_chain=reduce_documents_chain,
+            document_variable_name="opinions",
+            return_intermediate_steps=False
+            )
+    docs = get_documents(opinions, summaries)
+    spliter = CharacterTextSplitter()
+     
+    return map_reduce_chain.invoke(spliter.create_documents(docs))
     
