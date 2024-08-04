@@ -52,7 +52,10 @@ class RelBase(ReservationsBase):
             result = list(session.execute(query).scalars())
             return result
         return call
-
+    
+    def run_count(self, query: Select) -> int:
+        call = with_no_commit(lambda s: s.execute(query).scalar())
+        return call(self.__engine)
     def get_by_eq(self, query: Select) -> List[ReservationSchema]:
         call = with_no_commit(self.__get_by_eq(query)) 
         return call(self.__engine)
