@@ -12,7 +12,7 @@ from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
 from src.model.venues.service import HttpVenuesProvider
-from src.model.opinions.service import HttpOpinionsProvider
+from src.model.opinions.provider import HttpOpinionsProvider
 
 class Settings(BaseSettings):
     db_string: str = "database_conn_string"

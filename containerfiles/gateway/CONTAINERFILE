@@ -16,6 +16,7 @@ COPY ./src/model/commons /code/src/model/commons
 COPY ./src/model/venues /code/src/model/venues
 COPY ./src/model/reservations /code/src/model/reservations
 COPY ./src/model/opinions /code/src/model/opinions
+COPY ./src/model/summarizer /code/src/model/summarizer
 
 
 COPY ./src/services/gateway/main.py /code/main.py

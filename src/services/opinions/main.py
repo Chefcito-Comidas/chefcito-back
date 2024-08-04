@@ -8,21 +8,35 @@ from src.model.opinions.data.base import MongoOpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.opinions.service import LocalOpinionsProvider, OpinionsService
-
+from src.model.summarizer.process.algorithm import SummaryAlgorithm, VertexSummarizer 
+import src.model.summarizer.process.prompt as prompt
+from src.model.summarizer.service import SummarizerService, LocalSummarizerProvider
 
 class Settings(BaseSettings):
     conn_string: str
+    key: str = ""
+    key_id: str = ""
+    dev: bool = True
+
 
 settings = Settings()
 
 database = MongoOpinionsDB(settings.conn_string)
+summarizer = SummaryAlgorithm(VertexSummarizer())
+
 @asynccontextmanager
 async def init_database(app: FastAPI):
+    global summarizer
     await database.init()
+    if settings.dev:
+        summarizer = SummaryAlgorithm()
+    else:
+        prompt.init_google(settings.key, settings.key_id)
     yield
 
 app = FastAPI(lifespan=init_database)
-opinions = OpinionsService(LocalOpinionsProvider(database))
+summaries = SummarizerService(LocalSummarizerProvider(database, summarizer))
+opinions = OpinionsService(LocalOpinionsProvider(database), summaries)
 
 
 """

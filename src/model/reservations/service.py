@@ -6,7 +6,7 @@ from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.commons.error import Error
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
-from src.model.opinions.service import OpinionsProvider
+from src.model.opinions.provider import OpinionsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import CreateInfo, Reservation

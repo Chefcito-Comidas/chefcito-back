@@ -77,7 +77,7 @@ def get_documents(opinions: List[Opinion], summaries: List[Summary]) -> List[str
     docs = turn_opinions_to_text(opinions) + turn_summaries_to_text(summaries)
     return docs 
 
-def create_prompt(opinions: List[Opinion], summaries: List[Summary]):
+async def create_prompt(opinions: List[Opinion], summaries: List[Summary]):
     llm = get_llm() 
     map_chain = LLMChain(llm=llm, prompt=get_template())
     reduce_chain = LLMChain(llm=llm, prompt=get_template())
@@ -99,5 +99,5 @@ def create_prompt(opinions: List[Opinion], summaries: List[Summary]):
     docs = get_documents(opinions, summaries)
     spliter = CharacterTextSplitter()
      
-    return map_reduce_chain.invoke(spliter.create_documents(docs))
+    return await map_reduce_chain.ainvoke(spliter.create_documents(docs))
     

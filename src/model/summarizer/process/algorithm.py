@@ -4,9 +4,45 @@ from typing import List
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.summarizer.summary import Summary
+from src.model.opinions.opinion import Opinion
+import src.model.summarizer.process.prompt as prompt
 
+
+class Summarizer:
+    async def summarize(self, since: datetime, venue: str, opinions: List[Opinion], summaries: List[Summary]) -> Summary:
+       raise Exception("Interface method should not be called") 
+
+class MockSummarizer(Summarizer):
+    
+    async def summarize(self, since: datetime, venue: str, opinions: List[Opinion], summaries: List[Summary]) -> Summary:
+        text = ""
+        for opinion in opinions:
+            text += opinion.opinion
+        for summary in summaries:
+            text += summary.text
+        
+        return Summary(
+                date = since + timedelta(days=14),
+                text = text,
+                venue = venue
+                )
+
+class VertexSummarizer(Summarizer):
+    
+
+    async def summarize(self, since: datetime, venue: str, opinions: List[Opinion], summaries: List[Summary]) -> Summary:
+        
+        summary: str = await prompt.create_prompt(opinions, summaries)
+        return Summary(
+                date = since + timedelta(days=14),
+                text = summary,
+                venue = venue
+                )
 
 class SummaryAlgorithm:
+
+    def __init__(self, summarizer: Summarizer = MockSummarizer()):
+        self.summarizer = summarizer
 
     def __get_min_date(self) -> datetime:
         """
@@ -39,7 +75,7 @@ class SummaryAlgorithm:
     async def get_older_summaries(self, db: OpinionsDB, venue: str, since: datetime) -> List[Summary]:
         return await db.get_summaries(venue, since)
 
-    async def generate(self, db: OpinionsDB, venue: str, since: datetime):
+    async def generate(self, db: OpinionsDB, venue: str, since: datetime) -> Summary:
         """
             Generates summaries from since to today (may generate more than one summary)
         """
@@ -47,18 +83,9 @@ class SummaryAlgorithm:
         summaries = await self.get_older_summaries(db, venue, since)
         opinions = await db.get(query)
         
-        text = ""
-        for opinion in opinions:
-            text += opinion.opinion
-        for summary in summaries:
-            text += summary.text
-        await db.store_summary(Summary(
-                date=since + timedelta(days=14),
-                text=text,
-                venue=venue
-            ))
-
+        summary = await self.summarizer.summarize(since, venue, opinions, summaries) 
+        await db.store_summary(summary)
         if query.to_date:
-            await self.generate(db, venue, query.to_date)
+            return await self.generate(db, venue, query.to_date)
         
-
+        return summary
