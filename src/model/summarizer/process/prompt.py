@@ -34,7 +34,7 @@ def init_google(private_key: str, private_key_id: str) -> Tuple[Any, str | None]
     cred = get_cred(private_key, private_key_id) 
     return auth.load_credentials_from_dict(cred)
 
-def init(private_key: str, private_key_id: str, model: str = 'text-bison'):
+def init(private_key: str, private_key_id: str, model: str = 'gemini-1.0-pro'):
     global llm
     creds, project = init_google(private_key, private_key_id)
     llm = VertexAI(
@@ -47,7 +47,10 @@ def get_template() -> PromptTemplate:
     map_template = """The following is a set of opinions
     {opinions}
     Based on this list of opinions, please generate a summarized
-    opinion:
+    opinion. The summary should take into account the date of the opinions and
+    show how to they changed over time without being explicit the time at which each
+    opinion was given
+    the output should be in the same language as the opinions and it shouldn't be longer than 200 characters:
     """
     return PromptTemplate.from_template(map_template)
 
