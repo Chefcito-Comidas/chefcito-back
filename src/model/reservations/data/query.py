@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Callable, List, Optional, Tuple
 
 from fastapi import Query
+from pydantic import BaseModel
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 from src.model.reservations.data.base import MockBase, RelBase, ReservationsBase
@@ -17,6 +18,12 @@ def get_builder(db: ReservationsBase) -> 'QueryBuilder':
     
     return RelBuilder(db)
 
+
+class QueryResult():
+
+    def __init__(self, result: List[ReservationSchema], total: int):
+        self.result = result
+        self.total = total
 
 class QueryBuilder: 
  
@@ -39,7 +46,7 @@ class QueryBuilder:
             time: Optional[Tuple[datetime, datetime]],
             people: Optional[Tuple[int, int]],
             limit: int,
-            start: int) -> List[ReservationSchema]:
+            start: int) -> QueryResult:
         
         raise Exception("Interface method should not be called")
 
@@ -80,11 +87,11 @@ class RelBuilder(QueryBuilder):
     def __get_count(self) -> Select:
         return select(func.count()).select_from(ReservationSchema)
 
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
 
         if id:
-            return self._get_by_id(id)
-     
+            return QueryResult(result=self._get_by_id(id),total=1)
+
         query = self.__get_initial(limit, start)
         count_query = self.__get_count()
         query, count_query = self.__add_user_filter(query, count_query, user)
@@ -94,8 +101,7 @@ class RelBuilder(QueryBuilder):
         query, count_query = self.__add_people_filter(query,count_query, people)
         result = self.db.get_by_eq(query)
         count = self.db.run_count(count_query)
-        print(count)
-        return result
+        return QueryResult(result=result, total=count)
 
 class MockedBuilder(QueryBuilder):
     
@@ -119,15 +125,15 @@ class MockedBuilder(QueryBuilder):
             return value.venue == venue
         return filter
     
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
         if time != None or people != None:
             raise Exception("Timed and people query not implemented")
 
         if id:
-            return self._get_by_id(id)
+            return QueryResult(result=self._get_by_id(id),total=1)
         
-        return self.__filter_by_eq(user, venue, limit, start)        
-
+        result = self.__filter_by_eq(user, venue, limit, start)        
+        return QueryResult(result=result, total=len(result))
 
 
     def __filter_by_eq(self, user: Optional[str], venue: Optional[str], limit: int, start: int) -> List[ReservationSchema]:
