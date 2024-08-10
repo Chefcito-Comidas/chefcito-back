@@ -5,7 +5,7 @@ from src.model.commons.error import Error
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.summarizer.summary import Summary
-from src.model.summarizer.process.algorithm import SummaryAlgorithm
+from src.model.summarizer.process.algorithm import SummaryAlgorithm, MockSummarizer
 from src.model.summarizer.summary_query import SummaryQuery 
 
 class SummarizerProvider:

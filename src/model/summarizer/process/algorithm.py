@@ -83,7 +83,7 @@ class SummaryAlgorithm:
         summaries = await self.get_older_summaries(db, venue, since)
         opinions = await db.get(query)
         
-        summary = await self.summarizer.summarize(since, venue, opinions, summaries) 
+        summary = await self.summarizer.summarize(since, venue, opinions.result, summaries) 
         await db.store_summary(summary)
         if query.to_date:
             return await self.generate(db, venue, query.to_date)

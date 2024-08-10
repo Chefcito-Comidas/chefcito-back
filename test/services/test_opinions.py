@@ -22,7 +22,7 @@ async def opinion_load_and_queried_by_venue(database: OpinionsDB):
         query = OpinionQuery(venue="Elegantland")
         result = await provider.query_opinions(query)
         print(f"{result} vs. {opinion}")
-        assert result.pop() == opinion
+        assert result.result.pop() == opinion
     except Exception as e:
         pytest.fail(
                 reason=f"Failed at opinion_load_and_queried_by_venue because of {e}"
@@ -76,11 +76,11 @@ async def opinions_load_and_queried_by_date(database: OpinionsDB):
     second_result = await provider.query_opinions(second_query)
 
     try:
-        assert len(first_result) == 13, f"First result length: {len(first_result)}" 
-        assert len(second_result) == 11, f"Second result length: {len(second_result)}"
-        assert all(map(lambda op: datetime(2024, 7, 25, 20, 0, 0) <= op.date <= datetime(2024, 7, 26, 8, 0, 0),first_result)), f"first result mappings"
-        assert all(map(lambda op: datetime(2024, 7, 26, 9, 0, 0) <= op.date <= datetime(2024, 7, 26, 20, 0, 0),second_result)), f"second result mappings"
-        assert sorted(first_result, key=lambda x: x.date, reverse=True) == first_result, f"sorted answer"
+        assert first_result.total == 13, f"First result length: {first_result.total}" 
+        assert second_result.total == 11, f"Second result length: {second_result.total}"
+        assert all(map(lambda op: datetime(2024, 7, 25, 20, 0, 0) <= op.date <= datetime(2024, 7, 26, 8, 0, 0),first_result.result)), f"first result mappings"
+        assert all(map(lambda op: datetime(2024, 7, 26, 9, 0, 0) <= op.date <= datetime(2024, 7, 26, 20, 0, 0),second_result.result)), f"second result mappings"
+        assert sorted(first_result.result, key=lambda x: x.date, reverse=True) == first_result.result, f"sorted answer"
     except Exception as e:
         pytest.fail(reason=f"failed at opinions_load_and_queried_by_date: {e}")
 

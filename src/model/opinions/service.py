@@ -5,7 +5,7 @@ from src.model.commons.caller import get, post, recover_json_data
 from src.model.commons.error import Error
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.summarizer.service import SummarizerService
 from src.model.summarizer.summary_query import SummaryQuery
 from src.model.opinions.provider import OpinionsProvider
@@ -24,7 +24,7 @@ class OpinionsService:
         except Exception as e:
             return Error.from_exception(e) 
 
-    async def query_opinions(self, query: OpinionQuery) -> List[Opinion] | Error:
+    async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse | Error:
         try:
             return await self.provider.query_opinions(query)
         except Exception as e:
@@ -49,7 +49,7 @@ class HttpOpinionsProvider(OpinionsProvider):
         response = await post(f"{self.url}{endpoint}", body=body)
         return await recover_json_data(response)
 
-    async def query_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         endpoint = "/opinions"
         params = query.model_dump(exclude_none=True)
         if params.get("from_time"):
@@ -69,5 +69,5 @@ class LocalOpinionsProvider(OpinionsProvider):
 
         return opinion
 
-    async def query_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         return await self.db.get(query)

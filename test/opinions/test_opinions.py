@@ -26,7 +26,7 @@ def test_a_created_opinion_can_be_retrieved():
             venue="Elegantland"
             )
 
-    recovered_opinion = asyncio.run(provider.query_opinions(query)).pop()
+    recovered_opinion = asyncio.run(provider.query_opinions(query)).result.pop()
 
     assert recovered_opinion == opinion
 
@@ -56,6 +56,7 @@ def test_opinions_from_different_restaurants_do_not_show_up_on_the_same_query():
 
     result = asyncio.run(provider.query_opinions(query))
 
-    assert opinion_2 in result
-    assert opinion not in result
+    assert result.total == 1
+    assert opinion_2 in result.result
+    assert opinion not in result.result
 

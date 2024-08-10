@@ -29,7 +29,7 @@ def generate_same_text_opinions(
 def test_summary_text_has_all_opinions():
     db = MockedOpinionsDB()
     opinions = LocalOpinionsProvider(db)
-    summarizer = LocalSummarizerProvider(db)
+    summarizer = LocalSummarizerProvider(db, SummaryAlgorithm())
     generic_opinion = "Opinion generica"
     for opinion in generate_same_text_opinions(10, "Lo de Carlitos", generic_opinion):
         asyncio.run(opinions.create_opinion(opinion))

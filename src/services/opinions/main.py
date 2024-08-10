@@ -1,16 +1,17 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 from fastapi import Body, FastAPI, Path, Query
 from pydantic_settings import BaseSettings
 from datetime import datetime
 from src.model.opinions.data.base import MongoOpinionsDB
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.service import LocalOpinionsProvider, OpinionsService
 from src.model.summarizer.process.algorithm import SummaryAlgorithm, VertexSummarizer 
 import src.model.summarizer.process.prompt as prompt
 from src.model.summarizer.service import SummarizerService, LocalSummarizerProvider
+from src.model.commons.error import Error
 
 class Settings(BaseSettings):
     conn_string: str
@@ -57,7 +58,7 @@ Endpoints:
     
 
 @app.post("/opinions")
-async def create_opinion(opinion: Annotated[Opinion, Body()]):
+async def create_opinion(opinion: Annotated[Opinion, Body()]) -> Opinion | Error:
     return await opinions.create_opinion(opinion)
 
 @app.get("/opinions")
@@ -65,7 +66,7 @@ async def query_opinions(venue: Optional[str] = Query(default=None),
                          from_date: Optional[datetime] = Query(default=None),
                          to_date: Optional[datetime] = Query(default=None),
                          limit: int = Query(default=10),
-                         start: int = Query(default=0)):
+                         start: int = Query(default=0)) -> OpinionQueryResponse | Error:
     query = OpinionQuery(
         venue=venue,
         from_date=from_date,
@@ -76,9 +77,9 @@ async def query_opinions(venue: Optional[str] = Query(default=None),
     return await opinions.query_opinions(query)
 
 @app.get("/summaries/{restaurant}")
-async def get_summary(restaurant: Annotated[str, Path()]):
+async def get_summary(restaurant: Annotated[str, Path()]) -> Any | Error:
     return await opinions.get_summary(restaurant)
 
 @app.post("/summaries/{restaurant}")
-async def create_summary(restaurant: Annotated[str, Path()]):
+async def create_summary(restaurant: Annotated[str, Path()]) -> Any | Error:
     return await opinions.create_new_summary(restaurant)

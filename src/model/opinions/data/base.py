@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 from src.model.opinions.data.OpinionSchema import OpinionSchema
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 import motor.motor_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
@@ -18,8 +18,11 @@ class OpinionsDB:
     
     async def store_summary(self, summary: Summary) -> None:
         raise Exception("Interface method should not be called")
+    
+    async def get_total(self, query: OpinionQuery) -> int:
+        raise Exception("Interface method should not be called")
 
-    async def get(self, query: OpinionQuery) -> List[Opinion]:
+    async def get(self, query: OpinionQuery) -> OpinionQueryResponse:
         raise Exception("Interface method should not be called")
 
     async def get_summaries(self, venue: str, since: datetime, limit: int = 3, skip: int = 0) -> List[Summary]:
@@ -34,6 +37,9 @@ class MongoOpinionsDB(OpinionsDB):
         client = AsyncIOMotorClient(conn_string)
         self.client = client
         self.db = None 
+    
+    async def get_total(self, query: OpinionQuery) -> int:
+        return await query.total_query() 
 
     async def store(self, opinion: Opinion) -> None:
         schema = OpinionSchema.from_opinion(opinion)
@@ -42,10 +48,12 @@ class MongoOpinionsDB(OpinionsDB):
     async def get(self, query: OpinionQuery) -> List[Opinion]:
         result = query.query() 
         
-        return list(map(
+        opinions = list(map(
             lambda x: x.into_opinion(),
             await result.to_list()
             )) if result else []
+        total = await self.get_total(query)
+        return OpinionQueryResponse(result=opinions, total=total)
 
 class MockedOpinionsDB(OpinionsDB):
     
@@ -63,6 +71,9 @@ class MockedOpinionsDB(OpinionsDB):
         venue.append(opinion)
         self.opinions[opinion.venue]['opinions'] = venue
     
+    async def get_total(self, query: OpinionQuery) -> int:
+        raise Exception("Total should not be called for Mocked Database")
+
     async def get(self, query: OpinionQuery) -> List[Opinion]:
         if not query.venue:
             return []
@@ -84,7 +95,7 @@ class MockedOpinionsDB(OpinionsDB):
                 ))
 
 
-        return venue
+        return OpinionQueryResponse(result=venue, total=len(venue)) 
 
     async def store_summary(self, summary: Summary) -> None:
         
