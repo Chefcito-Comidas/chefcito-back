@@ -22,7 +22,9 @@ class VenuesProvider:
     async def get_venues(self, query: VenueQuery) -> List[Venue]:
         raise Exception("Interface method should not be called")
 
-
+    async def delete_venue(self, venue_id: str) -> None:
+        raise Exception("Interface method should not be called")
+    
 class VenuesService:
 
     def __init__(self, provider: VenuesProvider):
@@ -52,6 +54,11 @@ class VenuesService:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
 
+    async def delete_venue(self, venue_id: str) -> None:
+        try:
+            await self.provider.delete_venue(venue_id)
+        finally:
+            return
 
 
 
@@ -80,6 +87,11 @@ class HttpVenuesProvider(VenuesProvider):
         endpoint = "/venues"
         response = await get(f"{self.url}{endpoint}", params=query.model_dump(exclude_none=True))
         return await recover_json_data(response)
+    
+    async def delete_venue(self, venue_id: str) -> None:
+        endpoint = "/venues"
+        await delete(f"{self.url}{endpoint}/{venue_id}")
+        return  
         
 
 class LocalVenuesProvider(VenuesProvider):
@@ -103,3 +115,6 @@ class LocalVenuesProvider(VenuesProvider):
 
     async def get_venues(self, query: VenueQuery) -> List[Venue]:
         return query.query(self.db)
+    
+    async def delete_venue(self, venue_id: str) -> None:
+        Venue.delete(venue_id, self.db)

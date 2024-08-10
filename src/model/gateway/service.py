@@ -11,6 +11,7 @@ from src.model.reservations.update import Update
 from src.model.users.service import UsersProvider
 from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
+from src.model.venues import venue
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import VenuesService
@@ -103,6 +104,19 @@ class GatewayService:
         user = await self.__get_user(credentials) 
         r_query = reservation_query.with_user(user)
         return await self.reservations.get_reservations(r_query, response)
+    
+    async def get_my_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], response: Response) -> Venue | Error:
+        user = await self.__get_user(credentials)
+        venue_query = VenueQuery(id=user)
+        result = await self.venues.get_venues(venue_query, response)
+        
+        if isinstance(result, list) and len(result) > 0:
+            result = result.pop()
+        elif isinstance(result, list):
+            result = Error.from_exception(Exception("User has no venue associated with it"))
+
+        return result
+    
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
