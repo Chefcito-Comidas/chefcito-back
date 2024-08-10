@@ -4,7 +4,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.service import  ReservationsService
 from src.model.reservations.update import Update
@@ -127,5 +127,5 @@ class GatewayService:
 
     async def get_opinions(self,
                                query: OpinionQuery,
-                               response: Response) -> List[Opinion] | Error:
+                               response: Response) -> OpinionQueryResponse | Error:
         return await self.reservations.get_opinions(query, response)

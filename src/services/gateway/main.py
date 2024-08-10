@@ -6,7 +6,7 @@ from src.model.commons.error import Error
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -178,7 +178,7 @@ async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, De
                          from_date: Optional[datetime] = Query(default=None),
                          to_date: Optional[datetime] = Query(default=None),
                          limit: int = Query(default=10),
-                         start: int = Query(default=0)):
+                         start: int = Query(default=0)) -> OpinionQueryResponse | Error:
     query = OpinionQuery(
         venue=venue,
         from_date=from_date,
@@ -190,6 +190,6 @@ async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, De
     return await service.get_opinions(query, response)
 
 @app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
+async def create_opinion(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
     return await service.create_opinion(credentials, opinion, response)
  
