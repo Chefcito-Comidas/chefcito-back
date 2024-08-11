@@ -1,42 +1,32 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Annotated, Any, Optional
+from datetime import datetime
+from typing import Annotated, Any, List, Optional
 from fastapi import Body, FastAPI, Path, Query
 from pydantic_settings import BaseSettings
-from datetime import datetime
 from src.model.opinions.data.base import MongoOpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.service import LocalOpinionsProvider, OpinionsService
-from src.model.summarizer.process.algorithm import SummaryAlgorithm, VertexSummarizer 
-import src.model.summarizer.process.prompt as prompt
-from src.model.summarizer.service import SummarizerService, LocalSummarizerProvider
 from src.model.commons.error import Error
+from src.model.summarizer.summary import Summary
+from src.model.summarizer.provider import HttpSummarizerProvider, SummarizerService
 
 class Settings(BaseSettings):
     conn_string: str
-    key: str = ""
-    key_id: str = ""
-    dev: bool = True
-
+    summaries: str = "http://summaries"
 
 settings = Settings()
 
 database = MongoOpinionsDB(settings.conn_string)
-summarizer = SummaryAlgorithm(VertexSummarizer())
 
 @asynccontextmanager
 async def init_database(app: FastAPI):
-    global summarizer
     await database.init()
-    if settings.dev:
-        summarizer = SummaryAlgorithm()
-    else:
-        prompt.init_google(settings.key, settings.key_id)
     yield
 
 app = FastAPI(lifespan=init_database)
-summaries = SummarizerService(LocalSummarizerProvider(database, summarizer))
+summaries = SummarizerService(HttpSummarizerProvider(settings.summaries))
 opinions = OpinionsService(LocalOpinionsProvider(database), summaries)
 
 
@@ -77,8 +67,10 @@ async def query_opinions(venue: Optional[str] = Query(default=None),
     return await opinions.query_opinions(query)
 
 @app.get("/summaries/{restaurant}")
-async def get_summary(restaurant: Annotated[str, Path()]) -> Any | Error:
-    return await opinions.get_summary(restaurant)
+async def get_summary(restaurant: Annotated[str, Path()],
+                      limit: Annotated[int, Query()] = 3,
+                      skip: Annotated[int, Query()] = 0) -> List[Summary] | Error:
+    return await opinions.get_summary(restaurant, limit, skip)
 
 @app.post("/summaries/{restaurant}")
 async def create_summary(restaurant: Annotated[str, Path()]) -> Any | Error:

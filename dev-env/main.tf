@@ -90,6 +90,20 @@ resource "docker_container" "opinions" {
   }
 }
 
+resource "docker_container" "summaries" {
+  name = "summaries"
+  hostname = "summaries"
+  image = "service-summaries:latest"
+  ports {
+    internal = 80
+    external = 8005
+  }
+  env = ["CONN_STRING=mongodb://nsqldb/", "KEY=FakeKey", "KEY_ID=FAKEKEYID"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
 resource "docker_container" "postgresql" {
   name = "postgredb"
   hostname = "reldb"

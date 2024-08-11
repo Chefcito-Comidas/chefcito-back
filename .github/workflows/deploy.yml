@@ -48,6 +48,19 @@ jobs:
                 file: containerfiles/reservations/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/reservations:latest
+            - name: build-push opinions 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/opinions/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/opinions:latest
+            - name: build-push summaries 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/summaries/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/summaries:latest
+            
 
     deploy:
         needs: build

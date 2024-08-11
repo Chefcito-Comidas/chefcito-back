@@ -86,7 +86,12 @@ jobs:
           file: containerfiles/opinions/CONTAINERFILE
           push: true
           tags: chefcitoacr.azurecr.io/staging/opinions:latest
-
+      - name: build-push summaries 
+        uses: docker/build-push-action@v3
+        with:
+          file: containerfiles/summaries/CONTAINERFILE
+          push: true
+          tags: chefcitoacr.azurecr.io/staging/summaries:latest
 
 
       

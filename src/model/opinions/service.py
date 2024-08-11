@@ -6,10 +6,9 @@ from src.model.commons.error import Error
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
-from src.model.summarizer.service import SummarizerService
 from src.model.summarizer.summary_query import SummaryQuery
 from src.model.opinions.provider import OpinionsProvider
-
+from src.model.summarizer.provider import SummarizerService
 
 class OpinionsService:
     
@@ -30,8 +29,10 @@ class OpinionsService:
         except Exception as e:
             return Error.from_exception(e)
 
-    async def get_summary(self, venue: str) -> Any:
-        query = SummaryQuery(venue=venue)
+    async def get_summary(self, venue: str, limit: int, skip: int) -> Any:
+        query = SummaryQuery(venue=venue,
+                             limit=limit,
+                             skip=skip)
         return await self.summaries.get_summary(query)
 
     async def create_new_summary(self, venue: str) -> Any:
