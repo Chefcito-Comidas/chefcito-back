@@ -63,7 +63,8 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
     return await service.sign_up(credentials, user_type)
 
 
-@app.post("/venues", response_model=Venue)
+@app.post("/venues",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
+                                         status.HTTP_200_OK: {"model": Venue}})
 async def create_venue(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              venue: Annotated[v_stubs.CreateInfo, Body()],
                              response: Response) -> Venue | Error:
@@ -71,7 +72,8 @@ async def create_venue(credentials: Annotated[HTTPAuthorizationCredentials, Depe
     print(f"Created: {answer}")
     return answer
 
-@app.put("/venues/{venue_id}",response_model=Venue)
+@app.put("/venues/{venue_id}",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
+                                         status.HTTP_200_OK: {"model": Venue}})
 async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                               venue: Annotated[v.update.Update, Body()],
                               venue_id: Annotated[str, Path()],
@@ -157,6 +159,7 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
             )
     return await service.get_reservations(credentials, query, response)
 
+
 @app.get("/reservations/history", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                       response: Response,
@@ -193,3 +196,13 @@ async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, De
 async def create_opinion(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
     return await service.create_opinion(credentials, opinion, response)
  
+
+@app.get("/venue", responses={
+    status.HTTP_400_BAD_REQUEST: {"model": Error},
+    status.HTTP_200_OK: {"model": Venue}
+    })
+async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                         response: Response) -> Venue | Error:
+    return await service.get_my_venue(credentials, response)
+
+

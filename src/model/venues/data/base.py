@@ -89,6 +89,8 @@ class RelBase(VenuesBase):
         session.commit()
         session.close()
         return
+    
+    
 
 
 
