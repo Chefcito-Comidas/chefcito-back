@@ -3,6 +3,7 @@ import pytest
 
 from src.model.communications.comms.messager import MockedCommunicationsMessager
 from src.model.communications.data.base import MockedCommunicationsBase
+from src.model.communications.data.user_schema import UserSchema
 from src.model.communications.service import CommunicationService, LocalCommunicationProvider
 from src.model.communications.user import User
 from src.model.communications.message import Message
@@ -48,3 +49,18 @@ def test_sending_message_to_a_user():
     last_sent = comms_messager_log.messages.pop()
     assert last_sent['message'] == message
     assert last_sent['to'] == user.number
+
+def test_user_converts_itself_to_the_schema():
+    user = User(
+        localid="fakeid",
+        number="+549991111222"
+    )
+
+    schema = user.into_schema()
+
+    expected = UserSchema(
+        id="fakeid",
+        number="+549991111222"
+    )
+
+    assert schema.__repr__() == expected.__repr__()
