@@ -17,7 +17,7 @@ class VenueQuery(BaseModel):
     logo: Optional[str] = None
     pictures: Optional[List[str]] = None
     slots: Optional[List[datetime.datetime]] = None
-    characteristics: Optional[str] = None
+    characteristics: Optional[List[str]] = None
     vacations: Optional[List[datetime.datetime]] = None
     reservationLeadTime: Optional[int] = None
    

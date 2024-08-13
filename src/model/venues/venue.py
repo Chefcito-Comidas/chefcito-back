@@ -5,7 +5,7 @@ from typing import List
 from src.model.venues.data.base import VenuesBase
 import datetime
 
-def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int,) -> 'Venue':
+def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int) -> 'Venue':
     return Venue(id="",
                  name=name, 
                  location=location, 

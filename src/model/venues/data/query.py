@@ -40,7 +40,7 @@ class QueryBuilder:
             logo: Optional[str],
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
-            characteristics: Optional[str],
+            characteristics: Optional[List[str]],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
             limit: int,

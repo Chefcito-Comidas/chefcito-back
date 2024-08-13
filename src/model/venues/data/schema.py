@@ -38,7 +38,7 @@ class VenueSchema(VenuesBase):
                 f"reservationLeadTime={self.reservationLeadTime}), status={self.status}")
     
     @classmethod
-    def create(cls, name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], status: str, characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int) -> Self:
+    def create(cls, name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int, status: str) -> Self:
         uid = uuid.uuid1()
         uid_string=uid.__str__()
         return cls(id=uid_string, name=name, location=location, capacity=capacity, status=status, logo=logo, pictures=pictures, slots=slots, characteristics=characteristics, vacations=vacations, reservationLeadTime=reservationLeadTime )
