@@ -5,7 +5,7 @@ from typing import List
 from src.model.venues.data.base import VenuesBase
 import datetime
 
-def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime]) -> 'Venue':
+def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int,) -> 'Venue':
     return Venue(id="",
                  name=name, 
                  location=location, 
@@ -13,6 +13,9 @@ def create_venue(name: str, location: str, capacity: int, logo: str, pictures: L
                  logo=logo,
                  pictures=pictures,
                  slots=slots,
+                 characteristics=characteristics, 
+                 vacations=vacations, 
+                 reservationLeadTime=reservationLeadTime,
                  status=Available())
 
 class VenueStatus(BaseModel):
@@ -51,6 +54,9 @@ class CreateInfo(BaseModel):
     logo: str
     pictures: List[str]
     slots: List[datetime.datetime]
+    characteristics: List[str]
+    vacations: List[datetime.datetime]
+    reservationLeadTime: int
 
     def into_venue(self) -> 'Venue':
         return Venue(id=self.id, 
@@ -60,6 +66,9 @@ class CreateInfo(BaseModel):
                      logo=self.logo, 
                      pictures=self.pictures, 
                      slots=self.slots,
+                     characteristics=self.characteristics, 
+                     vacations=self.vacations, 
+                     reservationLeadTime=self.reservationLeadTime,
                      status=Available()) 
 
 
@@ -72,6 +81,9 @@ class Venue(BaseModel):
     logo: str
     pictures: List[str]
     slots: List[datetime.datetime]
+    characteristics: List[str]
+    vacations: List[datetime.datetime]
+    reservationLeadTime: int
     status: VenueStatus
 
     def get_status(self) -> str:
@@ -98,6 +110,9 @@ class Venue(BaseModel):
                     self.logo, 
                     self.pictures, 
                     self.slots,
+                    self.characteristics, 
+                    self.vacations, 
+                    self.reservationLeadTime,
                     self.status.get_status()
                     )
             self.id = schema.id.__str__()
@@ -111,6 +126,9 @@ class Venue(BaseModel):
                     logo=self.logo, 
                     pictures=self.pictures, 
                     slots=self.slots,
+                    characteristics=self.characteristics, 
+                    vacations=self.vacations, 
+                    reservationLeadTime=self.reservationLeadTime,
                     status=self.status.get_status()
                     )
 
@@ -127,5 +145,8 @@ class Venue(BaseModel):
                    logo=schema.logo, 
                    pictures=schema.pictures, 
                    slots=schema.slots,
+                   characteristics=schema.characteristics, 
+                   vacations=schema.vacations, 
+                   reservationLeadTime=schema.reservationLeadTime,
                    status=VenueStatus(status=schema.status)
                    )

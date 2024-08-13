@@ -40,6 +40,9 @@ class QueryBuilder:
             logo: Optional[str],
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
+            characteristics: Optional[str],
+            vacations: Optional[List[datetime.datetime]],
+            reservationLeadTime: Optional[int],
             limit: int,
             start: int) -> List[VenueSchema]:
 
@@ -54,8 +57,8 @@ class RelBuilder(QueryBuilder):
 
         return self.db.get_by_eq(query)
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> List[VenueSchema]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
             return self._get_by_id(id)
@@ -80,8 +83,8 @@ class MockedBuilder(QueryBuilder):
         return filter
 
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> List[VenueSchema]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
 
         if id:
