@@ -23,15 +23,22 @@ class VenueSchema(VenuesBase):
     logo: Mapped[str] = mapped_column()
     pictures: Mapped[List[str]] = mapped_column(ARRAY(String))
     slots: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
+    characteristics: Mapped[List[str]] = mapped_column(ARRAY(String))
+    vacations: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
+    reservationLeadTime: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
+
+
 
     def __repr__(self) -> str:
         return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
                 f"capacity={self.capacity}, "
-                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}, status={self.status})")
-
+                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), "
+                f"characteristics={self.characteristics}), vacations={self.vacations}), "
+                f"reservationLeadTime={self.reservationLeadTime}), status={self.status}")
+    
     @classmethod
-    def create(cls, name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], status: str) -> Self:
+    def create(cls, name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int, status: str) -> Self:
         uid = uuid.uuid1()
         uid_string=uid.__str__()
-        return cls(id=uid_string, name=name, location=location, capacity=capacity, status=status, logo=logo, pictures=pictures, slots=slots)
+        return cls(id=uid_string, name=name, location=location, capacity=capacity, status=status, logo=logo, pictures=pictures, slots=slots, characteristics=characteristics, vacations=vacations, reservationLeadTime=reservationLeadTime )

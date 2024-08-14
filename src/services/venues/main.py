@@ -8,7 +8,7 @@ from src.model.venues.data.base import MockBase, RelBase
 from src.model.venues.venue import CreateInfo, Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import LocalVenuesProvider, VenuesProvider, VenuesService
-import datetime
+from datetime import datetime
 
 
 class Settings(BaseSettings):
@@ -42,7 +42,10 @@ async def get_venues(response: Response,
                            capacity: int = Query(default=None),
                            logo: str = Query(default=None),
                            pictures: List[str] = Query(default=None),
-                           slots: List[datetime.datetime] = Query(default=None),
+                           slots: List[datetime] = Query(default=None),
+                           characteristics: List[str] = Query(default=None),
+                           vacations: List[datetime] = Query(default=None),
+                           reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> List[Venue] | Error:
@@ -54,6 +57,9 @@ async def get_venues(response: Response,
             logo=logo,
             pictures=pictures,
             slots=slots,
+            characteristics=characteristics,
+            vacations=vacations,
+            reservationLeadTime=reservationLeadTime,
             limit=limit,
             start=start
             )
