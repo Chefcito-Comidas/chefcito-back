@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
-from src.model.reservations.reservationQuery import ReservationQuery
+from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
 from src.model.venues.service import HttpVenuesProvider
@@ -49,13 +49,14 @@ async def get_reservations(response: Response,
                            to_people: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
-                           ) -> List[Reservation] | Error:
+                           ) -> ReservationQueryResponse | Error:
     query = ReservationQuery(
             id=id,
             user=user,
             status=status,
             venue=venue,
-            time=(from_time, to_time) if from_time != None and to_time != None else None,
+            from_time=from_time,
+            to_time=to_time,
             people=(from_people, to_people) if from_people != None and to_people != None else None,
             limit=limit,
             start=start

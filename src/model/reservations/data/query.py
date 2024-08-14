@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import Callable, List, Optional, Tuple
 
 from fastapi import Query
-from sqlalchemy import Select, select
+from pydantic import BaseModel
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 from src.model.reservations.data.base import MockBase, RelBase, ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
@@ -17,6 +18,12 @@ def get_builder(db: ReservationsBase) -> 'QueryBuilder':
     
     return RelBuilder(db)
 
+
+class QueryResult():
+
+    def __init__(self, result: List[ReservationSchema], total: int):
+        self.result = result
+        self.total = total
 
 class QueryBuilder: 
  
@@ -39,55 +46,62 @@ class QueryBuilder:
             time: Optional[Tuple[datetime, datetime]],
             people: Optional[Tuple[int, int]],
             limit: int,
-            start: int) -> List[ReservationSchema]:
+            start: int) -> QueryResult:
         
         raise Exception("Interface method should not be called")
 
 class RelBuilder(QueryBuilder):
-    def __add_user_filter(self, query: Select, user: Optional[str]) -> Select:
+    def __add_user_filter(self, query: Select, count: Select, user: Optional[str]) -> Tuple[Select, Select]:
         if user:
             query = query.where(ReservationSchema.user.__eq__(user))
-        return query
+            count = count.where(ReservationSchema.user.__eq__(user))
+        return query,count
     
-    def __add_venue_filter(self, query: Select, venue: Optional[str]) -> Select:
+    def __add_venue_filter(self, query: Select, count: Select, venue: Optional[str]) -> Tuple[Select,Select]:
         if venue:
             query = query.where(ReservationSchema.venue.__eq__(venue))
-        return query
+            count = count.where(ReservationSchema.venue.__eq__(venue))
+        return query,count
     
-    def __add_status_filter(self, query: Select, status: Optional[str]) -> Select:
+    def __add_status_filter(self, query: Select, count:Select, status: Optional[str]) -> Tuple[Select,Select]:
         if status:
             query = query.where(ReservationSchema.status.__eq__(status))
+            count = count.where(ReservationSchema.status.__eq__(status))
+        return query,count
 
-        return query
-
-    def __add_time_filter(self, query: Select, limits: Optional[Tuple[datetime, datetime]]) -> Select:
+    def __add_time_filter(self, query: Select, count: Select, limits: Optional[Tuple[datetime, datetime]]) -> Tuple[Select,Select]:
         if limits:
             query = query.where(ReservationSchema.time.__ge__(limits[0]) & ReservationSchema.time.__le__(limits[1]))
-
-        return query
+            count = count.where(ReservationSchema.time.__ge__(limits[0]) & ReservationSchema.time.__le__(limits[1]))
+        return query,count
     
-    def __add_people_filter(self, query: Select, limits: Optional[Tuple[int, int]]) -> Select:
+    def __add_people_filter(self, query: Select, count: Select, limits: Optional[Tuple[int, int]]) -> Tuple[Select,Select]:
         if limits:
             query = query.where(ReservationSchema.people.__ge__(limits[0]) & ReservationSchema.people.__le__(limits[1]))
-
-        return query
+            count = count.where(ReservationSchema.people.__ge__(limits[0]) & ReservationSchema.people.__le__(limits[1]))
+        return query,count
     
     def __get_initial(self, limit: int, start: int) -> Select:
         return select(ReservationSchema).limit(limit).offset(start)
+    
+    def __get_count(self) -> Select:
+        return select(func.count()).select_from(ReservationSchema)
 
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
 
         if id:
-            return self._get_by_id(id)
-    
-        query = self.__get_initial(limit, start)
-        query = self.__add_user_filter(query, user)
-        query = self.__add_status_filter(query, status)
-        query = self.__add_venue_filter(query, venue)
-        query = self.__add_time_filter(query, time)
-        query = self.__add_people_filter(query, people)
-        return self.db.get_by_eq(query)
+            return QueryResult(result=self._get_by_id(id),total=1)
 
+        query = self.__get_initial(limit, start)
+        count_query = self.__get_count()
+        query, count_query = self.__add_user_filter(query, count_query, user)
+        query, count_query = self.__add_status_filter(query, count_query, status)
+        query, count_query = self.__add_venue_filter(query,count_query, venue)
+        query, count_query = self.__add_time_filter(query,count_query, time)
+        query, count_query = self.__add_people_filter(query,count_query, people)
+        result = self.db.get_by_eq(query)
+        count = self.db.run_count(count_query)
+        return QueryResult(result=result, total=count)
 
 class MockedBuilder(QueryBuilder):
     
@@ -111,15 +125,15 @@ class MockedBuilder(QueryBuilder):
             return value.venue == venue
         return filter
     
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> List[ReservationSchema]:
+    def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
         if time != None or people != None:
             raise Exception("Timed and people query not implemented")
 
         if id:
-            return self._get_by_id(id)
+            return QueryResult(result=self._get_by_id(id),total=1)
         
-        return self.__filter_by_eq(user, venue, limit, start)        
-
+        result = self.__filter_by_eq(user, venue, limit, start)        
+        return QueryResult(result=result, total=len(result))
 
 
     def __filter_by_eq(self, user: Optional[str], venue: Optional[str], limit: int, start: int) -> List[ReservationSchema]:

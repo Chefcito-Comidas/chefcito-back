@@ -111,7 +111,7 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
                              people=9)
 
     asyncio.run(service.create_reservation(reservation))
-    reservation_venue_id = asyncio.run(service.get_reservations(ReservationQuery())).pop().venue
+    reservation_venue_id = asyncio.run(service.get_reservations(ReservationQuery())).result.pop().venue
 
     assert reservation_venue_id == id
     
