@@ -22,6 +22,13 @@ class ReservationsBase:
         """
         raise Exception("Interface method should not be called")
     
+    def run_count(self, query: Select) -> int:
+        """
+            Runs a query that returns the total number of rows
+            based on certain restrictions (given in the Select query)
+        """
+        raise Exception("Interface method should not be called")
+
     def update_reservation(self, reservation: ReservationSchema) -> None:
         """
             Updates information about a reservation
@@ -52,6 +59,10 @@ class RelBase(ReservationsBase):
             result = list(session.execute(query).scalars())
             return result
         return call
+    
+    def run_count(self, query: Select) -> int:
+        call = with_no_commit(lambda s: s.execute(query).scalar())
+        return call(self.__engine)
 
     def get_by_eq(self, query: Select) -> List[ReservationSchema]:
         call = with_no_commit(self.__get_by_eq(query)) 

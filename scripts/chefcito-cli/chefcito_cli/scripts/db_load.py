@@ -7,7 +7,6 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Column, String, Integer, ARRAY, DateTime
 from sqlalchemy import ForeignKey, UniqueConstraint
-import datetime
 import yaml
 
 TYPES_KEY = 'usertypes'
@@ -34,13 +33,18 @@ class VenueSchema(Base):
     capacity: Mapped[int] = mapped_column()
     logo: Mapped[str] = mapped_column()
     pictures: Mapped[List[str]] = mapped_column(ARRAY(String))
-    slots: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
+    slots: Mapped[List[datetime]] = mapped_column(ARRAY(DateTime))
+    characteristics: Mapped[List[str]] = mapped_column(ARRAY(String))
+    vacations: Mapped[List[datetime]] = mapped_column(ARRAY(DateTime))
+    reservationLeadTime: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
     
     def __repr__(self) -> str:
         return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
                 f"capacity={self.capacity}, "
-                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), status={self.status}")
+                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), "
+                f"characteristics={self.characteristics}), vacations={self.vacations}), "
+                f"reservationLeadTime={self.reservationLeadTime}), status={self.status}")
 
 
 class ReservationSchema(Base):

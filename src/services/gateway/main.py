@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -98,6 +99,9 @@ async def get_venues(response: Response,
                            logo: str = Query(default=None),
                            pictures: List[str] = Query(default=None),
                            slots: List[datetime] = Query(default=None),
+                           characteristics: List[str] = Query(default=None),
+                           vacations: List[datetime] = Query(default=None),
+                           reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> List[Venue] | Error:
@@ -109,6 +113,9 @@ async def get_venues(response: Response,
             logo=logo,
             pictures=pictures,
             slots=slots,
+            characteristics=characteristics,
+            vacations=vacations,
+            reservationLeadTime=reservationLeadTime,
             limit=limit,
             start=start
             )
@@ -146,7 +153,7 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
                            to_people: Optional[int] = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
-                           ) -> List[Reservation] | Error:
+                           ) -> ReservationQueryResponse | Error:
     query = ReservationQuery(
             id=id,
             venue=venue,

@@ -4,6 +4,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
 from src.model.reservations.reservation import Reservation
+from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.reservations.service import  ReservationsService
 from src.model.reservations.update import Update
 from src.model.users.service import UsersProvider
@@ -90,7 +91,7 @@ class GatewayService:
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
         if not await self.__check_user(credentials, venue_id, response):
             return
-        await self.venues.delete_venue(venue_id, response)
+        await self.venues.delete_venue(venue_id)
 
     async def create_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation: r_stubs.CreateInfo, response: Response) -> Reservation | Error:
         user = await self.__get_user(credentials)
@@ -101,7 +102,7 @@ class GatewayService:
         update = reservation_update.with_user(user) 
         return await self.reservations.update_reservation(reservation_id, update, response)
 
-    async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> List[Reservation] | Error:
+    async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> ReservationQueryResponse | Error:
         user = await self.__get_user(credentials) 
         r_query = reservation_query.with_user(user)
         return await self.reservations.get_reservations(r_query, response)

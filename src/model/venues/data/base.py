@@ -71,6 +71,9 @@ class RelBase(VenuesBase):
         value.logo = venue.logo
         value.pictures = venue.pictures
         value.slots = venue.slots
+        value.characteristics = venue.characteristics
+        value.vacations = venue.vacations
+        value.reservationLeadTime = venue.reservationLeadTime
         value.status = venue.status
         session.commit()
         session.close()
