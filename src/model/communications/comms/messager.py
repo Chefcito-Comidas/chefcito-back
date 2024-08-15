@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 from src.model.communications.message import Message
-
+from twilio.rest import Client
+from twilio.http.async_http_client import AsyncTwilioHttpClient
 
 class CommunicationsMessager():
 
@@ -19,3 +20,15 @@ class MockedCommunicationsMessager(CommunicationsMessager):
             'to': to
         }
         self.messages.append(new_message)
+
+class TwilioCommunicationsMessager(CommunicationsMessager):
+
+    def __init__(self, account_sid: str, auth_token: str):
+        self.client = Client(account_sid, auth_token, http_client=AsyncTwilioHttpClient())
+
+    async def send_message(self, message: Message, to: str) -> None:
+        await self.client.messages.create_async(
+            to=to,
+            body=message.message            
+        ) 
+     
