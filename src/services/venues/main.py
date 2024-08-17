@@ -1,5 +1,5 @@
 from src.model.commons.error import Error
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.update import Update
 from typing import Annotated, List, Tuple
 from fastapi import Body, FastAPI, Path, Query, Response, status
@@ -48,7 +48,7 @@ async def get_venues(response: Response,
                            reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
-                           ) -> List[Venue] | Error:
+                           ) -> VenueQueryResult | Error:
     query = VenueQuery(
             id=id,
             name=name,

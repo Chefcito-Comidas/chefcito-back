@@ -12,7 +12,7 @@ from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
 from src.model.venues.update import Update      
 import src.model.gateway.venues_stubs as v_stubs
@@ -82,7 +82,7 @@ class GatewayService:
             return Error(description="Invalid user")
         return await self.venues.update_venue(venue_id, venue_update, response)
 
-    async def get_venues(self, venue_query: VenueQuery, response: Response) -> List[Venue] | Error:
+    async def get_venues(self, venue_query: VenueQuery, response: Response) -> VenueQueryResult | Error:
         return await self.venues.get_venues(venue_query, response)
 
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
@@ -109,10 +109,12 @@ class GatewayService:
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
         
-        if isinstance(result, list) and len(result) > 0:
-            result = result.pop()
+        if isinstance(result, VenueQueryResult) and result.total > 0:
+            result = result.result.pop()
         elif isinstance(result, list):
             result = Error.from_exception(Exception("User has no venue associated with it"))
+        else:
+            result = Error.from_exception(Exception("Something went wrong"))
 
         return result
     

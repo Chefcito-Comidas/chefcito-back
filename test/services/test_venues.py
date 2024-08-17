@@ -57,10 +57,10 @@ async def test_venue_pagination():
         result_2 = query.query(database)
         query.start=10
         result_3= query.query(database)
-        assert len(result_1) == len(result_2) == len(result_3) == 5
-        assert all_different(result_1, result_2)
-        assert all_different(result_1, result_3)
-        assert all_different(result_2, result_3)
+        assert len(result_1.result) == len(result_2.result) == len(result_3.result) == 5
+        assert all_different(result_1.result, result_2.result)
+        assert all_different(result_1.result, result_3.result)
+        assert all_different(result_2.result, result_3.result)
 
 @pytest.mark.asyncio
 async def test_venue_deletion():
