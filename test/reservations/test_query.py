@@ -54,8 +54,8 @@ def test_get_all_by_one_user():
             user="user_0"
             )
     result = query.query(database)
-    assert len(result) == 3
-    assert all_same_user("user_0", result)
+    assert result.total == 3
+    assert all_same_user("user_0", result.result)
 
 
 def test_get_all_by_one_venue():
@@ -66,8 +66,8 @@ def test_get_all_by_one_venue():
             venue="venue_1"
             )
     result = query.query(database)
-    assert len(result) == 4
-    assert all_same_venue("venue_1", result)
+    assert result.total == 4
+    assert all_same_venue("venue_1", result.result)
 
 def test_limiting_the_amount_of_reservations():
     database = MockBase()
@@ -78,8 +78,8 @@ def test_limiting_the_amount_of_reservations():
             limit=2
             )
     result = query.query(database)
-    assert len(result) == 2
-    assert all_same_venue("venue_1", result)
+    assert result.total == 2
+    assert all_same_venue("venue_1", result.result)
 
 def test_stepping_with_limit_the_amount_of_reservations():
     database = MockBase()
@@ -92,6 +92,6 @@ def test_stepping_with_limit_the_amount_of_reservations():
     result_1 = query.query(database)
     query.start = 2
     result_2 = query.query(database)
-    assert len(result_1) == 2
-    assert len(result_2) == 2
-    assert all_different(result_1, result_2) 
+    assert result_1.total == 2
+    assert result_2.total == 2
+    assert all_different(result_1.result, result_2.result) 

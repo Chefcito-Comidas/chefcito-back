@@ -8,7 +8,7 @@ from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
-from src.model.reservations.reservationQuery import ReservationQuery
+from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
 from src.model.venues.service import HttpVenuesProvider
@@ -53,7 +53,7 @@ async def get_reservations(response: Response,
                            to_people: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
-                           ) -> List[Reservation] | Error:
+                           ) -> ReservationQueryResponse | Error:
     query = ReservationQuery(
             id=id,
             user=user,

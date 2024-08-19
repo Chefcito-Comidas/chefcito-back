@@ -11,7 +11,7 @@ from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.update import Update
-from src.model.reservations.reservationQuery import ReservationQuery
+from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.venues.service import VenuesProvider
 from src.model.venues.venueQuery import VenueQuery
 
@@ -24,7 +24,7 @@ class ReservationsProvider:
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         raise Exception("Interface method should not be called")
     
-    async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
+    async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         raise Exception("Interface method should not be called")
     
     async def delete_reservation(self, reservation_id: str) -> None:
@@ -56,7 +56,7 @@ class ReservationsService:
            response.status_code = status.HTTP_400_BAD_REQUEST
            return Error.from_exception(e)
     
-    async def get_reservations(self, query: ReservationQuery, response: Response) -> List[Reservation] | Error:
+    async def get_reservations(self, query: ReservationQuery, response: Response) -> ReservationQueryResponse | Error:
         try:
            print(f"SEARCHING WITH: {query}")
            return await self.provider.get_reservations(query)
@@ -108,7 +108,7 @@ class HttpReservationsProvider(ReservationsProvider):
         data['time'] = datetime.fromisoformat(data['time'])
         return data
 
-    async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
+    async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         endpoint = "/reservations"
         body = query.model_dump(exclude_none=True)
         if body.get('from_time'):
@@ -168,7 +168,7 @@ class LocalReservationsProvider(ReservationsProvider):
             return reservation
         raise Exception("Reservation does not exist")
 
-    async def get_reservations(self, query: ReservationQuery) -> List[Reservation]:
+    async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         return query.query(self.db)
 
     async def delete_reservation(self, reservation_id: str) -> None:

@@ -35,12 +35,17 @@ class VenueSchema(Base):
     logo: Mapped[str] = mapped_column()
     pictures: Mapped[List[str]] = mapped_column(ARRAY(String))
     slots: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
+    characteristics: Mapped[List[str]] = mapped_column(ARRAY(String))
+    vacations: Mapped[List[datetime.datetime]] = mapped_column(ARRAY(DateTime))
+    reservationLeadTime: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
     
     def __repr__(self) -> str:
         return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
                 f"capacity={self.capacity}, "
-                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), status={self.status}")
+                f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), "
+                f"characteristics={self.characteristics}), vacations={self.vacations}), "
+                f"reservationLeadTime={self.reservationLeadTime}), status={self.status}")
 
 
 class ReservationSchema(Base):

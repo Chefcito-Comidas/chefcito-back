@@ -12,6 +12,9 @@ class Update(BaseModel):
     logo: Optional[str] = None
     pictures: Optional[List[str]] = None
     slots: Optional[List[datetime.datetime]] = None
+    characteristics: Optional[List[str]] = None
+    vacations: Optional[List[datetime.datetime]] = None
+    reservationLeadTime: Optional[int] = None
     open: Optional[bool] = False
     close: Optional[bool] = False
     occupy: Optional[bool] = False  
@@ -54,4 +57,15 @@ class Update(BaseModel):
             venue.slots = self.slots
             venue.unconfirm()
 
+        if self.characteristics:
+            venue.characteristics = self.characteristics
+            venue.unconfirm()
+
+        if self.vacations:
+            venue.vacations = self.vacations
+            venue.unconfirm()
+        
+        if self.reservationLeadTime:
+            venue.reservationLeadTime = self.reservationLeadTime
+            venue.unconfirm()
         return venue

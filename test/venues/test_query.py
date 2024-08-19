@@ -19,6 +19,9 @@ def create_venues(amount: int) -> List[VenueSchema]:
             logo=f"logo_{i}.png",
             pictures=[f"picture_{i}_1.jpg", f"picture_{i}_2.jpg"],
             slots=[datetime(year=2024, month=i%12 + 1, day=i%28 + 1)],
+            characteristics=[f"charact{i}_1", f"charact{i}_2"],
+            vacations=[datetime(year=2024, month=i%12 + 1, day=i%28 + 1)],
+            reservationLeadTime=f"{i%5}",
             status=Available().get_status()
         ))
     return venues
