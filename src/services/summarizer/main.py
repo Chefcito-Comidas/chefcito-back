@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from logging import log
+import logging
 from typing import Annotated, List
 from fastapi import FastAPI, Path, Query
 from contextlib import asynccontextmanager
@@ -34,7 +37,7 @@ async def init_services(app: FastAPI):
        try:
         prompt.init_google(settings.key, settings.key_id)
        except Exception as e:
-          print(e)
+          log(level=logging.CRITICAL, msg=e)
           summarizer = SummaryAlgorithm()
     yield
 
