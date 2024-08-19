@@ -90,8 +90,8 @@ class RelBuilder(QueryBuilder):
     def get(self, id: Optional[str], user: Optional[str], status: Optional[str], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
 
         if id:
-            return QueryResult(result=self._get_by_id(id),total=1)
-
+            return Query(result=self._get_by_id(id), total=1)
+    
         query = self.__get_initial(limit, start)
         count_query = self.__get_count()
         query, count_query = self.__add_user_filter(query, count_query, user)

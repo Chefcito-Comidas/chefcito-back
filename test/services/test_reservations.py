@@ -59,9 +59,9 @@ async def test_reservation_pagination():
                 limit=5
                 )
         result_1 = query.query(database)
-        query.start=5
+        query.start=6
         result_2 = query.query(database)
-        query.start=10
+        query.start=11
         result_3= query.query(database)
         assert result_1.total == result_2.total == result_3.total == 33
         assert len(result_1.result) == len(result_2.result) == len(result_3.result) == 5

@@ -10,6 +10,9 @@ class CreateInfo(BaseModel):
     logo: str
     pictures: List[str]
     slots: List[datetime.datetime]
+    characteristics: List[str]
+    vacations: List[datetime.datetime]
+    reservationLeadTime: int
 
     def into_create_info(self, id: str) -> venues.CreateInfo:
         return venues.CreateInfo(
@@ -19,5 +22,8 @@ class CreateInfo(BaseModel):
             capacity=self.capacity,
             logo=self.logo,
             pictures=self.pictures,
-            slots=self.slots
+            slots=self.slots,
+            characteristics=self.characteristics,
+            vacations=self.vacations,
+            reservationLeadTime=self.reservationLeadTime
         )

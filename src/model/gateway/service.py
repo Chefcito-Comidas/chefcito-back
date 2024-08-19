@@ -3,6 +3,8 @@ from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.reservations.service import  ReservationsService
@@ -119,3 +121,26 @@ class GatewayService:
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
+    
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> List[Reservation] | Error:
+        user = await self.__get_user(credentials)
+        venue_id = None
+        if venue:
+            venue_id = user
+            user = None
+        query = r_stubs.ReservationQuery(venue=venue_id, limit=limit, start=start).with_user('')
+        query.user = user
+        return await self.reservations.get_reservations(query, response)
+        
+
+
+    async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+                             opinion: Opinion,
+                             response: Response) -> Opinion | Error:
+        user = await self.__get_user(credentials)
+        return await self.reservations.create_opinion(opinion, user, response)
+
+    async def get_opinions(self,
+                               query: OpinionQuery,
+                               response: Response) -> OpinionQueryResponse | Error:
+        return await self.reservations.get_opinions(query, response)
