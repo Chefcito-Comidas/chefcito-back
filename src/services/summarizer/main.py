@@ -31,7 +31,11 @@ async def init_services(app: FastAPI):
     if settings.dev:
         summarizer = SummaryAlgorithm()
     else:
-       prompt.init_google(settings.key, settings.key_id)
+       try:
+        prompt.init_google(settings.key, settings.key_id)
+       except Exception as e:
+          print(e)
+          summarizer = SummaryAlgorithm()
     yield
 
 app = FastAPI(lifespan=init_services)
