@@ -6,6 +6,3 @@ psycopg2-binary
 aiohttp
 beanie
 pyyaml
-shapely
-langchain
-langchain-google-vertexai

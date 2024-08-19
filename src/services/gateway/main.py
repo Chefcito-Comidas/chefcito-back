@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery
@@ -80,7 +82,6 @@ async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Dep
                               ) -> Venue | Error:
     
     answer = await service.update_venue(credentials,venue_id, venue, response)
-    print(f"Answering: {answer}")
     return answer
 
 @app.delete("/venues/{venue_id}")
@@ -165,6 +166,44 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
             )
     return await service.get_reservations(credentials, query, response)
 
+
+@app.get("/reservations/history", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def get_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                      response: Response,
+                      limit: int = Query(default=10),
+                      start: int = Query(default=0)) -> List[Reservation] | Error:
+    return await service.get_history(credentials, limit, start, False, response)
+
+@app.get("/reservations/venue", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def get_venue_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                            response: Response,
+                            limit: int = Query(default=10),
+                            start: int = Query(default=0)) -> List[Reservation] | Error:
+    return await service.get_history(credentials, limit, start, True, response)
+
+@app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                         response: Response,
+                         venue: Optional[str] = Query(default=None),
+                         from_date: Optional[datetime] = Query(default=None),
+                         to_date: Optional[datetime] = Query(default=None),
+                         limit: int = Query(default=10),
+                         start: int = Query(default=0)) -> OpinionQueryResponse | Error:
+    query = OpinionQuery(
+        venue=venue,
+        from_date=from_date,
+        to_date=to_date,
+        limit=limit,
+        start=start
+    )
+
+    return await service.get_opinions(query, response)
+
+@app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_opinion(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
+    return await service.create_opinion(credentials, opinion, response)
+ 
+
 @app.get("/venue", responses={
     status.HTTP_400_BAD_REQUEST: {"model": Error},
     status.HTTP_200_OK: {"model": Venue}
@@ -172,4 +211,5 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
 async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                          response: Response) -> Venue | Error:
     return await service.get_my_venue(credentials, response)
+
 
