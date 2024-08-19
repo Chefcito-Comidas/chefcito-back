@@ -31,7 +31,7 @@ def get_cred(private_key: str, private_key_id: str) -> Dict:
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/summarizer-service%40chefcito-comidas.iam.gserviceaccount.com",
             "universe_domain": "googleapis.com"
             }
-    log(level=logging.INFO, msg=cred)
+    log(level=logging.CRITICAL, msg=cred)
     return cred
 
 def init_google(private_key: str, private_key_id: str) -> Tuple[Any, str | None]:
