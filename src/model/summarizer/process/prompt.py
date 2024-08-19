@@ -1,4 +1,6 @@
 import json
+from logging import log
+import logging
 from typing import Any, Dict, List, Tuple
 
 from langchain_core.documents import Document
@@ -16,7 +18,7 @@ import google.auth as auth
 llm: VertexAI | None = None
 
 def get_cred(private_key: str, private_key_id: str) -> Dict:
-    return {
+    cred = {
             "type": "service_account",
             "project_id": "chefcito-comidas",
             "private_key_id": private_key_id,
@@ -29,6 +31,8 @@ def get_cred(private_key: str, private_key_id: str) -> Dict:
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/summarizer-service%40chefcito-comidas.iam.gserviceaccount.com",
             "universe_domain": "googleapis.com"
             }
+    log(level=logging.INFO, msg=cred)
+    return cred
 
 def init_google(private_key: str, private_key_id: str) -> Tuple[Any, str | None]:
     cred = get_cred(private_key, private_key_id) 
