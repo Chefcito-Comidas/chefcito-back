@@ -76,7 +76,7 @@ class RelBuilder(QueryBuilder):
         count = self.__get_total()
 
         query, count = self.__add_name_filter(name, query, count)
-        #query, count = self.__add_characteristic_filter(name, query, count) #TODO: TEST FALLA 
+        query, count = self.__add_characteristic_filter(name, query, count) #TODO: TEST FALLA
 
         return self.db.get_by_eq(query, count)     
 
