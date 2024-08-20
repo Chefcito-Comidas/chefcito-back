@@ -59,7 +59,7 @@ class RelBuilder(QueryBuilder):
 
     def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> List[VenueSchema]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
-            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
+            raise Exception("Capacity, location, logo, pictures, slots reservationLeadTime query not implemented")
         if id:
             return self._get_by_id(id)
 
@@ -85,7 +85,7 @@ class MockedBuilder(QueryBuilder):
 
     def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> List[VenueSchema]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
-            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
+            raise Exception("Capacity, location, logo, pictures, slots, vacations and reservationLeadTime query not implemented")
 
         if id:
             return self._get_by_id(id)
