@@ -99,7 +99,7 @@ async def get_venues(response: Response,
                            logo: str = Query(default=None),
                            pictures: List[str] = Query(default=None),
                            slots: List[datetime] = Query(default=None),
-                           characteristics: List[str] = Query(default=None),
+                           characteristic: str = Query(default=None),
                            vacations: List[datetime] = Query(default=None),
                            reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
@@ -113,7 +113,7 @@ async def get_venues(response: Response,
             logo=logo,
             pictures=pictures,
             slots=slots,
-            characteristics=characteristics,
+            characteristic=characteristic,
             vacations=vacations,
             reservationLeadTime=reservationLeadTime,
             limit=limit,
@@ -171,14 +171,14 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
 async def get_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                       response: Response,
                       limit: int = Query(default=10),
-                      start: int = Query(default=0)) -> List[Reservation] | Error:
+                      start: int = Query(default=0)) -> ReservationQueryResponse | Error:
     return await service.get_history(credentials, limit, start, False, response)
 
 @app.get("/reservations/venue", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_venue_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                             response: Response,
                             limit: int = Query(default=10),
-                            start: int = Query(default=0)) -> List[Reservation] | Error:
+                            start: int = Query(default=0)) -> ReservationQueryResponse | Error:
     return await service.get_history(credentials, limit, start, True, response)
 
 @app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})

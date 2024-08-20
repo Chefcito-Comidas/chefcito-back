@@ -124,7 +124,7 @@ class GatewayService:
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
     
-    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> List[Reservation] | Error:
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> ReservationQueryResponse | Error:
         user = await self.__get_user(credentials)
         venue_id = None
         if venue:

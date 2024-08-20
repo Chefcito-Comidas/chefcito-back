@@ -5,7 +5,7 @@ from fastapi import Response, status
 from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.commons.error import Error
 from src.model.opinions.opinion import Opinion
-from src.model.opinions.opinion_query import OpinionQuery
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.provider import OpinionsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
@@ -33,7 +33,7 @@ class ReservationsProvider:
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         raise Exception("Interface method should not be called")
 
-    async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         raise Exception("Interface method should not be called")
 
 class ReservationsService:
@@ -77,7 +77,7 @@ class ReservationsService:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
     
-    async def get_opinions(self, query: OpinionQuery, response: Response) -> List[Opinion] | Error:
+    async def get_opinions(self, query: OpinionQuery, response: Response) -> OpinionQueryResponse | Error:
         try:
             return await self.provider.get_opinions(query)
         except Exception as e:
@@ -179,7 +179,7 @@ class LocalReservationsProvider(ReservationsProvider):
             id=opinion.reservation
         )
         result = await self.get_reservations(query)
-        if len(result) == 0 and user not in result[0].user:
+        if result.total == 0 and user not in result.result[0].user:
             raise Exception("Reservation was not done by user")
         return await self.opinions.create_opinion(opinion)
 
