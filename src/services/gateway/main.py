@@ -9,7 +9,7 @@ from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
 
 from src.model.reservations.reservation import Reservation
@@ -104,7 +104,7 @@ async def get_venues(response: Response,
                            reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
-                           ) -> List[Venue] | Error:
+                           ) -> VenueQueryResult | Error:
     query = VenueQuery(
             id=id,
             name=name,

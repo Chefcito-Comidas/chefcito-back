@@ -49,7 +49,6 @@ async def test_venue_pagination():
             database.store_venue(venue)
 
         query = VenueQuery(
-                name="name_2",
                 limit=5
                 )
         result_1 = query.query(database)
@@ -57,10 +56,11 @@ async def test_venue_pagination():
         result_2 = query.query(database)
         query.start=10
         result_3= query.query(database)
-        assert len(result_1) == len(result_2) == len(result_3) == 5
-        assert all_different(result_1, result_2)
-        assert all_different(result_1, result_3)
-        assert all_different(result_2, result_3)
+        assert result_1.total == result_2.total == result_3.total == 99
+        assert len(result_1.result) == len(result_2.result) == len(result_3.result) == 5
+        assert all_different(result_1.result, result_2.result)
+        assert all_different(result_1.result, result_3.result)
+        assert all_different(result_2.result, result_3.result)
 
 @pytest.mark.asyncio
 async def test_venue_deletion():
@@ -72,3 +72,23 @@ async def test_venue_deletion():
         assert database.get_venue_by_id(venue.id) != None
         Venue.delete(venue.id, database)
         assert database.get_venue_by_id(venue.id) == None
+
+@pytest.mark.asyncio
+async def test_venue_filter():
+    with PostgresContainer('postgres:16') as postgres:
+        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        venues = create_venues(99) 
+        database = RelBase(conn_string=postgres.get_connection_url())
+        for venue in venues:
+            database.store_venue(venue)
+
+        query = VenueQuery(
+                name="name_1",
+                characteristic="charact1_1",
+                limit=5
+                )
+        result_1 = query.query(database)
+        
+        assert result_1.total ==  1
+        assert len(result_1.result) == 1
+        

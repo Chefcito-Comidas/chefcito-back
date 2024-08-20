@@ -4,7 +4,8 @@ import sqlalchemy
 from sqlalchemy.orm import DeclarativeBase, mapped_column
 from sqlalchemy.orm import Mapped
 from typing import Self
-from sqlalchemy import String, ARRAY, DateTime
+from sqlalchemy import String, DateTime
+from sqlalchemy.dialects.postgresql import ARRAY
 import datetime
 from typing import List
 

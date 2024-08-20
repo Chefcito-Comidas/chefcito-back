@@ -8,7 +8,7 @@ from src.model.venues.data.schema import VenueSchema
 from src.model.venues.venue import CreateInfo, Venue
 
 from src.model.venues.update import Update
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 
 
 class VenuesProvider:
@@ -19,7 +19,7 @@ class VenuesProvider:
     async def update_venue(self, venue_id: str, venue_update: Update) -> Venue:
         raise Exception("Interface method should not be called")
 
-    async def get_venues(self, query: VenueQuery) -> List[Venue]:
+    async def get_venues(self, query: VenueQuery) -> VenueQueryResult:
         raise Exception("Interface method should not be called")
 
     async def delete_venue(self, venue_id: str) -> None:
@@ -47,7 +47,7 @@ class VenuesService:
             return Error.from_exception(e)
 
 
-    async def get_venues(self, query: VenueQuery, response: Response) -> List[Venue] | Error:
+    async def get_venues(self, query: VenueQuery, response: Response) -> VenueQueryResult | Error:
         try:
             return await self.provider.get_venues(query)
         except Exception as e:
@@ -70,6 +70,7 @@ class HttpVenuesProvider(VenuesProvider):
         endpoint = "/venues"
         model = venue.model_dump()
         model['slots'] = [slot.__str__() for slot in model['slots']]
+        model['vacations'] = [vacation.__str__() for vacation in model['vacations']]
         response = await post(f"{self.url}{endpoint}", body=model)
         return await recover_json_data(response) 
         
@@ -79,11 +80,13 @@ class HttpVenuesProvider(VenuesProvider):
         model = venue_update.model_dump()
         if model.get('slots'):
             model['slots'] = [slot.__str__() for slot in model['slots']]
+        if model.get('vacations'):
+            model['vacations'] = [vacation.__str__() for vacation in model['vacations']]
         response = await put(f"{self.url}{endpoint}/{venue_id}", body=model)
         return await recover_json_data(response) 
         
 
-    async def get_venues(self, query: VenueQuery) -> List[Venue]:
+    async def get_venues(self, query: VenueQuery) -> VenueQueryResult:
         endpoint = "/venues"
         response = await get(f"{self.url}{endpoint}", params=query.model_dump(exclude_none=True))
         return await recover_json_data(response)
@@ -113,7 +116,7 @@ class LocalVenuesProvider(VenuesProvider):
             return venue
         raise Exception("Venue does not exist")
 
-    async def get_venues(self, query: VenueQuery) -> List[Venue]:
+    async def get_venues(self, query: VenueQuery) -> VenueQueryResult:
         return query.query(self.db)
     
     async def delete_venue(self, venue_id: str) -> None:

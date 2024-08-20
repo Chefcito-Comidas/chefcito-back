@@ -34,7 +34,7 @@ def all_different(list_1: List[Venue], list_2: List[Venue]) -> bool:
             )
         )
 
-def all_same_name(name: str, result: List[VenueSchema]) -> bool:
+def all_same_name(name: str, result: List[Venue]) -> bool:
     """
     Verifica si todos los venues en el resultado tienen el mismo nombre.
     """
@@ -63,8 +63,8 @@ def test_get_all_by_same_name():
         name="name_1"  
     )
     result = query.query(database)
-    assert len(result) == 3  #should be 3
-    assert all_same_name("name_1", result)
+    assert result.total == len(result.result) == 3  #should be 3
+    assert all_same_name("name_1", result.result)
 
 # TODO: TODAVIA NO IMPLEMENTADO por location o por status
 # def test_get_all_by_same_location():
@@ -91,7 +91,7 @@ def test_limiting_the_amount_of_venues():
             limit=2
             )
     result = query.query(database)
-    assert len(result) == 2
+    assert len(result.result) == result.total == 2
     # assert all_same_venue("venue_1", result)
 
 def test_stepping_with_limit_the_amount_of_venues():
@@ -105,6 +105,6 @@ def test_stepping_with_limit_the_amount_of_venues():
     result_1 = query.query(database)
     query.start = 2
     result_2 = query.query(database)
-    assert len(result_1) == 2
-    assert len(result_2) == 1
-    assert all_different(result_1, result_2)
+    assert len(result_1.result) == result_1.total == 2
+    assert len(result_2.result) == result_2.total == 1
+    assert all_different(result_1.result, result_2.result)

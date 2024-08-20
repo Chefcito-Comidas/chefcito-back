@@ -5,6 +5,10 @@ from src.model.venues.venue import Venue
 from typing import List, Optional, Tuple
 import datetime
 
+class VenueQueryResult(BaseModel):
+    result: List[Venue]
+    total: int
+
 
 class VenueQuery(BaseModel):
 
@@ -17,13 +21,14 @@ class VenueQuery(BaseModel):
     logo: Optional[str] = None
     pictures: Optional[List[str]] = None
     slots: Optional[List[datetime.datetime]] = None
-    characteristics: Optional[List[str]] = None
+    characteristic: Optional[str] = None
     vacations: Optional[List[datetime.datetime]] = None
     reservationLeadTime: Optional[int] = None
    
 
-    def query(self, db: VenuesBase) -> List[Venue]:
+    def query(self, db: VenuesBase) -> VenueQueryResult:
         builder = get_builder(db) 
-        result = builder.get(self.id, self.name, self.location, self.capacity, self.logo, self.pictures, self.slots, self.characteristics, self.vacations, self.reservationLeadTime, self.limit, self.start)
+        result, total = builder.get(self.id, self.name, self.location, self.capacity, self.logo, self.pictures, self.slots, self.characteristic, self.vacations, self.reservationLeadTime, self.limit, self.start)
 
-        return [Venue.from_schema(value) for value in result]
+        result = [Venue.from_schema(value) for value in result]
+        return VenueQueryResult(result=result, total=total)
