@@ -84,11 +84,11 @@ async def test_venue_filter():
 
         query = VenueQuery(
                 name="name_1",
-                characteristic="charact{i}_1",
+                characteristic="charact1_1",
                 limit=5
                 )
         result_1 = query.query(database)
         
-        assert result_1.total ==  33
-        assert len(result_1.result) == 5
+        assert result_1.total ==  1
+        assert len(result_1.result) == 1
         

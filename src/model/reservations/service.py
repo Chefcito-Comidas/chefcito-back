@@ -108,7 +108,7 @@ class LocalReservationsProvider(ReservationsProvider):
     async def _find_venue(self, venue_id: str) -> bool:
         query = VenueQuery(id=venue_id)
         result = await self.venues.get_venues(query)
-        return len(result) != 0
+        return result.total != 0
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):

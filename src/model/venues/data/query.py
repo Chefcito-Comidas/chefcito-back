@@ -38,7 +38,7 @@ class QueryBuilder:
             logo: Optional[str],
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
-            characteristics: Optional[List[str]],
+            characteristic: Optional[str],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
             limit: int,
@@ -62,11 +62,11 @@ class RelBuilder(QueryBuilder):
     
     def __add_characteristic_filter(self, characteristic: Optional[str], query: Select, count: Select) -> Tuple[Select, Select]:
         if characteristic: 
-            query = query.where(VenueSchema.characteristics.any(characteristic))
-            count = count.where(VenueSchema.characteristics.any(characteristic))
+            query = query.where(VenueSchema.characteristics.contains([characteristic]))
+            count = count.where(VenueSchema.characteristics.contains([characteristic]))
         return query, count
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
@@ -76,7 +76,7 @@ class RelBuilder(QueryBuilder):
         count = self.__get_total()
 
         query, count = self.__add_name_filter(name, query, count)
-        query, count = self.__add_characteristic_filter(name, query, count) #TODO: TEST FALLA
+        query, count = self.__add_characteristic_filter(characteristic, query, count) #TODO: TEST FALLA
 
         return self.db.get_by_eq(query, count)     
 
@@ -108,7 +108,8 @@ class MockedBuilder(QueryBuilder):
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
 
         if id:
-            return self._get_by_id(id), 1
+            result = self._get_by_id(id)
+            return result, 1 if result else 0
 
         result = self.__filter_by_eq(name, characteristic, limit, start)
 
