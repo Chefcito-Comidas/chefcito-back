@@ -70,6 +70,7 @@ class HttpVenuesProvider(VenuesProvider):
         endpoint = "/venues"
         model = venue.model_dump()
         model['slots'] = [slot.__str__() for slot in model['slots']]
+        model['vacations'] = [vacation.__str__() for vacation in model['vacations']]
         response = await post(f"{self.url}{endpoint}", body=model)
         return await recover_json_data(response) 
         
@@ -79,6 +80,8 @@ class HttpVenuesProvider(VenuesProvider):
         model = venue_update.model_dump()
         if model.get('slots'):
             model['slots'] = [slot.__str__() for slot in model['slots']]
+        if model.get('vacations'):
+            model['vacations'] = [vacation.__str__() for vacation in model['vacations']]
         response = await put(f"{self.url}{endpoint}/{venue_id}", body=model)
         return await recover_json_data(response) 
         
