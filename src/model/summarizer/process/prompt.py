@@ -22,7 +22,7 @@ def get_cred(private_key: str, private_key_id: str) -> Dict:
             "type": "service_account",
             "project_id": "chefcito-comidas",
             "private_key_id": private_key_id,
-            "private_key": private_key,
+            "private_key": bytes.fromhex(private_key).decode(),
             "client_email": "summarizer-service@chefcito-comidas.iam.gserviceaccount.com",
             "client_id": "100286983511312951818",
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
