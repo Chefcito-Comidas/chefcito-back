@@ -113,10 +113,8 @@ class GatewayService:
         
         if isinstance(result, VenueQueryResult) and result.total > 0:
             result = result.result.pop()
-        elif isinstance(result, list):
-            result = Error.from_exception(Exception("User has no venue associated with it"))
-        else:
-            result = Error.from_exception(Exception("Something went wrong"))
+         
+        
 
         return result
     
