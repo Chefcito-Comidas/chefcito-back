@@ -113,13 +113,15 @@ class GatewayService:
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
         log(level=logging.CRITICAL, msg=f"{result}\n{isinstance(result, VenueQueryResult)}") 
-        if isinstance(result, VenueQueryResult) and result.total > 0:
-            result = result.result.pop()
-         
-        
 
-        return result
-    
+        try:
+            as_result: VenueQueryResult = result
+            if as_result.total > 0:
+                return as_result.result.pop()
+            return result
+        except:
+            return Error.from_exception(Exception("Invalid user")) 
+        
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
