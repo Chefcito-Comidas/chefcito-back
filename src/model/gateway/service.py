@@ -112,7 +112,7 @@ class GatewayService:
         user = await self.__get_user(credentials)
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
-        log(level=logging.CRITICAL, msg=result) 
+        log(level=logging.CRITICAL, msg=f"{result}\n{isinstance(result, VenueQueryResult)}") 
         if isinstance(result, VenueQueryResult) and result.total > 0:
             result = result.result.pop()
          
