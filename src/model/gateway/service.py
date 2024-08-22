@@ -1,3 +1,5 @@
+from logging import log
+import logging
 from typing import Annotated, List
 from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
@@ -110,7 +112,7 @@ class GatewayService:
         user = await self.__get_user(credentials)
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
-        
+        log(level=logging.CRITICAL, msg=result) 
         if isinstance(result, VenueQueryResult) and result.total > 0:
             result = result.result.pop()
          
