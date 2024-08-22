@@ -1,3 +1,4 @@
+from ast import Dict
 from logging import log
 import logging
 from typing import Annotated, List
@@ -115,11 +116,12 @@ class GatewayService:
         log(level=logging.CRITICAL, msg=f"{result}\n{isinstance(result, VenueQueryResult)}") 
 
         try:
-            as_result: VenueQueryResult = result
-            if as_result.total > 0:
-                return as_result.result.pop()
-            return result
-        except:
+            as_result: dict = result  # type: ignore
+            if as_result['total'] > 0:
+                return as_result['result'].pop()
+            return result # type: ignore
+        except Exception as e:
+            log(level=logging.CRITICAL, msg=e)
             return Error.from_exception(Exception("Invalid user")) 
         
 
