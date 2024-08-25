@@ -15,7 +15,7 @@ from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.venues.service import VenuesProvider
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 
 
 class ReservationsProvider:
@@ -151,6 +151,8 @@ class LocalReservationsProvider(ReservationsProvider):
     async def _find_venue(self, venue_id: str) -> bool:
         query = VenueQuery(id=venue_id)
         result = await self.venues.get_venues(query)
+        if isinstance(result, VenueQueryResult):
+            return result.total != 0 # Need to check for this because of pydantic issues when working online
         return result['total'] != 0 # type: ignore
 
 

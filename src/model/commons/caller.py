@@ -1,14 +1,14 @@
 """
 Caller provides a simple interface to manage aihttp calls
 """
-
-
-from typing import Any
+from typing import Any, Awaitable, Callable
 import aiohttp
 import asyncio
 
 
-async def __call(method, url: str, body: dict, headers: dict, params: dict) -> aiohttp.ClientResponse:
+type HTTPMethod = Callable[..., Awaitable[aiohttp.ClientResponse]]
+
+async def __call(method: HTTPMethod, url: str, body: dict, headers: dict, params: dict) -> aiohttp.ClientResponse:
     client = aiohttp.ClientSession()
     response = await method(client, url, json=body, headers=headers,  params=params)
     await client.close()
@@ -30,3 +30,17 @@ async def delete(url: str, body: dict = {}, data: dict = {}, params: dict = {}) 
 
 async def post(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
    return await __call(aiohttp.ClientSession.post, url, body, data, params) 
+
+async def back_off(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> Any:
+    wait_time = 0.5
+    while wait_time <= 4:
+        try:
+            response = await method(url, body=body, data=data, params=params)
+            returnable_data = await asyncio.wait_for(response.json(), wait_time)
+            response.close()
+            return returnable_data
+        except TimeoutError:
+            response.close()
+            wait_time *= 2
+
+    raise Exception("Failed to connect to firebase server")
