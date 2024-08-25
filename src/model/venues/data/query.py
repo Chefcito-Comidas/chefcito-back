@@ -70,7 +70,8 @@ class RelBuilder(QueryBuilder):
         if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
-            return self._get_by_id(id), 1
+            result = self._get_by_id(id)
+            return result, 1 if result else 0
 
         query = self.__get_query(limit, start)
         count = self.__get_total()

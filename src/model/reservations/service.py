@@ -1,4 +1,6 @@
 from datetime import datetime
+from logging import log
+import logging
 from typing import List
 from fastapi import Response, status
 
@@ -149,7 +151,8 @@ class LocalReservationsProvider(ReservationsProvider):
     async def _find_venue(self, venue_id: str) -> bool:
         query = VenueQuery(id=venue_id)
         result = await self.venues.get_venues(query)
-        return result.total != 0
+        return result['total'] != 0 # type: ignore
+
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
@@ -183,5 +186,5 @@ class LocalReservationsProvider(ReservationsProvider):
             raise Exception("Reservation was not done by user")
         return await self.opinions.create_opinion(opinion)
 
-    async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         return await self.opinions.query_opinions(query)
