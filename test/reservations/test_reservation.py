@@ -21,12 +21,12 @@ def test_new_reservation_is_not_confirmed():
 
 def test_an_unaccepted_reservation_is_canceled():
     reservation = create_reservation("user", "venue", datetime.now(), 6)
-    reservation.reject()
+    reservation.advance(forward=False, who="venue")
     assert reservation.get_status() == Canceled().get_status()
 
 def test_an_accepted_reservation_is_confirmed():
     reservation = create_reservation("user", "venue", datetime.now(), 10)
-    reservation.accept()
+    reservation.advance(forward=True, who="venue")
     assert reservation.get_status() == Accepted().get_status()
 
 def test_a_confirmed_reservation_is_unconfirmed_when_modified():
@@ -37,13 +37,13 @@ def test_a_confirmed_reservation_is_unconfirmed_when_modified():
 
 def test_the_user_cannot_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 3)
-    update = Update(accept=True, user="user")
+    update = Update(advance_forward=True, user="user")
     reservation = update.modify(reservation)
     assert reservation.get_status() == Uncomfirmed().get_status()
 
 def test_the_venue_can_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
-    update = Update(accept=True, user="venue")
+    update = Update(advance_forward=True, user="venue")
     reservation = update.modify(reservation)
     assert reservation.get_status() == Accepted().get_status()
 
