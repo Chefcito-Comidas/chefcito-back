@@ -1,7 +1,7 @@
 from typing import Callable, List, Optional, Tuple
 
 from fastapi import Query
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 from src.model.venues.data.base import MockBase, RelBase, VenuesBase
 from src.model.venues.data.schema import VenueSchema
@@ -29,8 +29,6 @@ class QueryBuilder:
         value = self.db.get_venue_by_id(id)
         return [value] if value else []
 
-    def __filter_by_eq(self, name: Optional[str]) -> List[VenueSchema]:
-        raise Exception("Interface method should not be called")
 
     def get(self,
             id: Optional[str],
@@ -40,30 +38,48 @@ class QueryBuilder:
             logo: Optional[str],
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
-            characteristics: Optional[List[str]],
+            characteristic: Optional[str],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
             limit: int,
-            start: int) -> List[VenueSchema]:
+            start: int) -> Tuple[List[VenueSchema], int]:
 
         raise Exception("Interface method should not be called")
 
 class RelBuilder(QueryBuilder):
 
-    def __filter_by_eq(self, name: Optional[str], limit: int, start: int) -> List[VenueSchema]:
-        query = select(VenueSchema).order_by(VenueSchema.id).limit(limit).offset(start)
-        if name:
+    def __get_total(self) -> Select:
+        return select(func.count()).select_from(VenueSchema)
+
+    def __get_query(self, limit: int, start: int) -> Select:
+        return select(VenueSchema).order_by(VenueSchema.id).limit(limit).offset(start)
+
+    def __add_name_filter(self, name: Optional[str], query: Select, count: Select) -> Tuple[Select, Select]:
+        if name: 
             query = query.where(VenueSchema.name.__eq__(name))
+            count = count.where(VenueSchema.name.__eq__(name))
+        return query, count
+    
+    def __add_characteristic_filter(self, characteristic: Optional[str], query: Select, count: Select) -> Tuple[Select, Select]:
+        if characteristic: 
+            query = query.where(VenueSchema.characteristics.contains([characteristic]))
+            count = count.where(VenueSchema.characteristics.contains([characteristic]))
+        return query, count
 
-        return self.db.get_by_eq(query)
-
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
-            return self._get_by_id(id)
+            result = self._get_by_id(id)
+            return result, 1 if result else 0
 
-        return self.__filter_by_eq(name, limit, start)     
+        query = self.__get_query(limit, start)
+        count = self.__get_total()
+
+        query, count = self.__add_name_filter(name, query, count)
+        query, count = self.__add_characteristic_filter(characteristic, query, count) #TODO: TEST FALLA
+
+        return self.db.get_by_eq(query, count)     
 
 class MockedBuilder(QueryBuilder):
 
@@ -82,22 +98,32 @@ class MockedBuilder(QueryBuilder):
             return value.name == name
         return filter
 
+    
+    def __filter_by_characteristic(self, characteristic: str) -> Callable[[VenueSchema], bool]:
+        def filter(value: VenueSchema) -> bool:
+            return characteristic in value.characteristics
+        return filter
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristics: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> List[VenueSchema]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None or characteristics != None or vacations != None or reservationLeadTime != None:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None or  vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
 
         if id:
-            return self._get_by_id(id)
+            result = self._get_by_id(id)
+            return result, 1 if result else 0
 
-        return self.__filter_by_eq(name, limit, start)        
+        result = self.__filter_by_eq(name, characteristic, limit, start)
+
+        return result, len(result) 
 
 
 
-    def __filter_by_eq(self, name: Optional[str],limit: int, start: int) -> List[VenueSchema]:
+    def __filter_by_eq(self, name: Optional[str], characteristic: Optional[str], limit: int, start: int) -> List[VenueSchema]:
         result = self.db.base
 
         if name:
             result = self.__filter(result, self.__filter_by_name(name), limit, start)
 
+        if characteristic:
+            result = self.__filter(result, self.__filter_by_characteristic(characteristic), limit, start)
         return result

@@ -4,5 +4,10 @@ pydantic_settings>=2.2.1
 sqlalchemy>=2.0.28
 psycopg2-binary
 aiohttp
+beanie
 pyyaml
+shapely
+langchain
+langchain-google-vertexai
 twilio
+

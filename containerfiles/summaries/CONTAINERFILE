@@ -1,0 +1,24 @@
+# 
+FROM python:3.12-slim-bullseye
+
+# 
+WORKDIR /code
+
+# 
+COPY ./containerfiles/summaries/requirements.txt /code/requirements.txt
+RUN apt update && apt install -y git gcc build-essential python3-dev libgeos-dev
+
+RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+
+# 
+COPY ./src/model/opinions /code/src/model/opinions
+COPY ./src/model/commons /code/src/model/commons
+COPY ./src/services/summarizer/main.py /code/main.py
+COPY ./src/model/summarizer /code/src/model/summarizer
+
+
+
+# 
+CMD ["fastapi", "run", "main.py", "--port", "80"]

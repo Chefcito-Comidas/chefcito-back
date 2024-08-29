@@ -76,6 +76,35 @@ resource "docker_container" "reservations" {
   }
 }
 
+
+resource "docker_container" "opinions" {
+  name = "opinions"
+  hostname = "opinions"
+  image = "service-opinions:latest"
+  ports {
+    internal = 80
+    external = 8004
+  }
+  env = ["CONN_STRING=mongodb://nsqldb/"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
+resource "docker_container" "summaries" {
+  name = "summaries"
+  hostname = "summaries"
+  image = "service-summaries:latest"
+  ports {
+    internal = 80
+    external = 8005
+  }
+  env = ["CONN_STRING=mongodb://nsqldb/", "KEY=FakeKey", "KEY_ID=FAKEKEYID"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
 resource "docker_container" "communications" {
   name = "communications"
   hostname = "communications"
@@ -85,6 +114,7 @@ resource "docker_container" "communications" {
     external = 8010
   }
   env=["DB_STRING=postgresql://user:admin123@reldb/users_db", "TWILIO_SID=FAKEAUTH", "TWILIO_TOKEN=FAKETOKEN", "DEV=True"]
+
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
@@ -102,5 +132,17 @@ resource "docker_container" "postgresql" {
   networks_advanced {
     name = docker_network.chefcito_network.id
   }
-  
+}
+
+resource "docker_container" "mongo" {
+  name = "mongodb"
+  hostname = "nsqldb"
+  image = "mongo:8.0-rc"
+  ports {
+    internal = 27017
+    external = 27017
+  }
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
 }

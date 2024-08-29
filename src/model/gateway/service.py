@@ -1,8 +1,13 @@
+from ast import Dict
+from logging import log
+import logging
 from typing import Annotated, List
 from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
+from src.model.opinions.opinion import Opinion
+from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.reservations.service import  ReservationsService
@@ -12,7 +17,7 @@ from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
 from src.model.venues.update import Update      
 import src.model.gateway.venues_stubs as v_stubs
@@ -85,7 +90,7 @@ class GatewayService:
             return Error(description="Invalid user")
         return await self.venues.update_venue(venue_id, venue_update, response)
 
-    async def get_venues(self, venue_query: VenueQuery, response: Response) -> List[Venue] | Error:
+    async def get_venues(self, venue_query: VenueQuery, response: Response) -> VenueQueryResult | Error:
         return await self.venues.get_venues(venue_query, response)
 
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
@@ -111,14 +116,40 @@ class GatewayService:
         user = await self.__get_user(credentials)
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
-        
-        if isinstance(result, list) and len(result) > 0:
-            result = result.pop()
-        elif isinstance(result, list):
-            result = Error.from_exception(Exception("User has no venue associated with it"))
+        log(level=logging.CRITICAL, msg=f"{result}\n{isinstance(result, VenueQueryResult)}") 
 
-        return result
-    
+        try:
+            as_result: dict = result  # type: ignore
+            if as_result['total'] > 0:
+                return as_result['result'].pop()
+            return result # type: ignore
+        except Exception as e:
+            log(level=logging.CRITICAL, msg=e)
+            return Error.from_exception(Exception("Invalid user")) 
+        
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         return await self.reservations.delete_reservation(reservation_id)
+    
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> ReservationQueryResponse | Error:
+        user = await self.__get_user(credentials)
+        venue_id = None
+        if venue:
+            venue_id = user
+            user = None
+        query = r_stubs.ReservationQuery(venue=venue_id, limit=limit, start=start).with_user('')
+        query.user = user
+        return await self.reservations.get_reservations(query, response)
+        
+
+
+    async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+                             opinion: Opinion,
+                             response: Response) -> Opinion | Error:
+        user = await self.__get_user(credentials)
+        return await self.reservations.create_opinion(opinion, user, response)
+
+    async def get_opinions(self,
+                               query: OpinionQuery,
+                               response: Response) -> OpinionQueryResponse | Error:
+        return await self.reservations.get_opinions(query, response)

@@ -1,21 +1,20 @@
+# 
 FROM python:3.12-alpine
 
 # 
 WORKDIR /code
 
 # 
-COPY ./requirements.txt /code/requirements.txt
+COPY ./containerfiles/reservations/requirements.txt /code/requirements.txt
 
-# 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
 # 
 COPY ./src/model/reservations /code/src/model/reservations
 COPY ./src/model/commons /code/src/model/commons
 COPY ./src/model/venues /code/src/model/venues
+COPY ./src/model/opinions /code/src/model/opinions
+COPY ./src/model/summarizer/ /code/src/model/summarizer
 COPY ./src/services/reservations/main.py /code/main.py
-
-
 
 # 
 CMD ["fastapi", "run", "main.py", "--port", "80"]

@@ -48,6 +48,19 @@ jobs:
                 file: containerfiles/reservations/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/reservations:latest
+            - name: build-push opinions 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/opinions/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/opinions:latest
+            - name: build-push summaries 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/summaries/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/summaries:latest
+            
 
     deploy:
         needs: build
@@ -83,4 +96,10 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n venues -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy opinions 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${{ github.sha }}
             

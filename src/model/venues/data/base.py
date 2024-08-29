@@ -1,6 +1,7 @@
-from typing import List
+from typing import Any, Callable, List, Tuple
+from src.model.commons.session import with_no_commit
 from src.model.venues.data.schema import VenueSchema
-from sqlalchemy import Select, create_engine, select, update, delete
+from sqlalchemy import Engine, Result, Select, create_engine, select, update, delete
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -9,7 +10,7 @@ DEFAULT_POOL_SIZE = 10
 
 class VenuesBase:
 
-    def get_by_eq(self, query: Select) -> List[VenueSchema]:
+    def get_by_eq(self, query: Select, count: Select) -> Tuple[List[VenueSchema], int]:
         raise Exception("Interface method should not be used")
 
     def store_venue(self, venue: VenueSchema) -> None:
@@ -48,11 +49,16 @@ class RelBase(VenuesBase):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         self.__engine = create_engine(conn_string, pool_pre_ping=True,**kwargs)
 
-    def get_by_eq(self, query: Select) -> List[VenueSchema]:
-        session = Session(self.__engine)
-        result = list(session.execute(query).scalars())
-        session.close()
-        return result
+    def __get_runnable_select(self, query: Select) -> Callable[[Engine], Result]:
+        def call(session: Session) -> List[Any]:
+            return list(session.execute(query).scalars())
+
+        return with_no_commit(call)
+
+    def get_by_eq(self, query: Select, count: Select) -> Tuple[List[VenueSchema], int]:
+        venues: List[VenueSchema] = self.__get_runnable_select(query)(self.__engine) # type: ignore
+        total: int = self.__get_runnable_select(count)(self.__engine).pop() # type: ignore
+        return venues, total 
 
     def store_venue(self, venue: VenueSchema) -> None:
         session = Session(self.__engine)
