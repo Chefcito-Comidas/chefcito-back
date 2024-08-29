@@ -18,15 +18,15 @@ class CreateInfo(BaseModel):
         return info
 
 class Update(BaseModel):
-    accept: Optional[bool] = False
-    cancel: Optional[bool] = False 
+    advance_forward: Optional[bool] = None
+    cancel: bool = False
     time: Optional[datetime] = None 
     people: Optional[int] = None 
 
     def with_user(self, user: str) -> update.Update:
        value = update.Update(
                user="",
-               accept=self.accept,
+               advance_forward=self.advance_forward,
                cancel=self.cancel,
                time=self.time,
                people=self.people

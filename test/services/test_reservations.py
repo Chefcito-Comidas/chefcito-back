@@ -27,7 +27,7 @@ async def test_reservation_update():
         reservation = create_reservation(user="user", venue="venue",time=datetime.now(),people=4)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
-        update = Update(user="venue", accept=True)
+        update = Update(user="venue", advance_forward=True)
         reservation = update.modify(reservation)
         database.update_reservation(reservation.persistance())
         result = database.get_reservation_by_id(reservation.id)
