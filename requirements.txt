@@ -9,3 +9,5 @@ pyyaml
 shapely
 langchain
 langchain-google-vertexai
+twilio
+

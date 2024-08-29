@@ -22,6 +22,14 @@ ENDPOINT_PERMISSIONS = 'allowed'
 class Base(DeclarativeBase):
     pass
 
+class UserSchema(Base):
+    __tablename__ = "numbers"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column()
+
+    def __repr__(self) -> str:
+        return f"{self.id}-{self.number}"
 
 class VenueSchema(Base):
 
