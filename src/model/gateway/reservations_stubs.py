@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from pydantic import BaseModel
 import src.model.reservations.reservation as r 
 import src.model.reservations.update as update
@@ -38,7 +38,7 @@ class ReservationQuery(BaseModel):
     
     limit: int = 10
     start: int = 0
-    status: Optional[str] = None
+    status: Optional[List[str]] = None
     id: Optional[str] = None
     venue: Optional[str] = None
     from_time: Optional[datetime] = None 
