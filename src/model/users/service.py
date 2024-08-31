@@ -51,7 +51,7 @@ class LocalUsersProvider(UsersProvider):
         self.database = database
     
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
-        user = await token.get_data(self.authentication)
+        user = await token.get_data(self.authentication, self.database)
         user.insert_into(user_type, self.database)
         return user
 
@@ -59,7 +59,7 @@ class LocalUsersProvider(UsersProvider):
         """ 
         Returns all data from the user, including its type
         """
-        return await auth.get_data(self.authentication) 
+        return await auth.get_data(self.authentication, self.database) 
     
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
         return status.HTTP_200_OK if await auth.is_allowed(self.authentication, self.database) \

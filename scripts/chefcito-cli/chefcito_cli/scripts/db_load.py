@@ -95,6 +95,16 @@ class Permission(Base):
    def __repr__(self) -> str:
        return f"{self.user_type} ==> {self.endpoint}"
 
+class AssociatedData(Base):
+    __tablename__ = "users_data"
+
+    uid: Mapped[str] = mapped_column(ForeignKey("users.uid"),primary_key=True)
+    name: Mapped[str] = mapped_column()
+    phone_number: Mapped[str] = mapped_column()
+
+    def __repr__(self) -> str:
+        return f"{self.uid} => {self.name} => {self.phone_number}"
+
 def generate_user_types(yaml_config: dict) -> dict[str, str]:
     types = {}
     types[ANONYMOUS_KEY] = yaml_config.get(TYPES_KEY, {}).get(ANONYMOUS_KEY, ANONYMOUS_KEY)

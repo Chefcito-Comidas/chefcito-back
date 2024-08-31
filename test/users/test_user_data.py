@@ -56,7 +56,7 @@ def get_mocked_auth() -> fb.FirebaseAuth:
 
 @pytest.mark.asyncio
 async def test_unregistered_user_is_anonymous():
-    data = ud.UserData(localid='someId', email='mail@mail.com')
+    data = ud.UserData(localid='someId', email='mail@mail.com', name="", phone_number="")
     db = get_mocked_base()
     assert data.get_type(db) == 'anonymous'
 
@@ -64,14 +64,14 @@ async def test_unregistered_user_is_anonymous():
 async def test_registered_user_is_not_anonymous():
    auth = get_mocked_auth()
    db = get_mocked_base()
-   data = await ud.recover_data('user_1', auth)
+   data = await ud.recover_data('user_1', auth, db)
    assert data.get_type(db) != 'anonymous'
 
 @pytest.mark.asyncio
 async def test_registering_a_new_valid_user_makes_it_no_longer_anonymous():
     auth = get_mocked_auth()
     db = get_mocked_base()
-    data = await ud.recover_data('user_not_in_base', auth)
+    data = await ud.recover_data('user_not_in_base', auth, db)
     assert data.get_type(db) == 'anonymous'
     data.insert_into('client', db)
     assert data.get_type(db) == 'client'
@@ -80,7 +80,7 @@ async def test_registering_a_new_valid_user_makes_it_no_longer_anonymous():
 async def test_anonymous_user_canot_call_a_non_anonymous_endpoint():
     db = get_mocked_base()
     auth = get_mocked_auth()
-    data = await ud.recover_data('user_not_in_base', auth)
+    data = await ud.recover_data('user_not_in_base', auth, db)
     
     assert not data.allowed_to('/restaurant-allowed', db)
     assert not data.allowed_to('/client-allowed', db)
@@ -90,7 +90,7 @@ async def test_anonymous_user_canot_call_a_non_anonymous_endpoint():
 async def test_client_user_canot_call_restaurant_endpoint():
     db = get_mocked_base()
     auth = get_mocked_auth()
-    data = await ud.recover_data('user_2', auth)
+    data = await ud.recover_data('user_2', auth, db)
 
     assert not data.allowed_to('/restaurant-allowed', db)
 
@@ -98,7 +98,7 @@ async def test_client_user_canot_call_restaurant_endpoint():
 async def test_restaurant_user_cannot_call_client_endpoint():
     db = get_mocked_base()
     auth = get_mocked_auth()
-    data = await ud.recover_data('user_1', auth)
+    data = await ud.recover_data('user_1', auth, db)
 
     assert not data.allowed_to('/client-allowed', db)
 
@@ -106,9 +106,9 @@ async def test_restaurant_user_cannot_call_client_endpoint():
 async def test_all_allowed_to_anonymous_endpoints():
     db = get_mocked_base()
     auth = get_mocked_auth()
-    client = await ud.recover_data('user_2', auth)
-    restaurant = await ud.recover_data('user_1', auth)
-    anonymous = await ud.recover_data('user_not_in_base', auth)
+    client = await ud.recover_data('user_2', auth, db)
+    restaurant = await ud.recover_data('user_1', auth, db)
+    anonymous = await ud.recover_data('user_not_in_base', auth, db)
 
     assert client.allowed_to('/all-allowed', db)
     assert restaurant.allowed_to('/all-allowed', db)
@@ -118,8 +118,8 @@ async def test_all_allowed_to_anonymous_endpoints():
 async def test_client_and_restaurant_can_call_both_endpoint():
     db = get_mocked_base()
     auth = get_mocked_auth()
-    client = await ud.recover_data('user_2', auth)
-    restaurant = await ud.recover_data('user_1', auth)
+    client = await ud.recover_data('user_2', auth, db)
+    restaurant = await ud.recover_data('user_1', auth, db)
     
     assert client.allowed_to('/both-allowed', db)
     assert restaurant.allowed_to('/both-allowed', db)
