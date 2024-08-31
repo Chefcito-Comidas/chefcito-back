@@ -4,6 +4,7 @@ from fastapi import Response, status
 from src.model.commons.error import Error
 from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.venues.data.base import VenuesBase
+from src.model.venues.data.location_finder import Ranker
 from src.model.venues.data.schema import VenueSchema
 from src.model.venues.venue import CreateInfo, Venue
 
@@ -104,6 +105,10 @@ class HttpVenuesProvider(VenuesProvider):
         await delete(f"{self.url}{endpoint}/{venue_id}")
         return  
         
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+        endpoint = "/venues/near"
+        response = await get(f"{self.url}{endpoint}", params={'location': location})
+        return await recover_json_data(response)
 
 class LocalVenuesProvider(VenuesProvider):
     def __init__(self, base: VenuesBase):
@@ -129,3 +134,11 @@ class LocalVenuesProvider(VenuesProvider):
     
     async def delete_venue(self, venue_id: str) -> None:
         Venue.delete(venue_id, self.db)
+
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+        ranker = Ranker(self.db, location)
+        result = await ranker.rank()
+        return VenueQueryResult(
+            result=result,
+            total=len(result)
+        ) 
