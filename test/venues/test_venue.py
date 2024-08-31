@@ -1,4 +1,9 @@
+import asyncio
+from random import shuffle
+from typing import List
 import pytest
+from src.model.commons.distance import LocalPosition
+from src.model.venues.data.location_finder import Ranker
 from src.model.venues.venue import create_venue, Available, Closed, Unconfirmed, Occupied, Venue
 from src.model.venues.update import Update
 from src.model.venues.data.base import MockBase
@@ -70,3 +75,33 @@ def test_after_deleting_a_venue_it_can_no_longer_be_recovered():
     #Deleting the reservation
     Venue.delete(venue.id, base)
     assert base.get_venue_by_id(venue.id) == None
+
+def get_locations() -> List[str]:
+    return ["-34.694174,-58.5566507", "-34.794174,-58.6566507", "-34.894174,-58.7566507", "-34.994174,-58.8566507", "-35.094174,-58.9566507"] 
+
+def create_venues_by_distance() -> List[Venue]:
+    locations = get_locations()
+    shuffle(locations)
+    venues = [create_venue("La Pizzerias", 
+                           loc, 51, logo="foto.url", pictures = ["foto1", "foto2"], 
+                           slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], 
+                           vacations=[datetime.now()], reservationLeadTime=10)
+            for loc in locations]
+    return venues
+
+
+
+def test_venue_ranking_by_distance():
+    my_location = ("-34.594174","-58.4566507")
+    base = MockBase()
+
+    for venue in create_venues_by_distance():
+        base.store_venue(venue.persistance())
+    ranker = Ranker(base, my_location)
+    result = [value.location for value in asyncio.run(ranker.rank())]
+    locations = get_locations()
+    all_equal = list(filter(
+        lambda x: x[0] == x[1],
+        zip(result, locations)
+    ))
+    assert len(all_equal) == len(locations) #This means all locations are equal (and get_locations returns locations unsorted)

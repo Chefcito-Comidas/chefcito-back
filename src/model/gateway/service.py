@@ -1,7 +1,7 @@
 from ast import Dict
 from logging import log
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, Tuple
 from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
@@ -92,6 +92,9 @@ class GatewayService:
 
     async def get_venues(self, venue_query: VenueQuery, response: Response) -> VenueQueryResult | Error:
         return await self.venues.get_venues(venue_query, response)
+
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+        return await self.venues.get_venues_near_to(location, response)
 
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
         if not await self.__check_user(credentials, venue_id, response):

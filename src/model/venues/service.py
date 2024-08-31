@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Tuple
 from fastapi import Response, status
 
 from src.model.commons.error import Error
 from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.venues.data.base import VenuesBase
+from src.model.venues.data.location_finder import Ranker
 from src.model.venues.data.schema import VenueSchema
 from src.model.venues.venue import CreateInfo, Venue
 
@@ -24,7 +25,10 @@ class VenuesProvider:
 
     async def delete_venue(self, venue_id: str) -> None:
         raise Exception("Interface method should not be called")
-    
+
+    async def get_venues_near_to(self, localtion: Tuple[str, str]) -> VenueQueryResult:
+        raise Exception("Interface method should not be called")
+
 class VenuesService:
 
     def __init__(self, provider: VenuesProvider):
@@ -60,7 +64,12 @@ class VenuesService:
         finally:
             return
 
-
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+        try:
+            return await self.provider.get_venues_near_to(location)
+        except Exception as e:
+            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            return Error.from_exception(e)
 
 class HttpVenuesProvider(VenuesProvider):
     def __init__(self, service_url: str):
@@ -96,6 +105,10 @@ class HttpVenuesProvider(VenuesProvider):
         await delete(f"{self.url}{endpoint}/{venue_id}")
         return  
         
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+        endpoint = "/venues/near"
+        response = await get(f"{self.url}{endpoint}", params={'location': location})
+        return await recover_json_data(response)
 
 class LocalVenuesProvider(VenuesProvider):
     def __init__(self, base: VenuesBase):
@@ -121,3 +134,11 @@ class LocalVenuesProvider(VenuesProvider):
     
     async def delete_venue(self, venue_id: str) -> None:
         Venue.delete(venue_id, self.db)
+
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+        ranker = Ranker(self.db, location)
+        result = await ranker.rank()
+        return VenueQueryResult(
+            result=result,
+            total=len(result)
+        ) 
