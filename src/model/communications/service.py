@@ -1,3 +1,4 @@
+from fastapi import logger
 from src.model.commons import error
 from src.model.communications.comms.messager import CommunicationsMessager, MockedCommunicationsMessager
 from src.model.communications.data.base import CommunicationsBase
@@ -42,6 +43,16 @@ class CommunicationService():
             await self.provider.send_message(message)
         except Exception as e:
             return error.Error.from_exception(e)
+
+class DummyCommunicationProvider(CommunicationProvider):
+    async def store_user(self, user: User) -> User:
+        return user
+    
+    async def get_user(self, id: str) -> User | None:
+        return None
+    
+    async def send_message(self, message: Message) -> None:
+        logger.logger.info(f"{message.message} sent to {message.user}")
 
 class LocalCommunicationProvider(CommunicationProvider):
 
