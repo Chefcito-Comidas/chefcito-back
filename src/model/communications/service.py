@@ -1,5 +1,6 @@
 from fastapi import logger
 from src.model.commons import error
+from src.model.commons.caller import post
 from src.model.communications.comms.messager import CommunicationsMessager, MockedCommunicationsMessager
 from src.model.communications.data.base import CommunicationsBase
 from src.model.communications.message import Message
@@ -53,6 +54,20 @@ class DummyCommunicationProvider(CommunicationProvider):
     
     async def send_message(self, message: Message) -> None:
         logger.logger.info(f"{message.message} sent to {message.user}")
+
+class HttpCommunicationProvider(CommunicationProvider):
+    def __init__(self, url: str):
+        self.url = url
+
+    async def store_user(self, user: User) -> User:
+        endpoint = "/user"
+        await post(f"{self.url}{endpoint}", body=user.model_dump())
+        return user
+    
+    async def send_message(self, message: Message) -> None:
+        endpoint = "/messages"
+        await post(f"{self.url}{endpoint}", body=message.model_dump())
+
 
 class LocalCommunicationProvider(CommunicationProvider):
 
