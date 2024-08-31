@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from pydantic import BaseModel
 import src.model.reservations.reservation as r 
 import src.model.reservations.update as update
@@ -18,15 +18,15 @@ class CreateInfo(BaseModel):
         return info
 
 class Update(BaseModel):
-    accept: Optional[bool] = False
-    cancel: Optional[bool] = False 
+    advance_forward: Optional[bool] = None
+    cancel: bool = False
     time: Optional[datetime] = None 
     people: Optional[int] = None 
 
     def with_user(self, user: str) -> update.Update:
        value = update.Update(
                user="",
-               accept=self.accept,
+               advance_forward=self.advance_forward,
                cancel=self.cancel,
                time=self.time,
                people=self.people
@@ -38,7 +38,7 @@ class ReservationQuery(BaseModel):
     
     limit: int = 10
     start: int = 0
-    status: Optional[str] = None
+    status: Optional[List[str]] = None
     id: Optional[str] = None
     venue: Optional[str] = None
     from_time: Optional[datetime] = None 
