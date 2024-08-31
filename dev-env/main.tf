@@ -76,6 +76,7 @@ resource "docker_container" "reservations" {
   }
 }
 
+
 resource "docker_container" "opinions" {
   name = "opinions"
   hostname = "opinions"
@@ -99,6 +100,21 @@ resource "docker_container" "summaries" {
     external = 8005
   }
   env = ["CONN_STRING=mongodb://nsqldb/", "KEY=FakeKey", "KEY_ID=FAKEKEYID"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
+
+resource "docker_container" "communications" {
+  name = "communications"
+  hostname = "communications"
+  image = "service-communications:latest"
+  ports {
+    internal = 80
+    external = 8010
+  }
+  env=["DB_STRING=postgresql://user:admin123@reldb/users_db", "TWILIO_SID=FAKEAUTH", "TWILIO_TOKEN=FAKETOKEN", "DEV=True"]
+
   networks_advanced {
     name = docker_network.chefcito_network.id
   }

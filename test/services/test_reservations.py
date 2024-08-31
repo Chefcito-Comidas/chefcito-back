@@ -2,7 +2,7 @@ from datetime import datetime
 import pytest
 from testcontainers.postgres import PostgresContainer
 from src.model.reservations.data.base import RelBase
-from src.model.reservations.reservation import Accepted, Reservation, create_reservation
+from src.model.reservations.reservation import Accepted, Assisted, Reservation, Uncomfirmed, create_reservation
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.update import Update
 from test.reservations.test_query import all_different, create_reservations
@@ -68,3 +68,40 @@ async def test_reservation_pagination():
         assert all_different(result_1.result, result_2.result)
         assert all_different(result_1.result, result_3.result)
         assert all_different(result_2.result, result_3.result)
+
+@pytest.mark.asyncio
+async def test_reservation_query_by_various_states():
+    with PostgresContainer('postgres:16') as postgres:
+        run('db_config.yaml', connection=postgres.get_connection_url())
+        reservations = create_reservations(99)
+        database = RelBase(conn_string=postgres.get_connection_url())
+        for reservation in reservations:
+            database.store_reservation(reservation)
+        query = ReservationQuery(
+            user="user_1",
+            venue="venue_1",
+            status=[Uncomfirmed().get_status()],
+            limit=8
+        )
+        result = query.query(database)
+        for reservation in result.result:
+            reservation.status = Accepted()
+            database.update_reservation(reservation.persistance()) 
+        result = query.query(database)
+        for reservation in result.result:
+            reservation.status = Assisted()
+            database.update_reservation(reservation.persistance())
+        
+        query_final = ReservationQuery(
+            venue="venue_1",
+            status=[Accepted().get_status(), Assisted().get_status()],
+            limit=20
+        )
+        result = query_final.query(database)
+        accepted_result = list(filter(lambda x: x.status.get_status() == Accepted().get_status(),
+                                 result.result))
+        assisted_result = list(filter(lambda x: x.status.get_status() == Assisted().get_status(),
+                                     result.result)) 
+        assert result.total == 16
+        assert len(accepted_result) == 8
+        assert len(assisted_result) == 8

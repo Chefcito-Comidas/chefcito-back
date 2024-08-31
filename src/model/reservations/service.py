@@ -15,7 +15,7 @@ from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.venues.service import VenuesProvider
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 
 
 class ReservationsProvider:

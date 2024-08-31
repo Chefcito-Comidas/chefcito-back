@@ -14,7 +14,7 @@ class ReservationQuery(BaseModel):
     
     limit: int = 10
     start: int = 0
-    status: Optional[str] = None
+    status: Optional[List[str]] = None
     id: Optional[str] = None
     user: Optional[str] = None
     venue: Optional[str] = None
