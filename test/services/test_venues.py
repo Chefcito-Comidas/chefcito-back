@@ -84,7 +84,7 @@ async def test_venue_filter():
 
         query = VenueQuery(
                 name="name_1",
-                characteristic="charact1_1",
+                characteristics=["charact1_1"],
                 limit=5
                 )
         result_1 = query.query(database)

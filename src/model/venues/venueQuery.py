@@ -21,14 +21,14 @@ class VenueQuery(BaseModel):
     logo: Optional[str] = None
     pictures: Optional[List[str]] = None
     slots: Optional[List[datetime.datetime]] = None
-    characteristic: Optional[str] = None
+    characteristics: Optional[List[str]] = None
     vacations: Optional[List[datetime.datetime]] = None
     reservationLeadTime: Optional[int] = None
    
 
     def query(self, db: VenuesBase) -> VenueQueryResult:
         builder = get_builder(db) 
-        result, total = builder.get(self.id, self.name, self.location, self.capacity, self.logo, self.pictures, self.slots, self.characteristic, self.vacations, self.reservationLeadTime, self.limit, self.start)
+        result, total = builder.get(self.id, self.name, self.location, self.capacity, self.logo, self.pictures, self.slots, self.characteristics, self.vacations, self.reservationLeadTime, self.limit, self.start)
 
         result = [Venue.from_schema(value) for value in result]
         return VenueQueryResult(result=result, total=total)

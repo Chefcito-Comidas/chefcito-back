@@ -38,7 +38,7 @@ class QueryBuilder:
             logo: Optional[str],
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
-            characteristic: Optional[str],
+            characteristics: Optional[List[str]],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
             limit: int,
@@ -60,13 +60,13 @@ class RelBuilder(QueryBuilder):
             count = count.where(VenueSchema.name.__eq__(name))
         return query, count
     
-    def __add_characteristic_filter(self, characteristic: Optional[str], query: Select, count: Select) -> Tuple[Select, Select]:
+    def __add_characteristic_filter(self, characteristic: Optional[List[str]], query: Select, count: Select) -> Tuple[Select, Select]:
         if characteristic: 
-            query = query.where(VenueSchema.characteristics.contains([characteristic]))
-            count = count.where(VenueSchema.characteristics.contains([characteristic]))
+            query = query.where(VenueSchema.characteristics.contains(characteristic))
+            count = count.where(VenueSchema.characteristics.contains(characteristic))
         return query, count
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
         if id:
@@ -99,12 +99,12 @@ class MockedBuilder(QueryBuilder):
         return filter
 
     
-    def __filter_by_characteristic(self, characteristic: str) -> Callable[[VenueSchema], bool]:
+    def __filter_by_characteristic(self, characteristic: List[str]) -> Callable[[VenueSchema], bool]:
         def filter(value: VenueSchema) -> bool:
-            return characteristic in value.characteristics
+            return any([c in value.characteristics for c in characteristic])
         return filter
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[str], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None or  vacations != None or reservationLeadTime != None:
             raise Exception("Capacity, location, logo, pictures and slots query not implemented")
 
@@ -118,7 +118,7 @@ class MockedBuilder(QueryBuilder):
 
 
 
-    def __filter_by_eq(self, name: Optional[str], characteristic: Optional[str], limit: int, start: int) -> List[VenueSchema]:
+    def __filter_by_eq(self, name: Optional[str], characteristic: Optional[List[str]], limit: int, start: int) -> List[VenueSchema]:
         result = self.db.base
 
         if name:

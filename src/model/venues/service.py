@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from fastapi import Response, status
 
 from src.model.commons.error import Error
@@ -24,7 +24,10 @@ class VenuesProvider:
 
     async def delete_venue(self, venue_id: str) -> None:
         raise Exception("Interface method should not be called")
-    
+
+    async def get_venues_near_to(self, localtion: Tuple[str, str]) -> VenueQueryResult:
+        raise Exception("Interface method should not be called")
+
 class VenuesService:
 
     def __init__(self, provider: VenuesProvider):
@@ -60,7 +63,12 @@ class VenuesService:
         finally:
             return
 
-
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+        try:
+            return await self.provider.get_venues_near_to(location)
+        except Exception as e:
+            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            return Error.from_exception(e)
 
 class HttpVenuesProvider(VenuesProvider):
     def __init__(self, service_url: str):

@@ -64,3 +64,4 @@ async def get_venues(response: Response,
             start=start
             )
     return await service.get_venues(query, response)
+
