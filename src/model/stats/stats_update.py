@@ -15,9 +15,26 @@ class UserCancelUpdate(BaseModel, DataUpdate):
 
     async def update(self, db: StatsDB):
         user = await db.get_by_user(self.user)
-        user.canceled += 1
+        user.increase_canceled() 
         await db.update_user_data(user) 
 
+class UserExpiredUpdate(BaseModel, DataUpdate):
+    user: str
+
+    async def update(self, db: StatsDB):
+        user = await db.get_by_user(self.user)
+        user.increase_expired() 
+        await db.update_user_data(user)
+
+class UserTotalUpdate(BaseModel, DataUpdate):
+    user: str
+
+    async def update(self, db: StatsDB):
+        user = await db.get_by_user(self.user)
+        user.increase() 
+        await db.update_user_data(user)
+
+   
 
 class StatsUpdate():
 
@@ -28,6 +45,12 @@ class StatsUpdate():
 
     def canceled_reservation(self):
         self.update_data = UserCancelUpdate(user=self.user)
+
+    def expired_reservation(self):
+        self.update_data = UserExpiredUpdate(user=self.user)
+
+    def assisted_reservation(self):
+        self.update_data = UserTotalUpdate(user=self.user)
 
     async def update(self, db: StatsDB):
         await self.update_data.update(db)

@@ -18,4 +18,33 @@ def test_on_cancel_update():
 
     user = asyncio.run(stats.get_user("SomeClient"))
 
-    assert user.canceled == 1.0    
+    assert user.canceled == 1.0 
+    assert user.total == 1
+ 
+def test_on_expired_update():
+    db = MockedStatsDB()
+    stats = LocalStatsProvider(db)
+
+    update = StatsUpdate(user="SomeClient")
+    update.expired_reservation()
+    asyncio.run(stats.update(update))
+
+    user = asyncio.run(stats.get_user("SomeClient"))
+
+    assert user.expired == 1.0
+    assert user.total == 1
+
+def test_on_cancel_and_expired():
+    db = MockedStatsDB()
+    stats = LocalStatsProvider(db)
+
+    update = StatsUpdate(user="SomeClient")
+    update.expired_reservation()
+    asyncio.run(stats.update(update))
+    update.canceled_reservation()
+    asyncio.run(stats.update(update))
+
+    user = asyncio.run(stats.get_user("SomeClient"))
+
+    assert user.expired == user.canceled == 0.5
+    assert user.total == 2
