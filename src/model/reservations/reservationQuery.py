@@ -12,7 +12,7 @@ from src.model.reservations.reservation import Reservation
 
 class ReservationQueryResponse(BaseModel):
     result: List[Reservation]
-    opinions: Dict[str, Opinion] = {}
+    opinions: Dict[str, Opinion]
     total: int
 
 class ReservationQuery(BaseModel):

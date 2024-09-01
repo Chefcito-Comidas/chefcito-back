@@ -7,7 +7,8 @@ from pydantic_settings import BaseSettings
 from src.model.opinions.data.base import MongoOpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
-from src.model.opinions.service import LocalOpinionsProvider, OpinionsService
+from src.model.opinions.provider import LocalOpinionsProvider
+from src.model.opinions.service import OpinionsService
 from src.model.commons.error import Error
 from src.model.summarizer.summary import Summary
 from src.model.summarizer.provider import HttpSummarizerProvider, SummarizerService
