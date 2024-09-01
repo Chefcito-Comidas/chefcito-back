@@ -1,6 +1,8 @@
 import asyncio
 from datetime import datetime
 import pytest
+from src.model.opinions.data.base import MockedOpinionsDB
+from src.model.opinions.provider import LocalOpinionsProvider
 from src.model.reservations.data.base import MockBase
 from src.model.reservations.reservation import CreateInfo
 from src.model.reservations.data.schema import ReservationSchema
@@ -91,7 +93,8 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     database = MockBase()
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
-    service = LocalReservationsProvider(database, venues, None)
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    service = LocalReservationsProvider(database, venues, opinions)
     asyncio.run(venues.create_venue(v.CreateInfo(
                                                  id="ADSAF",
                                                  name="Lo de Carlitos",

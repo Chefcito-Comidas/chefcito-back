@@ -193,7 +193,7 @@ class LocalReservationsProvider(ReservationsProvider):
         raise Exception("Reservation does not exist")
 
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
-        return query.query(self.db)
+        return await query.query(self.db, self.opinions)
 
     async def delete_reservation(self, reservation_id: str) -> None:
         Reservation.delete(reservation_id, self.db)

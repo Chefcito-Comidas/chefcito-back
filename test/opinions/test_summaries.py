@@ -4,7 +4,7 @@ from typing import List
 from src.model.opinions.data.base import MockedOpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
-from src.model.opinions.service import LocalOpinionsProvider, OpinionsProvider
+from src.model.opinions.provider import LocalOpinionsProvider, OpinionsProvider
 from src.model.summarizer.process.algorithm import SummaryAlgorithm
 from src.model.summarizer.service import LocalSummarizerProvider
 

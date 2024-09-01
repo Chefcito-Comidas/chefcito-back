@@ -15,6 +15,7 @@ class OpinionQuery(BaseModel):
     venue: Optional[str] = None
     from_date: Optional[datetime] = None  
     to_date: Optional[datetime] = None
+    reservation: Optional[str] = None
     limit: int = 10
     start: int =  0
     
@@ -25,6 +26,8 @@ class OpinionQuery(BaseModel):
         query = OpinionSchema.find() 
         if self.venue:
             query = query.find(OpinionSchema.venue == self.venue)
+        if self.reservation:
+            query = query.find(OpinionSchema.reservation == self.reservation)
         if self.from_date:
             query = query.find(
                     OpinionSchema.date.__ge__(self.from_date)
@@ -35,6 +38,7 @@ class OpinionQuery(BaseModel):
                     )
 
         return query
+
 
     def query(self) -> FindMany[OpinionSchema] | None:
         query = self.__base_query()

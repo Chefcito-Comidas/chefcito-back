@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import Callable, List, Optional, Tuple
 
@@ -38,7 +39,7 @@ class QueryBuilder:
         raise Exception("Interface method should not be called")
 
 
-    def get(self,
+    async def get(self,
             id: Optional[str],
             user: Optional[str],
             status: Optional[List[str]],
@@ -87,8 +88,8 @@ class RelBuilder(QueryBuilder):
     def __get_count(self) -> Select:
         return select(func.count()).select_from(ReservationSchema)
 
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[List[str]], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
-
+    async def get(self, id: Optional[str], user: Optional[str], status: Optional[List[str]], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
+        loop = asyncio.get_event_loop()
         if id:
             return Query(result=self._get_by_id(id), total=1)
     
@@ -99,9 +100,9 @@ class RelBuilder(QueryBuilder):
         query, count_query = self.__add_venue_filter(query,count_query, venue)
         query, count_query = self.__add_time_filter(query,count_query, time)
         query, count_query = self.__add_people_filter(query,count_query, people)
-        result = self.db.get_by_eq(query)
-        count = self.db.run_count(count_query)
-        return QueryResult(result=result, total=count)
+        result = loop.run_in_executor(None,self.db.get_by_eq, query)
+        count = loop.run_in_executor(None, self.db.run_count,count_query)
+        return QueryResult(result=await result, total=await count)
 
 class MockedBuilder(QueryBuilder):
     
@@ -125,7 +126,7 @@ class MockedBuilder(QueryBuilder):
             return value.venue == venue
         return filter
     
-    def get(self, id: Optional[str], user: Optional[str], status: Optional[List[str]], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
+    async def get(self, id: Optional[str], user: Optional[str], status: Optional[List[str]], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
         if time != None or people != None:
             raise Exception("Timed and people query not implemented")
 

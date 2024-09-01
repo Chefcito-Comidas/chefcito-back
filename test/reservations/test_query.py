@@ -1,7 +1,10 @@
 
 
+import asyncio
 from datetime import datetime
 from typing import List
+from src.model.opinions.data.base import MockedOpinionsDB
+from src.model.opinions.provider import LocalOpinionsProvider
 from src.model.reservations.data.base import MockBase
 from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import Reservation, Uncomfirmed, create_reservation
@@ -48,50 +51,54 @@ def all_same_venue(venue: str, result: List[Reservation]) -> bool:
 
 def test_get_all_by_one_user():
     database = MockBase()
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
             user="user_0"
             )
-    result = query.query(database)
+    result = asyncio.run(query.query(database, opinions))
     assert result.total == 3
     assert all_same_user("user_0", result.result)
 
 
 def test_get_all_by_one_venue():
     database = MockBase()
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
             venue="venue_1"
             )
-    result = query.query(database)
+    result = asyncio.run(query.query(database, opinions))
     assert result.total == 4
     assert all_same_venue("venue_1", result.result)
 
 def test_limiting_the_amount_of_reservations():
     database = MockBase()
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
             venue="venue_1",
             limit=2
             )
-    result = query.query(database)
+    result = asyncio.run(query.query(database, opinions))
     assert result.total == 2
     assert all_same_venue("venue_1", result.result)
 
 def test_stepping_with_limit_the_amount_of_reservations():
     database = MockBase()
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
             venue="venue_1",
             limit=2
             )
-    result_1 = query.query(database)
+    result_1 = asyncio.run(query.query(database, opinions))
     query.start = 2
-    result_2 = query.query(database)
+    result_2 = asyncio.run(query.query(database, opinions))
     assert result_1.total == 2
     assert result_2.total == 2
     assert all_different(result_1.result, result_2.result) 
