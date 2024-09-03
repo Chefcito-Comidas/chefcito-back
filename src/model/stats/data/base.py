@@ -2,21 +2,29 @@ from typing import Any, Dict
 from beanie import Document, init_beanie
 
 from src.model.stats.data.user_data import UserDataDocument
+from src.model.stats.data.venue_data import VenueDataDocument
 from src.model.stats.user_data import UserStatData
 from motor.motor_asyncio import AsyncIOMotorClient
+
+from src.model.stats.venue_data import VenueStatData
 
 class StatsDB:
     
     async def update_user_data(self, doc: UserStatData):
         raise Exception("Interface method should not be called")
-    
+
+    async def update_venue_data(self, doc: VenueStatData):
+        raise Exception("Interface method should not be called")
+
     async def get_by_user(self, user: str) -> UserStatData:
         raise Exception("Interface exception should not be called")    
 
+    async def get_by_venue(self, venue: str) -> VenueStatData:
+        raise Exception("Interface method should not be called")
 
 class MongoStatsDB(StatsDB):
     async def init(self):
-        self.db = await init_beanie(database=self.client.db_name, document_models=[UserDataDocument])
+        self.db = await init_beanie(database=self.client.db_name, document_models=[UserDataDocument, VenueDataDocument])
 
     def __init__(self, conn_string: str):
         client = AsyncIOMotorClient(conn_string)
@@ -29,8 +37,18 @@ class MongoStatsDB(StatsDB):
             return UserDataDocument(user=user, total=0, canceled=0, expired=0)
         return doc
 
+    async def __get_venue_doc(self, venue: str) -> VenueDataDocument:
+        doc = await VenueDataDocument.find_one(VenueDataDocument.venue == venue)
+        if not doc:
+            return VenueDataDocument(venue=venue, total=0, canceled=0, expired=0)
+        return doc
+
     async def get_by_user(self, user: str) -> UserStatData:
         doc = await self.__get_user_doc(user)    
+        return doc.into_stat_data()
+
+    async def get_by_venue(self, venue: str) -> VenueStatData:
+        doc = await self.__get_venue_doc(venue)
         return doc.into_stat_data()
 
     async def update_user_data(self, doc: UserStatData):
@@ -38,16 +56,26 @@ class MongoStatsDB(StatsDB):
         user.update_from(doc)
         await user.save()
 
+    async def update_venue_data(self, doc: VenueStatData):
+        venue = await self.__get_venue_doc(doc.venue)
+        venue.update_from(doc)
+        await venue.save()
+
 class MockedStatsDB(StatsDB):
 
     def __init__(self):
         self.data: Dict[str, Dict[str, Any]] = {}
         self.data['user_data'] = {}
-
+        self.data['venue_data'] = {}
 
     async def update_user_data(self, doc: UserStatData):
         self.data['user_data'][doc.user] = doc
 
     async def get_by_user(self, user: str) -> UserStatData:
         return self.data['user_data'].get(user, UserStatData(user=user, total=0, canceled=0, expired=0))                  # type: ignore
-    
+
+    async def update_venue_data(self, doc: VenueStatData):
+        self.data['venue_data'][doc.venue] = doc
+
+    async def get_by_venue(self, venue: str) -> VenueStatData:
+        return self.data['venue_data'].get(venue, VenueStatData(venue=venue, total=0, canceled=0, expired=0))  

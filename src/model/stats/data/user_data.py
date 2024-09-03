@@ -18,8 +18,8 @@ class UserDataDocument(Document):
         return UserStatData(
             user=self.user,
             total=self.total,
-            canceled=self.canceled/self.total,
-            expired=self.expired/self.total
+            canceled=round(self.canceled/self.total, 2),
+            expired=round(self.expired/self.total, 2)
         )
     
     def update_from(self, stat: UserStatData):

@@ -11,7 +11,7 @@ def test_on_cancel_update():
     db = MockedStatsDB()
     stats = LocalStatsProvider(db)
 
-    update = StatsUpdate(user="SomeClient")
+    update = StatsUpdate(user="SomeClient", venue="")
     update.canceled_reservation()
 
     asyncio.run(stats.update(update))
@@ -25,7 +25,7 @@ def test_on_expired_update():
     db = MockedStatsDB()
     stats = LocalStatsProvider(db)
 
-    update = StatsUpdate(user="SomeClient")
+    update = StatsUpdate(user="SomeClient", venue="")
     update.expired_reservation()
     asyncio.run(stats.update(update))
 
@@ -38,7 +38,7 @@ def test_on_cancel_and_expired():
     db = MockedStatsDB()
     stats = LocalStatsProvider(db)
 
-    update = StatsUpdate(user="SomeClient")
+    update = StatsUpdate(user="SomeClient", venue="")
     update.expired_reservation()
     asyncio.run(stats.update(update))
     update.canceled_reservation()

@@ -8,7 +8,7 @@ from src.model.stats.user_data import UserStatData
 
 async def user_data_storage_and_update(db: StatsDB):
     provider = LocalStatsProvider(db)
-    update = StatsUpdate(user="CustomUser")
+    update = StatsUpdate(user="CustomUser", venue="CustomVenue")
     user_data = UserStatData(user="", total=0, canceled=0, expired=0) 
     for i in range(100):
         if i%3 == 0:
@@ -26,6 +26,16 @@ async def user_data_storage_and_update(db: StatsDB):
     assert user.total == 100
     assert round(user.canceled, 2) == round(user_data.canceled, 2) 
     assert round(user.expired, 2) ==  round(user_data.expired, 2)
+
+async def venue_data_based_on_customVenue(db: StatsDB):
+    provider = LocalStatsProvider(db)
+
+    venue = await provider.get_venue("CustomVenue")
+
+    assert venue.total == 100
+    assert round(venue.total, 2) == round(33 / 100, 2)
+    assert round(venue.expired, 2) == round(33/ 100, 2)
+    
 
 @pytest.mark.asyncio
 async def test_stats_loop():
