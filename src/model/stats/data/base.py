@@ -78,4 +78,4 @@ class MockedStatsDB(StatsDB):
         self.data['venue_data'][doc.venue] = doc
 
     async def get_by_venue(self, venue: str) -> VenueStatData:
-        return self.data['venue_data'].get(venue, VenueStatData(venue=venue, total=0, canceled=0, expired=0))  
+        return self.data['venue_data'].get(venue, VenueStatData(venue=venue, total=0, canceled=0, expired=0, people=0))  

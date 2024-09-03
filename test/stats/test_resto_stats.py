@@ -1,6 +1,8 @@
 import asyncio
+import datetime
 import pytest
 
+from src.model.reservations.reservation import Assisted, Expired, Reservation
 from src.model.stats.data.base import MockedStatsDB
 from src.model.stats.provider import LocalStatsProvider
 from src.model.stats.stats_update import StatsUpdate
@@ -70,4 +72,24 @@ def test_on_multiple_reservations():
     assert user.expired == 1/3
     assert user.total == 3
 
-    
+def test_on_reservation_update():
+    db = MockedStatsDB()
+    stats = LocalStatsProvider(db)
+
+    update = StatsUpdate.from_reservation(Reservation(
+        id="Random",
+        user="SomeUser",
+        venue="SomeVenue",
+        time=datetime.datetime.now(),
+        people=5,
+        status=Assisted()
+    ))
+
+    asyncio.run(stats.update(update))
+
+    venue = asyncio.run(stats.get_venue("SomeVenue"))
+
+    assert venue.total == 1
+    assert venue.people == 5
+
+
