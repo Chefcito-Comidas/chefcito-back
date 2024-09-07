@@ -16,5 +16,7 @@ COPY ./src/model/opinions /code/src/model/opinions
 COPY ./src/model/summarizer/ /code/src/model/summarizer
 COPY ./src/services/reservations/main.py /code/main.py
 COPY ./src/model/communications /code/src/model/communications
+COPY ./src/model/stats /code/src/model/stats
+
 # 
 CMD ["fastapi", "run", "main.py", "--port", "80"]

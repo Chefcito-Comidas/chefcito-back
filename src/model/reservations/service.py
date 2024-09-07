@@ -2,7 +2,7 @@ from datetime import datetime
 from logging import log
 import logging
 from typing import List
-from fastapi import Response, status
+from fastapi import HTTPException, Response, status
 
 from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.commons.error import Error
@@ -16,6 +16,9 @@ from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
+from src.model.stats.provider import StatsProvider
+from src.model.stats.user_data import UserStatData
+from src.model.stats.venue_data import VenueStatData
 from src.model.venues.service import VenuesProvider
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 
@@ -38,6 +41,12 @@ class ReservationsProvider:
         raise Exception("Interface method should not be called")
 
     async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
+        raise Exception("Interface method should not be called")
+
+    async def get_venue_stats(self, venue: str) -> VenueStatData:
+        raise Exception("Interface mehotd should not be called")
+    
+    async def get_user_stats(self, user: str) -> UserStatData:
         raise Exception("Interface method should not be called")
 
 class ReservationsService:
@@ -88,7 +97,23 @@ class ReservationsService:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
 
+    async def get_user_stats(self, user: str) -> UserStatData:
+        try:
+            return await self.provider.get_user_stats(user)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
 
+    async def get_venue_stats(self, venue: str) -> VenueStatData:
+        try:
+            return await self.provider.get_venue_stats(venue)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
 
 class HttpReservationsProvider(ReservationsProvider):
     def __init__(self, service_url: str):
@@ -142,15 +167,26 @@ class HttpReservationsProvider(ReservationsProvider):
         response = await get(f"{self.url}{endpoint}", params=params)
         return await recover_json_data(response)
 
+    async def get_user_stats(self, user: str) -> UserStatData:
+        endpoint = f"/stats/user/{user}"
+        response = await get(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+    
+    async def get_venue_stats(self, venue: str) -> VenueStatData:
+        endpoint = f"/stats/venue/{venue}"
+        response = await get(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
 
 class LocalReservationsProvider(ReservationsProvider):
     
-    def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider, 
+    def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider,
+                 stats: StatsProvider, 
                  comms: CommunicationProvider = DummyCommunicationProvider()):
         self.db = base
         self.venues = venues
         self.opinions = opinions
         self.communications = comms
+        self.stats = stats
 
     async def __notify_user(self, user: str, message: str) -> None:
         to_send = Message(user=user, message=message)
@@ -212,3 +248,9 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         return await self.opinions.query_opinions(query)
+
+    async def get_user_stats(self, user: str) -> UserStatData:
+        return await self.stats.get_user(user)
+    
+    async def get_venue_stats(self, venue: str) -> VenueStatData:
+        return await self.stats.get_venue(venue)

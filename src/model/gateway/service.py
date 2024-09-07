@@ -2,7 +2,7 @@ from ast import Dict
 from logging import log
 import logging
 from typing import Annotated, List, Tuple
-from fastapi import Body, Response, status
+from fastapi import Body, HTTPException, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
 from fastapi.security import HTTPAuthorizationCredentials
@@ -12,6 +12,8 @@ from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.reservations.service import  ReservationsService
 from src.model.reservations.update import Update
+from src.model.stats.user_data import UserStatData
+from src.model.stats.venue_data import VenueStatData
 from src.model.users.service import UsersProvider
 from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
@@ -156,3 +158,22 @@ class GatewayService:
                                query: OpinionQuery,
                                response: Response) -> OpinionQueryResponse | Error:
         return await self.reservations.get_opinions(query, response)
+
+    async def get_user_stats(self, user: str) -> UserStatData:
+        try:
+            return await self.reservations.get_user_stats(user)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
+    
+    async def get_venue_stats(self, venue: str) -> VenueStatData:
+        try:
+            return await self.reservations.get_venue_stats(venue)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
+        

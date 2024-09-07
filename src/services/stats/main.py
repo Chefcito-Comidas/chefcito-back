@@ -32,10 +32,10 @@ stats = StatsService(LocalStatsProvider(database))
 async def update_call(reservation: Reservation) -> None:
     return await stats.update(reservation)
 
-@app.get(GET_USER_DATA_ENDPOINT + "{user}")
+@app.get(GET_USER_DATA_ENDPOINT + "/{user}")
 async def get_user_data(user: Annotated[str, Path()])-> UserStatData:
     return await stats.get_user(user)
 
-@app.get(GET_VENUE_DATA_ENDPOINT + "{venue}")
+@app.get(GET_VENUE_DATA_ENDPOINT + "/{venue}")
 async def get_venue_data(venue: Annotated[str, Path()]) -> VenueStatData:
     return await stats.get_venue(venue)
