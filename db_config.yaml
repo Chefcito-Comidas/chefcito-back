@@ -31,4 +31,4 @@ endpoints:
   - name: "/stats/venue/param"
     allowed: ["restaurant"]
   - name: "/stats/user/param"
-    allowed: ["user", "restaurant"] 
+    allowed: ["client", "restaurant"] 
