@@ -1,6 +1,8 @@
+import datetime
 import pytest
 from testcontainers.mongodb import MongoDbContainer
 
+from src.model.reservations.reservation import Assisted, Reservation
 from src.model.stats.data.base import MongoStatsDB, StatsDB
 from src.model.stats.provider import LocalStatsProvider
 from src.model.stats.stats_update import StatsUpdate
@@ -37,9 +39,35 @@ async def venue_data_based_on_customVenue(db: StatsDB):
     assert round(venue.expired, 2) == round(33/ 100, 2)
     
 
+async def venue_data_based_on_reservations(db: StatsDB):
+    provider = LocalStatsProvider(db)
+
+    for i in range(280):
+        update = StatsUpdate.from_reservation(
+            Reservation(
+                id="Random",
+                user=f"user_{i}",
+                venue="CoolPlace",
+                time=datetime.datetime(year=2024, month=4, day=14, hour=20) + datetime.timedelta(days=i, hours=(i)%4),
+                people=i + 1,
+                status=Assisted() 
+            )
+        )
+        await provider.update(update)
+
+    venue = await provider.get_venue("CoolPlace")
+
+    assert venue.total == 280 
+    for i in range(6):
+        assert round(venue.get_day(i), 2) == round(1/7, 2)
+    for turn in venue.get_turns():
+        assert round(turn[1], 2) == round(1/4, 2)
+
+
 @pytest.mark.asyncio
 async def test_stats_loop():
     with MongoDbContainer()as mongo:
         database = MongoStatsDB(mongo.get_connection_url())
         await database.init()
-        await user_data_storage_and_update(database) 
+        await user_data_storage_and_update(database)
+        await venue_data_based_on_reservations(database) 
