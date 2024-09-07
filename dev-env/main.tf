@@ -119,7 +119,19 @@ resource "docker_container" "communications" {
     name = docker_network.chefcito_network.id
   }
 }
-
+resource "docker_container" "stats" {
+  name = "stats"
+  hostname = "stats"
+  image = "service-stats:latest"
+  ports {
+    internal = 80
+    external = 8011
+  }
+  env = ["MONGO_STRING=mongodb://nsqldb/"]
+  networks_advanced {
+    name = docker_network.chefcito_network.id
+  }
+}
 resource "docker_container" "postgresql" {
   name = "postgredb"
   hostname = "reldb"

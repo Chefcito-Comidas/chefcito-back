@@ -52,7 +52,7 @@ class Accepted(ReservationStatus):
 
 class Assisted(ReservationStatus):
     def __init__(self):
-        super().__init__(status="Assited")
+        super().__init__(status="Assisted")
 
 class Expired(ReservationStatus):
     def __init__(self):

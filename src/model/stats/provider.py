@@ -5,6 +5,10 @@ from src.model.stats.stats_update import StatsUpdate
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 
+UPDATE_ENDPOINT = "/update-data"
+GET_VENUE_DATA_ENDPOINT = "/venue"
+GET_USER_DATA_ENDPOINT = "/user"
+
 
 class StatsProvider():
     
