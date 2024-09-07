@@ -92,6 +92,12 @@ jobs:
           file: containerfiles/summaries/CONTAINERFILE
           push: true
           tags: chefcitoacr.azurecr.io/staging/summaries:latest
+      - name: build-push communications 
+        uses: docker/build-push-action@v3
+        with:
+          file: containerfiles/communications/CONTAINERFILE
+          push: true
+          tags: chefcitoacr.azurecr.io/staging/communications:latest
 
 
       

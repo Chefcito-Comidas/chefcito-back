@@ -60,6 +60,12 @@ jobs:
                 file: containerfiles/summaries/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/summaries:latest
+            - name: build-push communications 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/communications/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/communications:latest
             
 
     deploy:
@@ -102,4 +108,16 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy summaries 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n summaries -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy communications 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n communications -g chefcito-rg --revision-suffix ${{ github.sha }}
             
