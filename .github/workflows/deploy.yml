@@ -60,7 +60,12 @@ jobs:
                 file: containerfiles/summaries/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/summaries:latest
-            
+            - name: build-push stats 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/stats/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/stats:latest
 
     deploy:
         needs: build
@@ -102,4 +107,16 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy summaries 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n summaries -g chefcito-rg --revision-suffix ${{ github.sha }}
+            - name: deploy stats 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n stats -g chefcito-rg --revision-suffix ${{ github.sha }}
             
