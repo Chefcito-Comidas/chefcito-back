@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from beanie import Document, init_beanie
 
 from src.model.stats.data.user_data import UserDataDocument
@@ -21,6 +21,9 @@ class StatsDB:
 
     async def get_by_venue(self, venue: str) -> VenueStatData:
         raise Exception("Interface method should not be called")
+    
+    async def get_venue_user(self, user: str, venue: str) -> Tuple[UserStatData, VenueStatData]:
+        raise Exception("Interface method should not be called")
 
 class MongoStatsDB(StatsDB):
     async def init(self):
@@ -40,7 +43,7 @@ class MongoStatsDB(StatsDB):
     async def __get_venue_doc(self, venue: str) -> VenueDataDocument:
         doc = await VenueDataDocument.find_one(VenueDataDocument.venue == venue)
         if not doc:
-            return VenueDataDocument(venue=venue, total=0, canceled=0, expired=0)
+            return VenueDataDocument.new_document(venue)
         return doc
 
     async def get_by_user(self, user: str) -> UserStatData:
@@ -61,6 +64,11 @@ class MongoStatsDB(StatsDB):
         venue.update_from(doc)
         await venue.save()
 
+    async def get_venue_user(self, user: str, venue: str) -> Tuple[UserStatData, VenueStatData]:
+        user_val = self.get_by_user(user) 
+        venue_val = self.get_by_venue(venue)
+        return await user_val, await venue_val
+
 class MockedStatsDB(StatsDB):
 
     def __init__(self):
@@ -79,3 +87,6 @@ class MockedStatsDB(StatsDB):
 
     async def get_by_venue(self, venue: str) -> VenueStatData:
         return self.data['venue_data'].get(venue, VenueStatData(venue=venue, total=0, canceled=0, expired=0, people=0))  
+
+    async def get_venue_user(self, user: str, venue: str) -> Tuple[UserStatData, VenueStatData]:
+        return await self.get_by_user(user), await self.get_by_venue(venue)
