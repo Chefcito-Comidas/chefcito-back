@@ -28,3 +28,7 @@ endpoints:
     allowed: ["anonymous"]
   - name: "/venue"
     allowed: ["restaurant"]
+  - name: "/stats/venue/param"
+    allowed: ["restaurant"]
+  - name: "/stats/user/param"
+    allowed: ["user", "restaurant"] 

@@ -219,7 +219,7 @@ class LocalReservationsProvider(ReservationsProvider):
         schema = self.db.get_reservation_by_id(reservation_id)
         if schema:
             reservation = Reservation.from_schema(schema)
-            reservation = reservation_update.modify(reservation)
+            reservation = await reservation_update.modify(reservation, self.stats)
             self.db.update_reservation(reservation.persistance())
             await self.__notify_user(
                 reservation.user,
