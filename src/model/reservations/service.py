@@ -13,7 +13,7 @@ from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.provider import OpinionsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
-from src.model.reservations.reservation import CreateInfo, Reservation
+from src.model.reservations.reservation import CreateInfo, Reservation, ReservationStatus
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.venues.service import VenuesProvider
@@ -166,6 +166,10 @@ class LocalReservationsProvider(ReservationsProvider):
             return result['total'] != 0
         return result.total != 0 # type: ignore
 
+    async def __notify_state_change(self, to: str, venue_id: str, new_state: ReservationStatus):
+        venue = await self.venues.get_venues(VenueQuery(id=venue_id))
+        message = f"Tienes un cambio de estado en tu reserva en {venue.result.pop().name}!\n{new_state.status_message()}"
+        await self.communications.send_message(Message(user=to, message=message)) 
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
@@ -186,9 +190,10 @@ class LocalReservationsProvider(ReservationsProvider):
             reservation = reservation_update.modify(reservation)
             self.db.update_reservation(reservation.persistance())
             await self.__notify_user(
-                reservation.user,
-                message=f"Tu reserva para el dia {schema.time.date()} fue modificada ! Podes ver las modificaciones realizadas en nuestra app."
+                reservation.venue,
+                message=f"Tienes una modeficacion en la reserva ({reservation.id}): del dia {schema.time.date()}!\nPodes ver las modificaciones de la reserva en la web"
             )
+            await self.__notify_state_change(reservation.user, reservation.venue, reservation.status)
             return reservation
         raise Exception("Reservation does not exist")
 
