@@ -1,4 +1,5 @@
 from src.model.commons.caller import get, post, recover_json_data
+from src.model.communications import user
 from src.model.stats.data.base import StatsDB
 from src.model.stats.data.user_data import UserDataDocument
 from src.model.stats.stats_query import StatsQuery
@@ -46,11 +47,17 @@ class LocalStatsProvider(StatsProvider):
     def __init__(self, db: StatsDB):
         self.db = db
 
+    def __calculate_alerts(self,user: UserStatData, expired_threshold: float, canceled_threshold: float):
+       user.canceled_alert = user.canceled > canceled_threshold
+       user.expired_alert = user.expired > expired_threshold 
+
     async def update(self, update: StatsUpdate):
         await update.update(self.db)
 
     async def get_venue(self, query: str) -> VenueStatData:
         return await self.db.get_by_venue(query)
 
-    async def get_user(self, query: str) -> UserStatData:
-        return await self.db.get_by_user(query) 
+    async def get_user(self, query: str, expired_threshold: float = 0.5, canceled_threshold: float = 0.5) -> UserStatData:
+        user = await self.db.get_by_user(query)
+        self.__calculate_alerts(user, expired_threshold, canceled_threshold)
+        return user

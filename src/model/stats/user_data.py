@@ -6,6 +6,8 @@ class UserStatData(BaseModel):
     total: int
     canceled: float
     expired: float
+    expired_alert: bool = False
+    canceled_alert: bool = False
 
     def __increase(self, canceled: float, expired: float):
         canceled += self.canceled * self.total
