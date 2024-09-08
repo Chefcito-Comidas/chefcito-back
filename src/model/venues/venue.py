@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from src.model.commons.distance import LocalPosition
 from src.model.venues.data.schema import VenueSchema
 from typing import Self
 from typing import List
@@ -100,6 +101,13 @@ class Venue(BaseModel):
 
     def unconfirm(self):
         self.status = Unconfirmed()
+
+    def get_location(self) -> LocalPosition:
+        lat_lon = self.location.split(",")
+        try:
+            return LocalPosition(self.id, lat_lon[0], lat_lon[1])
+        except:
+            return LocalPosition(self.id, "-34.594174", "-58.4566507")
     
     def persistance(self) -> VenueSchema:
         if not self.id:

@@ -6,16 +6,18 @@ from fastapi import Response, status
 
 from src.model.commons.caller import delete, get, post, put, recover_json_data
 from src.model.commons.error import Error
+from src.model.communications.message import Message
+from src.model.communications.service import CommunicationProvider, DummyCommunicationProvider
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.provider import OpinionsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
-from src.model.reservations.reservation import CreateInfo, Reservation
+from src.model.reservations.reservation import CreateInfo, Reservation, ReservationStatus
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.venues.service import VenuesProvider
-from src.model.venues.venueQuery import VenueQuery
+from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 
 
 class ReservationsProvider:
@@ -143,16 +145,31 @@ class HttpReservationsProvider(ReservationsProvider):
 
 class LocalReservationsProvider(ReservationsProvider):
     
-    def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider):
+    def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider, 
+                 comms: CommunicationProvider = DummyCommunicationProvider()):
         self.db = base
         self.venues = venues
         self.opinions = opinions
-    
+        self.communications = comms
+
+    async def __notify_user(self, user: str, message: str) -> None:
+        to_send = Message(user=user, message=message)
+        try:
+            await self.communications.send_message(to_send)
+        except Exception as e:
+            logging.error(f"Could not send message to: {user} ({e})")
+
     async def _find_venue(self, venue_id: str) -> bool:
         query = VenueQuery(id=venue_id)
         result = await self.venues.get_venues(query)
-        return result['total'] != 0 # type: ignore
+        if isinstance(result, dict):
+            return result['total'] != 0
+        return result.total != 0 # type: ignore
 
+    async def __notify_state_change(self, to: str, venue_id: str, new_state: ReservationStatus):
+        venue = await self.venues.get_venues(VenueQuery(id=venue_id))
+        message = f"Tienes un cambio de estado en tu reserva en {venue.result.pop().name}!\n{new_state.status_message()}"
+        await self.communications.send_message(Message(user=to, message=message)) 
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
@@ -160,6 +177,14 @@ class LocalReservationsProvider(ReservationsProvider):
         persistance = reservation.into_reservation().persistance()
         response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
+        await self.__notify_user(
+            reservation.user,
+            message=f"Tu reserva para el dia {response.time.date()} fue creada con exito!"
+        )
+        await self.__notify_user(
+            reservation.venue,
+            message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
+        ) 
         return response 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
@@ -168,11 +193,16 @@ class LocalReservationsProvider(ReservationsProvider):
             reservation = Reservation.from_schema(schema)
             reservation = reservation_update.modify(reservation)
             self.db.update_reservation(reservation.persistance())
+            await self.__notify_user(
+                reservation.venue,
+                message=f"Tienes una modeficacion en la reserva ({reservation.id}): del dia {schema.time.date()}!\nPodes ver las modificaciones de la reserva en la web"
+            )
+            await self.__notify_state_change(reservation.user, reservation.venue, reservation.status)
             return reservation
         raise Exception("Reservation does not exist")
 
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
-        return query.query(self.db)
+        return await query.query(self.db, self.opinions)
 
     async def delete_reservation(self, reservation_id: str) -> None:
         Reservation.delete(reservation_id, self.db)
@@ -184,7 +214,10 @@ class LocalReservationsProvider(ReservationsProvider):
         result = await self.get_reservations(query)
         if result.total == 0 and user not in result.result[0].user:
             raise Exception("Reservation was not done by user")
-        return await self.opinions.create_opinion(opinion)
+        created_opinion = await self.opinions.create_opinion(opinion)
+        await self.__notify_user(result.result[0].venue,
+                           message="Tenes una nueva opinion en tu local!\nPodes revisarla en nuestra web")
+        return created_opinion
 
     async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         return await self.opinions.query_opinions(query)

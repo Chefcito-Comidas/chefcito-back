@@ -7,7 +7,7 @@ from testcontainers.mongodb import MongoDbContainer
 from src.model.opinions.data.base import MongoOpinionsDB, OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
-from src.model.opinions.service import LocalOpinionsProvider
+from src.model.opinions.provider import LocalOpinionsProvider
 
 async def opinion_load_and_queried_by_venue(database: OpinionsDB):
     provider = LocalOpinionsProvider(database)

@@ -1,6 +1,8 @@
 import asyncio
 from datetime import datetime
 import pytest
+from src.model.opinions.data.base import MockedOpinionsDB
+from src.model.opinions.provider import LocalOpinionsProvider
 from src.model.reservations.data.base import MockBase
 from src.model.reservations.reservation import CreateInfo
 from src.model.reservations.data.schema import ReservationSchema
@@ -21,12 +23,12 @@ def test_new_reservation_is_not_confirmed():
 
 def test_an_unaccepted_reservation_is_canceled():
     reservation = create_reservation("user", "venue", datetime.now(), 6)
-    reservation.reject()
+    reservation.advance(forward=False, who="venue")
     assert reservation.get_status() == Canceled().get_status()
 
 def test_an_accepted_reservation_is_confirmed():
     reservation = create_reservation("user", "venue", datetime.now(), 10)
-    reservation.accept()
+    reservation.advance(forward=True, who="venue")
     assert reservation.get_status() == Accepted().get_status()
 
 def test_a_confirmed_reservation_is_unconfirmed_when_modified():
@@ -37,13 +39,13 @@ def test_a_confirmed_reservation_is_unconfirmed_when_modified():
 
 def test_the_user_cannot_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 3)
-    update = Update(accept=True, user="user")
+    update = Update(advance_forward=True, user="user")
     reservation = update.modify(reservation)
     assert reservation.get_status() == Uncomfirmed().get_status()
 
 def test_the_venue_can_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
-    update = Update(accept=True, user="venue")
+    update = Update(advance_forward=True, user="venue")
     reservation = update.modify(reservation)
     assert reservation.get_status() == Accepted().get_status()
 
@@ -91,7 +93,8 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     database = MockBase()
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
-    service = LocalReservationsProvider(database, venues, None)
+    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    service = LocalReservationsProvider(database, venues, opinions)
     asyncio.run(venues.create_venue(v.CreateInfo(
                                                  id="ADSAF",
                                                  name="Lo de Carlitos",

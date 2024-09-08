@@ -1,7 +1,7 @@
 from ast import Dict
 from logging import log
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, Tuple
 from fastapi import Body, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
@@ -46,13 +46,16 @@ class GatewayService:
 
 
     async def sign_up(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
-                  user_type: Annotated[str, Body()]) -> UserData | Error:
+                  user_type: Annotated[str, Body()],
+                  name: str,
+                  number: str) -> UserData | Error:
         """
         Adds a new user to the system
         """
         try:
             data= UserToken(id_token=credentials.credentials)
-            return await self.users.sign_up(user_type, data) 
+            result = await self.users.sign_up(user_type, data, name, number) 
+            return result
         except Exception as e:
             return Error.from_exception(e, endpoint="/users")
     
@@ -89,6 +92,9 @@ class GatewayService:
 
     async def get_venues(self, venue_query: VenueQuery, response: Response) -> VenueQueryResult | Error:
         return await self.venues.get_venues(venue_query, response)
+
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+        return await self.venues.get_venues_near_to(location, response)
 
     async def delete_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, response: Response) -> None:
         if not await self.__check_user(credentials, venue_id, response):

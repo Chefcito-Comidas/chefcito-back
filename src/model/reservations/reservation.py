@@ -21,20 +21,59 @@ class ReservationStatus(BaseModel):
     def get_status(self) -> str:
         return self.status
 
+    def advance(self, forward: bool = True) -> 'ReservationStatus':
+        return self
+
+    def status_message(self) -> str:
+        return "Estado de reserva"
+
 class Uncomfirmed(ReservationStatus):
 
     def __init__(self):
         super().__init__(status="Uncomfirmed")
+
+    def advance(self, forward: bool = True) -> ReservationStatus:
+        if not forward:
+            return Canceled() 
+        return Accepted()
+    
+    def status_message(self) -> str:
+        return "La reserva aun no esta confirmada"
 
 class Canceled(ReservationStatus):
 
     def __init__(self):
         super().__init__(status="Canceled")
 
+    def status_message(self) -> str:
+        return "Tu reserva a sido cancelada."
+
 class Accepted(ReservationStatus):
 
     def __init__(self):
         super().__init__(status="Accepted")
+
+    def advance(self, forward: bool = True) -> ReservationStatus:
+        if not forward:
+            return Expired()
+        return Assisted()
+    
+    def status_message(self) -> str:
+        return "La reserva fue aceptada por el local!"
+
+class Assisted(ReservationStatus):
+    def __init__(self):
+        super().__init__(status="Assited")
+
+    def status_message(self) -> str:
+        return "Esperamos que disfrutes tu experiencia ! No te olvides de dejar una reseña luego."
+
+class Expired(ReservationStatus):
+    def __init__(self):
+        super().__init__(status="Expired")
+
+    def status_message(self) -> str:
+        return "Tu reserva a expirado!"
 
 class CreateInfo(BaseModel):
     user: str
@@ -63,11 +102,14 @@ class Reservation(BaseModel):
     def modified(self):
         self.status = Uncomfirmed()
 
-    def accept(self):
-        self.status = Accepted()
+    def cancel(self):
+        self.status = Canceled()
 
-    def reject(self):
-        self.status = Canceled() 
+    def advance(self, forward: bool, who: str):
+        if self.status.get_status() == Uncomfirmed().get_status() and forward and who == self.venue:
+            self.status = self.status.advance(forward=forward)
+        elif self.status.get_status() != Uncomfirmed().get_status() or not forward:
+            self.status = self.status.advance(forward=forward)
 
     def persistance(self) -> ReservationSchema:
         if not self.id:

@@ -5,3 +5,5 @@ sqlalchemy>=2.0.28
 psycopg2-binary
 aiohttp
 beanie
+twilio
+haversine

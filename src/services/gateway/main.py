@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, List, Optional
+from typing import Annotated, List, Optional, Tuple
 from fastapi import Body, Depends, FastAPI, Header, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
@@ -59,9 +59,10 @@ async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
 
 @app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                  user_type: Annotated[str, Body(embed=True, alias='user_type')]) -> UserData | Error:
-    
-    return await service.sign_up(credentials, user_type)
+                  user_type: Annotated[str, Body(embed=True, alias='user_type')],
+                  name: Annotated[str, Body(embed=True, alias='user_name')],
+                  number: Annotated[str, Body(embed=True, alias="user_number")]) -> UserData | Error:
+    return await service.sign_up(credentials, user_type, name, number)
 
 
 @app.post("/venues",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
@@ -99,7 +100,7 @@ async def get_venues(response: Response,
                            logo: str = Query(default=None),
                            pictures: List[str] = Query(default=None),
                            slots: List[datetime] = Query(default=None),
-                           characteristic: str = Query(default=None),
+                           characteristic: List[str] = Query(default=None),
                            vacations: List[datetime] = Query(default=None),
                            reservationLeadTime: int = Query(default=None),
                            limit: int = Query(default=10),
@@ -113,14 +114,20 @@ async def get_venues(response: Response,
             logo=logo,
             pictures=pictures,
             slots=slots,
-            characteristic=characteristic,
+            characteristics=characteristic,
             vacations=vacations,
             reservationLeadTime=reservationLeadTime,
             limit=limit,
             start=start
             )
     return await service.get_venues(query, response)
-  
+
+@app.get("venues/near")
+async def get_venues_near_to(response: Response,
+                             location: Tuple[str, str] = Query(default=("-34.594174","-58.4566507"))
+                             ) -> VenueQueryResult | Error:
+    return await service.get_venues_near_to(location, response)
+
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_reservation(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              reservation: Annotated[CreateInfo, Body()],
@@ -145,7 +152,7 @@ async def delete_reservations(credentials: Annotated[HTTPAuthorizationCredential
 async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                            response: Response,
                            id: Optional[str] = Query(default=None),
-                           status: Optional[str] = Query(default=None),
+                           status: Optional[List[str]] = Query(default=None),
                            venue: Optional[str] = Query(default=None),
                            from_time: Optional[datetime] = Query(default=None),
                            to_time: Optional[datetime] = Query(default=None),

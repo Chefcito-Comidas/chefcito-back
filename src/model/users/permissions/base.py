@@ -1,6 +1,7 @@
+from typing import Tuple
 from sqlalchemy import BinaryExpression, Column, create_engine, select
 from sqlalchemy.orm import Session
-from src.model.users.permissions.schema import User, Permission
+from src.model.users.permissions.schema import AssociatedData, User, Permission
 
 # TODO: This pool size makes more sense if it is configurable
 DEFAULT_POOL_SIZE = 10
@@ -12,7 +13,7 @@ class Database():
         splitted[position] = "param"
         return "/".join(splitted)
 
-    def get_user(self, uid: str) -> User | None:
+    def get_user(self, uid: str) -> Tuple[User | None, AssociatedData | None]:
         """
         Returns a user from the database
         """
@@ -24,7 +25,7 @@ class Database():
         """
         raise Exception("Interface method")
 
-    def insert_user(self, user: User) -> None:
+    def insert_user(self, user: User, data: AssociatedData) -> None:
         """
         Inserts a new user into the database
         """
@@ -37,13 +38,15 @@ class DBEngine(Database):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         self.__engine = create_engine(conn_string, **kwargs)
     
-    def get_user(self, uid: str) -> User | None:
+    def get_user(self, uid: str) -> Tuple[User | None,AssociatedData | None]:
         session = Session(self.__engine)
     
         user_query = select(User).where(User.uid.__eq__(uid))
+        data_query = select(AssociatedData).where(AssociatedData.uid.__eq__(uid))
         result = session.scalar(user_query)
+        data_result = session.scalar(data_query)
         session.close()
-        return result 
+        return result,data_result 
     
     def __get_condition(self, endpoint: str) -> BinaryExpression[bool]:
         endpoints = [endpoint, super()._add_param_at(endpoint)]
@@ -66,9 +69,10 @@ class DBEngine(Database):
         session.close()
         return result
     
-    def insert_user(self, user: User) -> None:
+    def insert_user(self, user: User, data: AssociatedData) -> None:
         session = Session(self.__engine)
         session.add(user)
+        session.add(data)
         session.commit()
         session.close()
 
@@ -79,12 +83,12 @@ class DBMock(Database):
        super().__init__()
        self.base = base_mock
 
-    def get_user(self, uid: str) -> User | None:
+    def get_user(self, uid: str) -> Tuple[User | None, AssociatedData | None]:
         user_type = self.base.get('users', {}).get(uid, 'anonymous')
         if user_type:
-           return User(uid=uid, email="testmail@user.com", user_type=user_type) 
+           return User(uid=uid, email="testmail@user.com", user_type=user_type), None 
 
-        return None 
+        return None, None 
     
     def __check_all(self, endpoint: str, user_type: str) -> bool:
         endpoints = [endpoint, self._add_param_at(endpoint)]
@@ -98,7 +102,7 @@ class DBMock(Database):
         
         return self.__check_all(endpoint, user.user_type) 
 
-    def insert_user(self, user: User) -> None:
+    def insert_user(self, user: User, data: AssociatedData) -> None:
         users = self.base.get('users', {})
         users[user.uid] = user.user_type
         self.base['users'] = users

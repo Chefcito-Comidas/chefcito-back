@@ -13,7 +13,7 @@ async def test_postgres():
        run('db_config.yaml', connection=postgres.get_connection_url()) 
        database = DBEngine(conn_string=postgres.get_connection_url())
        firebase = get_mocked_auth()
-       users_service = LocalUsersProvider(firebase, database)
+       users_service = LocalUsersProvider(firebase, database, None) # type: ignore
        assert await users_service.is_allowed(AuthRequest(endpoint="/docs", id_token="anonymous")) == status.HTTP_200_OK
 
 

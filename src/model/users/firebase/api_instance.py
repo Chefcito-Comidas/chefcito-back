@@ -1,7 +1,7 @@
-from typing import Dict, Any
+from typing import Callable, Dict, Any
 
 from fastapi import status
-from src.model.commons.caller import post, recover_json_data
+from src.model.commons.caller import HTTPMethod, back_off, post, recover_json_data
 import src.model.users.firebase.exceptions as fe
 import aiohttp
 
@@ -34,15 +34,22 @@ class FirebaseClient(FirebaseAuth):
         response = await post(endpoint, body=data, params=params)
         return response
 
+    def __get_backoff_method(self) -> HTTPMethod:
+        async def method(endpoint: str, data: dict = {}, body: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
+            response = await self.call_endpoint(endpoint, data=data, params=params)
+            if response.status != status.HTTP_200_OK:
+                raise fe.InvalidToken()
+            return response
+        return method  
+
     async def get_data(self, token: str) -> Dict[str, str]:
         endpoint = "/v1/accounts:lookup"
-        response = await self.call_endpoint(endpoint, data={"idToken": token}, params={"key": self.api_key})
-        if response.status != status.HTTP_200_OK:
-            raise fe.InvalidToken() 
-        return (await recover_json_data(response))['users'][0]
+        method =  self.__get_backoff_method()
+        return (await back_off(method, endpoint, data={"idToken": token}, params={"key": self.api_key}))['users'][0]
     
     async def sign_in(self, email: str, password: str) -> Dict[str, Any]:
         endpoint = "/v1/accounts:signInWithPassword"
+        print(self.api_key)
         response = await self.call_endpoint(endpoint, 
                           data={"email": email, "password": password, "returnSecureToken": True},
                           params={"key": self.api_key})

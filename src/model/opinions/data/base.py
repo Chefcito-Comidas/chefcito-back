@@ -45,7 +45,7 @@ class MongoOpinionsDB(OpinionsDB):
         schema = OpinionSchema.from_opinion(opinion)
         await schema.insert()
     
-    async def get(self, query: OpinionQuery) -> List[Opinion]:
+    async def get(self, query: OpinionQuery) -> OpinionQueryResponse:
         result = query.query() 
         
         opinions = list(map(
@@ -74,9 +74,9 @@ class MockedOpinionsDB(OpinionsDB):
     async def get_total(self, query: OpinionQuery) -> int:
         raise Exception("Total should not be called for Mocked Database")
 
-    async def get(self, query: OpinionQuery) -> List[Opinion]:
+    async def get(self, query: OpinionQuery) -> OpinionQueryResponse:
         if not query.venue:
-            return []
+            return OpinionQueryResponse(result=[], total=0) 
 
         value = self.opinions.get(query.venue, {})
         value = value.get('opinions', [])
@@ -84,13 +84,13 @@ class MockedOpinionsDB(OpinionsDB):
         
         if query.from_date != None:
             venue = list(filter(
-                lambda op: op.date != None and op.date >= query.from_date,
+                lambda op: op.date != None and op.date >= query.from_date,  # type: ignore
                 venue
                 )
                     )
         if query.to_date != None:
             venue = list(filter(
-                lambda op: op.date != None and op.date <= query.to_date,
+                lambda op: op.date != None and op.date <= query.to_date, # type: ignore
                 venue
                 ))
 

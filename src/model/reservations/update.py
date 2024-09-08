@@ -7,8 +7,8 @@ from src.model.reservations.reservation import Reservation
 
 class Update(BaseModel):
     user: str 
-    accept: Optional[bool] = False
-    cancel: Optional[bool] = False 
+    advance_forward: Optional[bool] = None
+    cancel: bool = False
     time: Optional[datetime] = None 
     people: Optional[int] = None 
     
@@ -16,14 +16,12 @@ class Update(BaseModel):
         self.user = f"user/{new_user}"
 
     def modify(self, reservation: Reservation) -> Reservation:
-        
-        if self.cancel:
-            reservation.reject()
-            return reservation
 
-        if self.accept and self.user == reservation.venue:
-            reservation.accept()
-            return reservation
+        if self.cancel:
+            reservation.cancel()
+
+        if self.advance_forward:
+            reservation.advance(self.advance_forward, self.user)
 
         if self.time:
             reservation.time = self.time
