@@ -180,6 +180,10 @@ class LocalReservationsProvider(ReservationsProvider):
         await self.__notify_user(
             reservation.user,
             message=f"Tu reserva para el dia {response.time.date()} fue creada con exito!"
+        )
+        await self.__notify_user(
+            reservation.venue,
+            message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
         ) 
         return response 
 
