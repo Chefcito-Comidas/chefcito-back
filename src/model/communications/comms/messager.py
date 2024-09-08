@@ -24,11 +24,14 @@ class MockedCommunicationsMessager(CommunicationsMessager):
 
 class TwilioCommunicationsMessager(CommunicationsMessager):
 
-    def __init__(self, account_sid: str, auth_token: str):
+    def __init__(self, account_sid: str, auth_token: str, from_number: str = "+14155238886"):
         self.client = Client(account_sid, auth_token)
+        self.number = from_number
 
     async def send_message(self, message: Message, to: str) -> None:
         loop = asyncio.get_event_loop()
-        func = lambda : self.client.messages.create(to=to, body=message.message)
+        func = lambda : self.client.messages.create(to=f"whatsapp:{to}",
+                                                    from_=f"whatsapp:{self.number}", 
+                                                    body=message.message)
         await loop.run_in_executor(None, func)
      
