@@ -2,10 +2,13 @@ from typing import Annotated, Any, Dict, Self
 from fastapi import Body, Query, status, Response
 from src.model.commons.caller import post, recover_json_data
 from src.model.commons.error import Error
+from src.model.communications.service import CommunicationProvider
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseAuth
 from src.model.users.permissions.base import Database
 from src.model.users.user_data import UserData, UserToken
+import src.model.communications.user as c
+
 
 class UsersProvider:
     
@@ -46,13 +49,16 @@ class HttpUsersProvider(UsersProvider):
 
 class LocalUsersProvider(UsersProvider):
     
-    def __init__(self, authentication: FirebaseAuth, database: Database) -> None:
+    def __init__(self, authentication: FirebaseAuth, database: Database, communications: CommunicationProvider) -> None:
         self.authentication = authentication
         self.database = database
+        self.communications = communications
     
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
         user = await token.get_data(self.authentication, self.database)
         user.insert_into(user_type, self.database)
+        
+        await self.communications.store_user(c.User(localid=user.localid, number=user.phone_number))
         return user
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:

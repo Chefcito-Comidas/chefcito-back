@@ -26,6 +26,8 @@ class ReservationStatus(BaseModel):
 
     def notifiable(self) -> bool:
         return False
+    def status_message(self) -> str:
+        return "Estado de reserva"
 
 class Uncomfirmed(ReservationStatus):
 
@@ -36,6 +38,9 @@ class Uncomfirmed(ReservationStatus):
         if not forward:
             return Canceled() 
         return Accepted()
+    
+    def status_message(self) -> str:
+        return "La reserva aun no esta confirmada"
 
 class Canceled(ReservationStatus):
 
@@ -44,6 +49,8 @@ class Canceled(ReservationStatus):
 
     def notifiable(self) -> bool:
         return True
+    def status_message(self) -> str:
+        return "Tu reserva a sido cancelada."
 
 class Accepted(ReservationStatus):
 
@@ -54,6 +61,9 @@ class Accepted(ReservationStatus):
         if not forward:
             return Expired()
         return Assisted()
+    
+    def status_message(self) -> str:
+        return "La reserva fue aceptada por el local!"
 
 class Assisted(ReservationStatus):
     def __init__(self):
@@ -63,6 +73,9 @@ class Assisted(ReservationStatus):
         return True
 
 
+    def status_message(self) -> str:
+        return "Esperamos que disfrutes tu experiencia ! No te olvides de dejar una reseña luego."
+
 class Expired(ReservationStatus):
     def __init__(self):
         super().__init__(status="Expired")
@@ -70,6 +83,8 @@ class Expired(ReservationStatus):
     def notifiable(self) -> bool:
         return True
 
+    def status_message(self) -> str:
+        return "Tu reserva a expirado!"
 
 class CreateInfo(BaseModel):
     user: str
