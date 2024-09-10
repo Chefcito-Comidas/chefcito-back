@@ -12,7 +12,7 @@ import src.model.communications.user as c
 
 class UsersProvider:
     
-    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
+    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         raise Exception("Interface method should not be called")
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
@@ -26,9 +26,12 @@ class HttpUsersProvider(UsersProvider):
     def __init__(self, users_host: str) -> None:
         self.host = users_host 
     
-    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
+    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         endpoint = f"{self.host}/users/signup/{user_type}"
-        users_response = await post(endpoint, body=token.model_dump())
+        body = token.model_dump()
+        body['name'] = name
+        body['phone_number'] = phone_number
+        users_response = await post(endpoint, body=body)
         return UserData(**await recover_json_data(users_response))
     
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
@@ -54,8 +57,12 @@ class LocalUsersProvider(UsersProvider):
         self.database = database
         self.communications = communications
     
-    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()]) -> UserData:
+    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         user = await token.get_data(self.authentication, self.database)
+        if name:
+            user.name = name
+        if phone_number:
+            user.phone_number = phone_number
         user.insert_into(user_type, self.database)
         
         await self.communications.store_user(c.User(localid=user.localid, number=user.phone_number))
@@ -76,13 +83,13 @@ class UsersService:
     def __init__(self, provider: UsersProvider) -> None:
         self.provider = provider
 
-    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
+    async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str, response: Response) -> UserData | Error:
         """
         Recieve the token, get the user data for the token and add it
         to the database
         """
         try:
-           return await self.provider.sign_up(user_type, token) 
+           return await self.provider.sign_up(user_type, token, name, phone_number) 
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, endpoint="/signup") 

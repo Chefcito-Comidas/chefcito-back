@@ -62,9 +62,9 @@ async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
 @app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                   user_type: Annotated[str, Body(embed=True, alias='user_type')],
+                  name: Annotated[str, Body(embed=True, alias='user_name')],
                   number: Annotated[str, Body(embed=True, alias="user_number")]) -> UserData | Error:
-    #TODO: Number should be used for sign_up 
-    return await service.sign_up(credentials, user_type, number)
+    return await service.sign_up(credentials, user_type, name, number)
 
 
 @app.post("/venues",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},

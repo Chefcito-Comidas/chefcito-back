@@ -49,14 +49,14 @@ class GatewayService:
 
     async def sign_up(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
                   user_type: Annotated[str, Body()],
+                  name: str,
                   number: str) -> UserData | Error:
         """
         Adds a new user to the system
         """
         try:
             data= UserToken(id_token=credentials.credentials)
-            result = await self.users.sign_up(user_type, data) 
-            #TODO: Pass the number to the communications service
+            result = await self.users.sign_up(user_type, data, name, number) 
             return result
         except Exception as e:
             return Error.from_exception(e, endpoint="/users")
