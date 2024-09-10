@@ -22,7 +22,7 @@ class Update(BaseModel):
         if self.cancel:
             reservation.cancel()
 
-        if self.advance_forward:
+        if not self.advance_forward is None:
             reservation.advance(self.advance_forward, self.user)
 
         if self.time:
