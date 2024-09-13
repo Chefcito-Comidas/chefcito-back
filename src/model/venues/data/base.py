@@ -80,6 +80,7 @@ class RelBase(VenuesBase):
         value.characteristics = venue.characteristics
         value.vacations = venue.vacations
         value.reservationLeadTime = venue.reservationLeadTime
+        value.menu = venue.menu
         value.status = venue.status
         session.commit()
         session.close()

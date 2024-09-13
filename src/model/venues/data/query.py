@@ -41,6 +41,7 @@ class QueryBuilder:
             characteristics: Optional[List[str]],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
+            menu: Optional[str],
             limit: int,
             start: int) -> Tuple[List[VenueSchema], int]:
 
@@ -66,9 +67,9 @@ class RelBuilder(QueryBuilder):
             count = count.where(VenueSchema.characteristics.contains(characteristic))
         return query, count
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None:
-            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None or menu != None:
+            raise Exception("Capacity, location, logo, pictures, menu and slots query not implemented")
         if id:
             result = self._get_by_id(id)
             return result, 1 if result else 0
@@ -104,9 +105,9 @@ class MockedBuilder(QueryBuilder):
             return any([c in value.characteristics for c in characteristic])
         return filter
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
-        if capacity != None or location != None or logo != None or pictures != None or slots != None or  vacations != None or reservationLeadTime != None:
-            raise Exception("Capacity, location, logo, pictures and slots query not implemented")
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
+        if capacity != None or location != None or logo != None or pictures != None or slots != None or  vacations != None or reservationLeadTime != None or menu != None:
+            raise Exception("Capacity, location, logo, pictures, menu and slots query not implemented")
 
         if id:
             result = self._get_by_id(id)
