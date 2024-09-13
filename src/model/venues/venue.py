@@ -1,12 +1,29 @@
-from pydantic import BaseModel
+
+from typing import Self
+import datetime
+from typing import List, Optional
+from pydantic import BaseModel, field_validator
 from src.model.commons.distance import LocalPosition
 from src.model.venues.data.schema import VenueSchema
-from typing import Self
-from typing import List
 from src.model.venues.data.base import VenuesBase
-import datetime
+import os
+import json
+from config import PROJECT_ROOT
 
-def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int) -> 'Venue':
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'characteristics.json')
+
+with open(json_path) as f:
+    FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
+
+
+def validate_characteristics(characteristics: List[str]):
+    for characteristic in characteristics:
+        if characteristic not in FIXED_CHARACTERISTICS:
+            raise ValueError(f"Invalid characteristic: {characteristic}")
+    return characteristics
+
+def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int, menu: str) -> 'Venue':
+    characteristics = validate_characteristics(characteristics)
     return Venue(id="",
                  name=name, 
                  location=location, 
@@ -17,6 +34,7 @@ def create_venue(name: str, location: str, capacity: int, logo: str, pictures: L
                  characteristics=characteristics, 
                  vacations=vacations, 
                  reservationLeadTime=reservationLeadTime,
+                 menu=menu,
                  status=Available())
 
 class VenueStatus(BaseModel):
@@ -58,7 +76,12 @@ class CreateInfo(BaseModel):
     characteristics: List[str]
     vacations: List[datetime.datetime]
     reservationLeadTime: int
+    menu: str
 
+    @field_validator('characteristics', mode='before')
+    def validate_characteristics(cls, characteristics: List[str]):
+        return validate_characteristics(characteristics)
+    
     def into_venue(self) -> 'Venue':
         return Venue(id=self.id, 
                      name=self.name, 
@@ -70,6 +93,7 @@ class CreateInfo(BaseModel):
                      characteristics=self.characteristics, 
                      vacations=self.vacations, 
                      reservationLeadTime=self.reservationLeadTime,
+                     menu=self.menu,
                      status=Available()) 
 
 
@@ -85,8 +109,13 @@ class Venue(BaseModel):
     characteristics: List[str]
     vacations: List[datetime.datetime]
     reservationLeadTime: int
+    menu: str
     status: VenueStatus
 
+    @field_validator('characteristics', mode='before')
+    def validate_characteristics(cls, characteristics: List[str]):
+        return validate_characteristics(characteristics)
+    
     def get_status(self) -> str:
         return self.status.get_status()
 
@@ -121,6 +150,7 @@ class Venue(BaseModel):
                     self.characteristics, 
                     self.vacations, 
                     self.reservationLeadTime,
+                    self.menu,
                     self.status.get_status()
                     )
             self.id = schema.id.__str__()
@@ -137,6 +167,7 @@ class Venue(BaseModel):
                     characteristics=self.characteristics, 
                     vacations=self.vacations, 
                     reservationLeadTime=self.reservationLeadTime,
+                    menu=self.menu,
                     status=self.status.get_status()
                     )
 
@@ -156,5 +187,6 @@ class Venue(BaseModel):
                    characteristics=schema.characteristics, 
                    vacations=schema.vacations, 
                    reservationLeadTime=schema.reservationLeadTime,
+                   menu=schema.menu,
                    status=VenueStatus(status=schema.status)
                    )

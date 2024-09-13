@@ -112,7 +112,9 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
                                                  capacity=150,
                                                  characteristics= ["hamburgueseria", "pizzeria"], 
                                                  vacations=[datetime.now()], 
-                                                 reservationLeadTime=10)))
+                                                 reservationLeadTime=10,
+                                                 menu="Menu")))
+                                                
     id = asyncio.run(venues.get_venues(VenueQuery())).result.pop().id
     
     reservation = CreateInfo(user="juanCarlos",

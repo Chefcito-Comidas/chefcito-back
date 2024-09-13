@@ -1,9 +1,15 @@
-from typing import Optional
-from pydantic import BaseModel
-from typing import List
 import datetime
+from typing import List, Optional
+from pydantic import BaseModel, field_validator
 from src.model.venues.venue import Venue
+import os
+import json
+from config import PROJECT_ROOT
 
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'characteristics.json')
+
+with open(json_path) as f:
+    FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
 
 class Update(BaseModel):
     name: Optional[str] = None
@@ -15,10 +21,20 @@ class Update(BaseModel):
     characteristics: Optional[List[str]] = None
     vacations: Optional[List[datetime.datetime]] = None
     reservationLeadTime: Optional[int] = None
+    menu: Optional[str] = None
     open: Optional[bool] = False
     close: Optional[bool] = False
     occupy: Optional[bool] = False  
 
+
+    @field_validator('characteristics', mode='before')
+    def validate_characteristics(cls, characteristics: Optional[List[str]]):
+        if characteristics:
+            for characteristic in characteristics:
+                if characteristic not in FIXED_CHARACTERISTICS:
+                    raise ValueError(f"Invalid characteristic: {characteristic}")
+        return characteristics
+    
     def modify(self, venue: Venue) -> Venue:
 
         if self.close:
@@ -67,5 +83,9 @@ class Update(BaseModel):
         
         if self.reservationLeadTime:
             venue.reservationLeadTime = self.reservationLeadTime
+            venue.unconfirm()
+
+        if self.menu:
+            venue.menu = self.menu
             venue.unconfirm()
         return venue

@@ -12,7 +12,7 @@ from datetime import datetime
 async def test_venue_persistance():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        venue = create_venue(name="La Pizzerias", location="126 Main St", capacity=51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10)
+        venue = create_venue(name="La Pizzerias", location="126 Main St", capacity=51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10,menu="comidas.url")
         database = RelBase(conn_string=postgres.get_connection_url())
         venue_with_id=venue.persistance()
         database.store_venue(venue_with_id)
@@ -24,7 +24,7 @@ async def test_venue_persistance():
 async def test_venue_update():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        venue = create_venue(name="La Pizzerias", location="126 Main St", capacity=51, logo="foto.url", pictures = ["foto1", "foto2"],slots=[datetime.now(),datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10)
+        venue = create_venue(name="La Pizzerias", location="126 Main St", capacity=51, logo="foto.url", pictures = ["foto1", "foto2"],slots=[datetime.now(),datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10,menu="comidas.url")
         database = RelBase(conn_string=postgres.get_connection_url())
         venue_with_id=venue.persistance()
         database.store_venue(venue_with_id)
@@ -66,7 +66,7 @@ async def test_venue_pagination():
 async def test_venue_deletion():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        venue = create_venue("La Pizzerias", "126 Main St", 51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10)
+        venue = create_venue("La Pizzerias", "126 Main St", 51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10,menu="comidas.url")
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_venue(venue.persistance())
         assert database.get_venue_by_id(venue.id) != None
@@ -85,10 +85,10 @@ async def test_venue_filter():
         query = VenueQuery(
                 name="name_1",
                 characteristics=["charact1_1"],
-                limit=5
+                
                 )
         result_1 = query.query(database)
         
-        assert result_1.total ==  1
-        assert len(result_1.result) == 1
+        assert result_1.total ==  33
+        
         

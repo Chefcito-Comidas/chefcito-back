@@ -105,6 +105,7 @@ async def get_venues(response: Response,
                            characteristic: List[str] = Query(default=None),
                            vacations: List[datetime] = Query(default=None),
                            reservationLeadTime: int = Query(default=None),
+                           menu: str = Query(default=None),
                            limit: int = Query(default=10),
                            start: int = Query(default=0)
                            ) -> VenueQueryResult | Error:
@@ -119,6 +120,7 @@ async def get_venues(response: Response,
             characteristics=characteristic,
             vacations=vacations,
             reservationLeadTime=reservationLeadTime,
+            menu=menu,
             limit=limit,
             start=start
             )

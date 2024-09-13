@@ -8,6 +8,18 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy import Column, String, Integer, ARRAY, DateTime
 from sqlalchemy import ForeignKey, UniqueConstraint
 import yaml
+from sqlalchemy import CheckConstraint
+from sqlalchemy.orm import validates
+import os
+import json
+from config import PROJECT_ROOT
+
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'characteristics.json')
+
+with open(json_path) as f:
+    FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
+
+
 
 TYPES_KEY = 'usertypes'
 ENDPOINTS_KEY = 'endpoints'
@@ -45,14 +57,26 @@ class VenueSchema(Base):
     characteristics: Mapped[List[str]] = mapped_column(ARRAY(String))
     vacations: Mapped[List[datetime]] = mapped_column(ARRAY(DateTime))
     reservationLeadTime: Mapped[int] = mapped_column()
+    menu: Mapped[str] = mapped_column()
     status: Mapped[str] = mapped_column()
     
+    __table_args__ = (
+        CheckConstraint("ARRAY_LENGTH(characteristics, 1) <= 20", name="max_characteristics"),
+    )
+
+    @validates('characteristics')
+    def validate_characteristics(self, key, characteristics):
+        for characteristic in characteristics:
+            if characteristic not in FIXED_CHARACTERISTICS:
+                raise ValueError(f"Invalid characteristic: {characteristic}")
+        return characteristics
+
     def __repr__(self) -> str:
         return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
                 f"capacity={self.capacity}, "
                 f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), "
                 f"characteristics={self.characteristics}), vacations={self.vacations}), "
-                f"reservationLeadTime={self.reservationLeadTime}), status={self.status}")
+                f"reservationLeadTime={self.reservationLeadTime}), menu={self.menu}, status={self.status}")
 
 
 class ReservationSchema(Base):
