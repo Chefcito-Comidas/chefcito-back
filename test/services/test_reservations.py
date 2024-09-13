@@ -7,6 +7,8 @@ from src.model.reservations.data.base import RelBase
 from src.model.reservations.reservation import Accepted, Assisted, Reservation, Uncomfirmed, create_reservation
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.update import Update
+from src.model.stats.data.base import MockedStatsDB
+from src.model.stats.provider import LocalStatsProvider
 from test.reservations.test_query import all_different, create_reservations
 from test.services.db_load import run
 
@@ -30,7 +32,8 @@ async def test_reservation_update():
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
         update = Update(user="venue", advance_forward=True)
-        reservation = update.modify(reservation)
+        stats = LocalStatsProvider(MockedStatsDB())
+        reservation = await update.modify(reservation, stats)
         database.update_reservation(reservation.persistance())
         result = database.get_reservation_by_id(reservation.id)
         assert result != None

@@ -60,6 +60,12 @@ jobs:
                 file: containerfiles/summaries/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/summaries:latest
+            - name: build-push stats 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/stats/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/stats:latest
             - name: build-push communications 
               uses: docker/build-push-action@v3
               with:
@@ -73,7 +79,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-
+            - name: Get Short SHA
+              run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
             - name: Log in to Azure
               uses: azure/login@v1
               with:
@@ -83,41 +90,48 @@ jobs:
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n gateway -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n gateway -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             - name: deploy users 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n users -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n users -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             - name: deploy reservations 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n reservations -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n reservations -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             - name: deploy venues 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n venues -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n venues -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             - name: deploy opinions 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n opinions -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             - name: deploy summaries 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n summaries -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n summaries -g chefcito-rg --revision-suffix ${GITHUB_SHA}
+            - name: deploy stats 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n stats -g chefcito-rg --revision-suffix ${GITHUB_SHA}
+               
             - name: deploy communications 
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                    az containerapp revision copy -n communications -g chefcito-rg --revision-suffix ${{ github.sha }}
+                    az containerapp revision copy -n communications -g chefcito-rg --revision-suffix ${GITHUB_SHA}
             

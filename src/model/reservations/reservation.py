@@ -24,6 +24,8 @@ class ReservationStatus(BaseModel):
     def advance(self, forward: bool = True) -> 'ReservationStatus':
         return self
 
+    def notifiable(self) -> bool:
+        return False
     def status_message(self) -> str:
         return "Estado de reserva"
 
@@ -45,6 +47,8 @@ class Canceled(ReservationStatus):
     def __init__(self):
         super().__init__(status="Canceled")
 
+    def notifiable(self) -> bool:
+        return True
     def status_message(self) -> str:
         return "Tu reserva a sido cancelada."
 
@@ -63,7 +67,11 @@ class Accepted(ReservationStatus):
 
 class Assisted(ReservationStatus):
     def __init__(self):
-        super().__init__(status="Assited")
+        super().__init__(status="Assisted")
+
+    def notifiable(self) -> bool:
+        return True
+
 
     def status_message(self) -> str:
         return "Esperamos que disfrutes tu experiencia ! No te olvides de dejar una reseña luego."
@@ -71,6 +79,9 @@ class Assisted(ReservationStatus):
 class Expired(ReservationStatus):
     def __init__(self):
         super().__init__(status="Expired")
+
+    def notifiable(self) -> bool:
+        return True
 
     def status_message(self) -> str:
         return "Tu reserva a expirado!"
@@ -149,3 +160,6 @@ class Reservation(BaseModel):
 
     def change_user(self, new_user: str):
         self.user = f"user/{new_user}"
+
+    def notifiable(self) -> bool:
+        return self.status.notifiable()

@@ -8,6 +8,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservationQuery import ReservationQueryResponse
+from src.model.stats.user_data import UserStatData
+from src.model.stats.venue_data import VenueStatData
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -220,3 +222,10 @@ async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, De
     return await service.get_my_venue(credentials, response)
 
 
+@app.get("/stats/user/{user}")
+async def get_user_stats(user: str) -> UserStatData:
+    return await service.get_user_stats(user)
+
+@app.get("/stats/venue/{venue}")
+async def get_venue_stats(venue: str) -> VenueStatData:
+    return await service.get_venue_stats(venue)

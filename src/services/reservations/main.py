@@ -11,6 +11,9 @@ from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.reservations.service import LocalReservationsProvider, ReservationsProvider, ReservationsService
 from src.model.reservations.update import Update
+from src.model.stats.provider import HttpStatsProvider
+from src.model.stats.user_data import UserStatData
+from src.model.stats.venue_data import VenueStatData
 from src.model.venues.service import HttpVenuesProvider
 from src.model.opinions.provider import HttpOpinionsProvider
 
@@ -18,15 +21,16 @@ class Settings(BaseSettings):
     db_string: str = "database_conn_string"
     venues: str = "http://venues"
     opinions: str = "http://opinions"
-
+    stats: str = "http://stats"
 
 settings = Settings()
 
 app = FastAPI()
 database =  RelBase(settings.db_string)
 venues = HttpVenuesProvider(settings.venues)
-opinions = HttpOpinionsProvider(settings.opinions) 
-service = ReservationsService(LocalReservationsProvider(database, venues, opinions))
+opinions = HttpOpinionsProvider(settings.opinions)
+stats = HttpStatsProvider(settings.stats) 
+service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -46,7 +50,7 @@ async def get_reservations(response: Response,
                            id: str = Query(default=None),
                            user: str = Query(default=None),
                            venue: str = Query(default=None),
-                           status: str = Query(default=None),
+                           status: List[str] = Query(default=None),
                            from_time: datetime = Query(default=None),
                            to_time: datetime = Query(default=None),
                            from_people: int = Query(default=None),
@@ -91,3 +95,13 @@ async def create_opinion(opinion: Annotated[Opinion, Body()],
     return await service.create_opinion(opinion, user, response)
 
 
+@app.get("/stats/user/{user}")
+async def get_user_stats(user: Annotated[str, Path()]) -> UserStatData:
+    
+    response = await service.get_user_stats(user)
+    print(response)
+    return response
+
+@app.get("/stats/venue/{venue}")
+async def get_venue_stats(venue: Annotated[str, Path()]) -> VenueStatData:
+    return await service.get_venue_stats(venue)

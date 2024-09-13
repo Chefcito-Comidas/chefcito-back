@@ -16,7 +16,7 @@ from src.model.summarizer.summary import Summary
 from src.model.summarizer.summary_query import SummaryQuery
 
 class Settings(BaseSettings):
-    conn_string: str
+    conn_string: str = ""
     key_id: str = ""
     key: str = ""
     dev: bool = True
