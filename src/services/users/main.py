@@ -12,14 +12,15 @@ from src.model.users.service import LocalUsersProvider, UsersService
 class Settings(BaseSettings):
     api_key: str = "ultraSecret"
     db_string: str = "database_conn_string"
-    communications: str = "http://communications"
+    communications: str = "communications"
+    proto: str = "https://"
 
 settings = Settings()
 app = FastAPI()
 print(settings.db_string)
 authenticator = FirebaseClient(key=settings.api_key)
 database = DBEngine(conn_string=settings.db_string)
-comms = HttpCommunicationProvider(settings.communications)
+comms = HttpCommunicationProvider(f"{settings.proto}{settings.communications}")
 service = UsersService(LocalUsersProvider(authenticator, database, comms))
 
 @app.get("/health")

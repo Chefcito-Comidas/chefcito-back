@@ -33,7 +33,7 @@ class HttpUsersProvider(UsersProvider):
         request['token'] = body
         request['name'] = name
         request['phone_number'] = phone_number
-        users_response = await post(endpoint, body=body)
+        users_response = await post(endpoint, body=request)
         return UserData(**await recover_json_data(users_response))
     
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
