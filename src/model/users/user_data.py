@@ -42,7 +42,7 @@ async def recover_data(token: str, auth: FirebaseAuth, base: Database) -> 'UserD
     data = await auth.get_data(token)
     user, user_data = base.get_user(data['localId'])
     if not user:
-        raise Exception("User does not exists")
+        user = User(uid=data['localId'], email=data['email'])
     if not user_data:
         user_data = AssociatedData(name="", phone_number="")
     return UserData(localid=user.uid,
