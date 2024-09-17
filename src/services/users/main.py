@@ -29,8 +29,8 @@ async def health(response: Response):
 @app.post("/users/signup/{user_type}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_up(user_type: str,
                   token: Annotated[UserToken, Body()],
-                  name: Annotated[str, Body(alias="name")],
-                  phone_number: Annotated[str, Body(alias="phone_number")],
+                  name: Annotated[str, Body(embed=True, alias="name")],
+                  phone_number: Annotated[str, Body(embed=True, alias="phone_number")],
                   response: Response) -> UserData | Error:
     return await service.sign_up(user_type, token, name, phone_number, response)       
 
