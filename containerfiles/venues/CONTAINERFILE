@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./src/model/commons /code/src/model/commons
 COPY ./src/model/venues /code/src/model/venues
 COPY ./src/services/venues/main.py /code/main.py
-
+COPY ./config.py /code/config.py
 
 
 # 
