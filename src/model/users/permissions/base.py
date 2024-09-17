@@ -72,6 +72,7 @@ class DBEngine(Database):
     def insert_user(self, user: User, data: AssociatedData) -> None:
         session = Session(self.__engine)
         session.add(user)
+        session.commit()
         session.add(data)
         session.commit()
         session.close()
