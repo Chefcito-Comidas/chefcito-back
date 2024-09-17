@@ -29,9 +29,10 @@ class HttpUsersProvider(UsersProvider):
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         endpoint = f"{self.host}/users/signup/{user_type}"
         body = token.model_dump()
-        body['token'] = body
-        body['name'] = name
-        body['phone_number'] = phone_number
+        request = {}
+        request['token'] = body
+        request['name'] = name
+        request['phone_number'] = phone_number
         users_response = await post(endpoint, body=body)
         return UserData(**await recover_json_data(users_response))
     
