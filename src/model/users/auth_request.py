@@ -13,7 +13,7 @@ class AuthRequest(UserToken):
         """
         if self.id_token == ANONYMOUS_TOKEN:
             return await self.__anonymous_allowed(db) 
-        data = await self.get_data(firebase)
+        data = await self.get_data(firebase, db)
         return data.allowed_to(self.endpoint, db)
 
     async def __anonymous_allowed(self, db:Database) -> bool:
