@@ -57,6 +57,7 @@ class ReservationsService:
     
     async def create_reservation(self, reservation: CreateInfo, response: Response) -> Reservation | Error:
         try:
+           print(f"==> New reservation: {reservation}")
            return await self.provider.create_reservation(reservation)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
@@ -123,6 +124,7 @@ class HttpReservationsProvider(ReservationsProvider):
         endpoint = "/reservations"
         body = reservation.model_dump()
         body['time'] = body['time'].__str__()
+        print(f"==> Sending create reservation request with data: {body}")
         response = await post(f"{self.url}{endpoint}", body=body)
         data = await recover_json_data(response) 
         data['time'] = datetime.fromisoformat(data['time'])
@@ -209,18 +211,24 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
+            print("==> Tried to created a reservation for an unexisting venue")
             raise Exception("Venue does not exist")
+        print(f"==> Creating new reservation for: {reservation.user}")
         persistance = reservation.into_reservation().persistance()
+        print("===> Persisted reservation schema created")
         response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
+        print("===> Stored reservation in database")
         await self.__notify_user(
             reservation.user,
             message=f"Tu reserva para el dia {response.time.date()} fue creada con exito!"
         )
+        print("===> Sent notification to user")
         await self.__notify_user(
             reservation.venue,
             message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
-        ) 
+        )
+        print("===> Sent notification to venue") 
         return response 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
