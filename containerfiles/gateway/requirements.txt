@@ -8,3 +8,5 @@ beanie
 pyyaml
 haversine
 twilio
+azure-servicebus
+azure-identity

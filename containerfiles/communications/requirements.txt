@@ -7,3 +7,5 @@ aiohttp
 beanie
 pyyaml
 twilio
+azure-servicebus
+azure-identity

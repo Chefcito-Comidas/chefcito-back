@@ -7,3 +7,5 @@ aiohttp
 beanie
 twilio
 haversine
+azure-servicebus
+azure-identity
