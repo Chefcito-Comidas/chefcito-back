@@ -20,17 +20,18 @@ from src.model.opinions.provider import HttpOpinionsProvider
 
 class Settings(BaseSettings):
     db_string: str = "database_conn_string"
-    venues: str = "http://venues"
-    opinions: str = "http://opinions"
-    stats: str = "http://stats"
+    venues: str = "venues"
+    opinions: str = "opinions"
+    stats: str = "stats"
+    proto: str = "https://"
 
 settings = Settings()
 
 app = FastAPI()
 database =  RelBase(settings.db_string)
-venues = HttpVenuesProvider(settings.venues)
-opinions = HttpOpinionsProvider(settings.opinions)
-stats = HttpStatsProvider(settings.stats) 
+venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
+opinions = HttpOpinionsProvider(f"{settings.proto}{settings.opinions}")
+stats = HttpStatsProvider(f"{settings.proto}{settings.stats}") 
 service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats))
 
 

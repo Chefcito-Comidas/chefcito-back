@@ -15,7 +15,8 @@ from src.model.summarizer.provider import HttpSummarizerProvider, SummarizerServ
 
 class Settings(BaseSettings):
     conn_string: str
-    summaries: str = "http://summaries"
+    summaries: str = "summaries"
+    proto: str = "https://"
 
 settings = Settings()
 
@@ -27,7 +28,7 @@ async def init_database(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=init_database)
-summaries = SummarizerService(HttpSummarizerProvider(settings.summaries))
+summaries = SummarizerService(HttpSummarizerProvider(f"{settings.proto}{settings.summaries}"))
 opinions = OpinionsService(LocalOpinionsProvider(database), summaries)
 
 
