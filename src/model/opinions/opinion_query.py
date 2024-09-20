@@ -44,7 +44,7 @@ class OpinionQuery(BaseModel):
         query = self.__base_query()
         if query == None:
             return None
-        return query.limit(self.limit).skip(self.start)
+        return query.limit(self.limit).skip(self.start).sort("-date")
     
     async def total_query(self) -> int:
        query = self.__base_query()

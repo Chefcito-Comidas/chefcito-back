@@ -1,14 +1,23 @@
 from datetime import datetime
 from typing import Annotated, Self
 from beanie import Document, Indexed
+import pymongo
 from src.model.opinions.opinion import Opinion
 
 class OpinionSchema(Document):
     
-    venue: Annotated[str, Indexed()]
+    venue: str
     opinion: str
     reservation: str
     date: datetime
+
+    class Settings:
+        indexes = [
+            [
+                ("venue", pymongo.ASCENDING),
+                ("date", pymongo.DESCENDING)
+            ]
+        ]
 
     @classmethod
     def from_opinion(cls, opinion: Opinion) -> Self:
