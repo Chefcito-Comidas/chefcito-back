@@ -25,12 +25,12 @@ def test_new_reservation_is_not_confirmed():
 
 def test_an_unaccepted_reservation_is_canceled():
     reservation = create_reservation("user", "venue", datetime.now(), 6)
-    reservation.advance(forward=False, who="venue")
+    reservation.advance(forward=False, who="user/venue")
     assert reservation.get_status() == Canceled().get_status()
 
 def test_an_accepted_reservation_is_confirmed():
     reservation = create_reservation("user", "venue", datetime.now(), 10)
-    reservation.advance(forward=True, who="venue")
+    reservation.advance(forward=True, who="user/venue")
     assert reservation.get_status() == Accepted().get_status()
 
 def test_a_confirmed_reservation_is_unconfirmed_when_modified():
@@ -49,7 +49,7 @@ def test_the_user_cannot_accept_through_an_update():
 
 def test_the_venue_can_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
-    update = Update(advance_forward=True, user="venue")
+    update = Update(advance_forward=True, user="user/venue")
     provider = LocalStatsProvider(MockedStatsDB())
     reservation = asyncio.run(update.modify(reservation,provider))
     assert reservation.get_status() == Accepted().get_status()

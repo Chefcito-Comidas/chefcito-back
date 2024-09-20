@@ -14,6 +14,17 @@ def create_reservation(user: str, venue: str, time: datetime, people: int) -> 'R
                         people=people,
                         status=Uncomfirmed())
 
+def create_status(value: str) -> 'ReservationStatus':
+    if value == Uncomfirmed().get_status():
+        return Uncomfirmed()
+    if value == Accepted().get_status():
+        return Accepted()
+    if value == Expired().get_status():
+        return Expired()
+    if value == Assisted().get_status():
+        return Assisted()
+    return Canceled()
+
 class ReservationStatus(BaseModel):
 
     status: str
@@ -22,6 +33,7 @@ class ReservationStatus(BaseModel):
         return self.status
 
     def advance(self, forward: bool = True) -> 'ReservationStatus':
+        
         return self
 
     def notifiable(self) -> bool:
@@ -35,6 +47,7 @@ class Uncomfirmed(ReservationStatus):
         super().__init__(status="Uncomfirmed")
 
     def advance(self, forward: bool = True) -> ReservationStatus:
+        print("==> Advancing uncomfirmed reservation")
         if not forward:
             return Canceled() 
         return Accepted()
@@ -118,8 +131,10 @@ class Reservation(BaseModel):
 
     def advance(self, forward: bool, who: str):
         if self.status.get_status() == Uncomfirmed().get_status() and forward and who == f"user/{self.venue}":
+            print("==> updating from venue")
             self.status = self.status.advance(forward=forward)
         elif self.status.get_status() != Uncomfirmed().get_status() or not forward:
+            print("==> Updating a not uncomfirmed reservation")
             self.status = self.status.advance(forward=forward)
 
     def persistance(self) -> ReservationSchema:
@@ -155,7 +170,7 @@ class Reservation(BaseModel):
                    venue=schema.venue,
                    time=schema.time,
                    people=schema.people,
-                   status=ReservationStatus(status=schema.status)
+                   status=create_status(schema.status)
                    )
 
     def change_user(self, new_user: str):

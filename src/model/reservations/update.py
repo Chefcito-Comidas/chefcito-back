@@ -20,20 +20,25 @@ class Update(BaseModel):
     async def modify(self, reservation: Reservation, stats: StatsProvider) -> Reservation:
 
         if self.cancel:
+            print("==> Canceling reservation")
             reservation.cancel()
 
         if not self.advance_forward is None:
+            print("==> Advancing reservation")
             reservation.advance(self.advance_forward, self.user)
 
         if self.time:
+            print("==> Changing reservation time")
             reservation.time = self.time
             reservation.modified()
 
         if self.people:
+            print("==> Changing reservation people")
             reservation.people = self.people
             reservation.modified()
 
         if reservation.notifiable():
+            print("==> Notifying stats service")
             await stats.update(StatsUpdate.from_reservation(reservation))
 
         return reservation

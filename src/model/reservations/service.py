@@ -243,9 +243,12 @@ class LocalReservationsProvider(ReservationsProvider):
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         schema = self.db.get_reservation_by_id(reservation_id)
         if schema:
+            print("==> Updating reservation from schema")
             reservation = Reservation.from_schema(schema)
             reservation = await reservation_update.modify(reservation, self.stats)
+            print(f"==> Modified reservation: {reservation}")
             self.db.update_reservation(reservation.persistance())
+            print("==> Persisted reservation")
             await self.__notify_user(
                 reservation.venue,
                 message=f"Tienes una modeficacion en la reserva ({reservation.id}): del dia {schema.time.date()}!\nPodes ver las modificaciones de la reserva en la web"

@@ -30,7 +30,10 @@ class HttpStatsProvider(StatsProvider):
 
     async def update(self, update: StatsUpdate):
         endpoint = f"{self.url}{UPDATE_ENDPOINT}"
-        await post(endpoint, body=update.model_dump())
+        body = update.model_dump()
+        if body.get('date'):
+            body['date'] = body['date'].__str__()
+        await post(endpoint, body=body)
 
     async def get_user(self, user: str) -> UserStatData:
         endpoint = f"{self.url}{GET_USER_DATA_ENDPOINT}/{user}"
