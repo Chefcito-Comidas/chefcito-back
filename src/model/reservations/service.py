@@ -207,9 +207,17 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def __notify_state_change(self, to: str, venue_id: str, new_state: ReservationStatus):
         venue = await self.venues.get_venues(VenueQuery(id=venue_id))
-        message = f"Tienes un cambio de estado en tu reserva en {venue.result.pop().name}!\n{new_state.status_message()}"
-        await self.communications.send_message(Message(user=to, message=message)) 
-
+        try:
+            if isinstance(venue, dict):
+                name = venue['result'].pop()['name']
+            else:
+                name = venue.result.pop().name
+                
+            message = f"Tienes un cambio de estado en tu reserva en {name}!\n{new_state.status_message()}"
+            await self.communications.send_message(Message(user=to, message=message)) 
+        except Exception as e:
+            logging.error(f"Could not send message update to venue")
+            
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         if not await self._find_venue(reservation.venue):
             print("==> Tried to created a reservation for an unexisting venue")
