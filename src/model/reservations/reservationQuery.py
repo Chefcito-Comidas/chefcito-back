@@ -40,6 +40,7 @@ class ReservationQuery(BaseModel):
         )
         for result in promises:
             value = await result
+            print(value)
             if isinstance(value, dict) and value['total'] > 0:
                 op = value['result'].pop()
                 final[op.reservation] = op
