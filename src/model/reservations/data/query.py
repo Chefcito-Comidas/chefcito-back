@@ -91,7 +91,7 @@ class RelBuilder(QueryBuilder):
     async def get(self, id: Optional[str], user: Optional[str], status: Optional[List[str]], venue: Optional[str], time: Optional[Tuple[datetime, datetime]], people: Optional[Tuple[int, int]], limit: int, start: int) -> QueryResult:
         loop = asyncio.get_event_loop()
         if id:
-            return Query(result=self._get_by_id(id), total=1)
+            return QueryResult(result=self._get_by_id(id), total=1)
     
         query = self.__get_initial(limit, start)
         count_query = self.__get_count()
