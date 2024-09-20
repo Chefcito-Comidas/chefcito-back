@@ -117,7 +117,7 @@ class Reservation(BaseModel):
         self.status = Canceled()
 
     def advance(self, forward: bool, who: str):
-        if self.status.get_status() == Uncomfirmed().get_status() and forward and f"user/{who}" == self.venue:
+        if self.status.get_status() == Uncomfirmed().get_status() and forward and who == f"user/{self.venue}":
             self.status = self.status.advance(forward=forward)
         elif self.status.get_status() != Uncomfirmed().get_status() or not forward:
             self.status = self.status.advance(forward=forward)
