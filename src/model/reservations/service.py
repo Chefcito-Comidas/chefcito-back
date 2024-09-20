@@ -133,7 +133,8 @@ class HttpReservationsProvider(ReservationsProvider):
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         endpoint = "/reservations"
         body = reservation_update.model_dump(exclude_none=True)
-        body['time'] = body['time'].__str__()
+        if body.get('time'):
+            body['time'] = body['time'].__str__()
         response = await put(f"{self.url}{endpoint}/{reservation_id}", body=body)
         data = await recover_json_data(response) 
         data['time'] = datetime.fromisoformat(data['time'])
