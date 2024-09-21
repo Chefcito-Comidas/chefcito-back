@@ -1,4 +1,5 @@
 from src.model.commons.caller import get, post, recover_json_data
+from src.model.commons.logger import Logger
 from src.model.communications import user
 from src.model.stats.data.base import StatsDB
 from src.model.stats.data.user_data import UserDataDocument
@@ -55,12 +56,15 @@ class LocalStatsProvider(StatsProvider):
        user.expired_alert = user.expired > expired_threshold 
 
     async def update(self, update: StatsUpdate):
+        Logger.info(f"Updating stats with update: {update}")
         await update.update(self.db)
 
     async def get_venue(self, query: str) -> VenueStatData:
+        Logger.info(f"Looking for venue ==> {query} stats")
         return await self.db.get_by_venue(query)
 
     async def get_user(self, query: str, expired_threshold: float = 0.5, canceled_threshold: float = 0.5) -> UserStatData:
+        Logger.info("Looking for user ==> {query} stats")
         user = await self.db.get_by_user(query)
         self.__calculate_alerts(user, expired_threshold, canceled_threshold)
         return user

@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from src.model.commons.caller import get, post, recover_json_data
+from src.model.commons.logger import Logger
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
@@ -50,9 +51,11 @@ class LocalOpinionsProvider(OpinionsProvider):
         self.db = db
 
     async def create_opinion(self, opinion: Opinion) -> Opinion:
+        Logger.info(f"Storing new opinion for venue ==> {opinion.venue}")
         await self.db.store(opinion)
-
+        Logger.info(f"New opinion for venue ==> {opinion.venue} stored")
         return opinion
 
     async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
+        Logger.info(f"Recieved opinions query: {query}")
         return await self.db.get(query)

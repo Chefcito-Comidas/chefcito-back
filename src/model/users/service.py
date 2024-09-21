@@ -2,6 +2,7 @@ from typing import Annotated, Any, Dict, Self
 from fastapi import Body, Query, status, Response
 from src.model.commons.caller import post, recover_json_data
 from src.model.commons.error import Error
+from src.model.commons.logger import Logger
 from src.model.communications.service import CommunicationProvider
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseAuth
@@ -60,23 +61,27 @@ class LocalUsersProvider(UsersProvider):
         self.communications = communications
     
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
+        Logger.info(f"Retrieving data for new user")
         user = await token.get_data(self.authentication, self.database)
         if name:
             user.name = name
         if phone_number:
             user.phone_number = phone_number
+        Logger.info(f"New user ==> {user.localid} retrieved")
         user.insert_into(user_type, self.database)
-        
         await self.communications.store_user(c.User(localid=user.localid, number=user.phone_number))
+        Logger.info(f"New user ==> {user.localid} persisted")
         return user
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         """ 
         Returns all data from the user, including its type
         """
+        Logger.info("Retrieving data for a user")
         return await auth.get_data(self.authentication, self.database) 
     
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
+        Logger.info(f"Validating permissions for {auth.endpoint}")
         return status.HTTP_200_OK if await auth.is_allowed(self.authentication, self.database) \
                     else status.HTTP_403_FORBIDDEN
 

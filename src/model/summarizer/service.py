@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, List
 
 from src.model.commons.error import Error
+from src.model.commons.logger import Logger
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.summarizer.provider import SummarizerProvider
@@ -20,8 +21,10 @@ class LocalSummarizerProvider(SummarizerProvider):
         self.algo = algo
 
     async def create_summary(self, venue: str, since: datetime) -> Summary:
+        Logger.info(f"Creating summary for venue ==> {venue} since: {since.__str__()}")
         return await self.algo.generate(self.db, venue, since)  
     
     async def get_summary(self, query: SummaryQuery) -> List[Summary]:
+        Logger.info(f"Retrieving summary for venue ==> {query.venue}")
         return await query.make_query(self.db) 
 

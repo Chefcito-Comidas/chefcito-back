@@ -37,7 +37,6 @@ service = ReservationsService(LocalReservationsProvider(database, venues, opinio
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_reservation(reservation: Annotated[CreateInfo, Body()], response: Response) -> Reservation | Error:
-    logging.info("==> Called reservation creation")
     return await service.create_reservation(reservation, response)
 
 @app.put("/reservations/{reservation}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})

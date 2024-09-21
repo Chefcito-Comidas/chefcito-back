@@ -21,7 +21,7 @@ from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.venues.service import VenuesProvider
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
-
+from src.model.commons.logger import Logger, define_log_level
 
 class ReservationsProvider:
     
@@ -57,7 +57,6 @@ class ReservationsService:
     
     async def create_reservation(self, reservation: CreateInfo, response: Response) -> Reservation | Error:
         try:
-           print(f"==> New reservation: {reservation}")
            return await self.provider.create_reservation(reservation)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
@@ -72,7 +71,6 @@ class ReservationsService:
     
     async def get_reservations(self, query: ReservationQuery, response: Response) -> ReservationQueryResponse | Error:
         try:
-           print(f"SEARCHING WITH: {query}")
            return await self.provider.get_reservations(query)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
@@ -124,7 +122,7 @@ class HttpReservationsProvider(ReservationsProvider):
         endpoint = "/reservations"
         body = reservation.model_dump()
         body['time'] = body['time'].__str__()
-        print(f"==> Sending create reservation request with data: {body}")
+        Logger.info(f"Sending create reservation request with data: {body}")
         response = await post(f"{self.url}{endpoint}", body=body)
         data = await recover_json_data(response) 
         data['time'] = datetime.fromisoformat(data['time'])
@@ -219,67 +217,78 @@ class LocalReservationsProvider(ReservationsProvider):
             logging.error(f"Could not send message update to venue")
             
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
+        Logger.info(f"New reservation: {reservation}")
         if not await self._find_venue(reservation.venue):
-            print("==> Tried to created a reservation for an unexisting venue")
+            Logger.info("Tried to created a reservation for an unexisting venue")
             raise Exception("Venue does not exist")
-        print(f"==> Creating new reservation for: {reservation.user}")
+        Logger.info(f"Creating new reservation for: {reservation.user}")
         persistance = reservation.into_reservation().persistance()
-        print("===> Persisted reservation schema created")
+        Logger.info("=Persisted reservation schema created")
         response = Reservation.from_schema(persistance)
         self.db.store_reservation(persistance)
-        print("===> Stored reservation in database")
+        Logger.info("=Stored reservation in database")
         await self.__notify_user(
             reservation.user,
             message=f"Tu reserva para el dia {response.time.date()} fue creada con exito!"
         )
-        print("===> Sent notification to user")
+        Logger.info("=Sent notification to user")
         await self.__notify_user(
             reservation.venue,
             message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
         )
-        print("===> Sent notification to venue") 
+        Logger.info("=Sent notification to venue") 
         return response 
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
+        Logger.info(f"Update request for reservation: {Update}")
         schema = self.db.get_reservation_by_id(reservation_id)
         if schema:
-            print("==> Updating reservation from schema")
+            Logger.info("Updating reservation from schema")
             reservation = Reservation.from_schema(schema)
             reservation = await reservation_update.modify(reservation, self.stats)
-            print(f"==> Modified reservation: {reservation}")
+            Logger.info(f"Modified reservation: {reservation}")
             self.db.update_reservation(reservation.persistance())
-            print("==> Persisted reservation")
+            Logger.info("Persisted reservation")
             await self.__notify_user(
                 reservation.venue,
                 message=f"Tienes una modeficacion en la reserva ({reservation.id}): del dia {schema.time.date()}!\nPodes ver las modificaciones de la reserva en la web"
             )
             await self.__notify_state_change(reservation.user, reservation.venue, reservation.status)
+            Logger.info("Notifications sent")
             return reservation
         raise Exception("Reservation does not exist")
 
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
+        Logger.info(f"Reservation query recieved: {query}")
         return await query.query(self.db, self.opinions)
 
     async def delete_reservation(self, reservation_id: str) -> None:
+        Logger.info(f"Reservation deletion for reservation id: {reservation_id}")
         Reservation.delete(reservation_id, self.db)
 
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
+        Logger.info(f"Opinion creation for reservation {opinion.reservation}")
         query = ReservationQuery(
             id=opinion.reservation
         )
         result = await self.get_reservations(query)
         if result.total == 0 and user not in result.result[0].user:
             raise Exception("Reservation was not done by user")
+        Logger.info("Creating opinion")
         created_opinion = await self.opinions.create_opinion(opinion)
         await self.__notify_user(result.result[0].venue,
                            message="Tenes una nueva opinion en tu local!\nPodes revisarla en nuestra web")
+        Logger.info("Opinion created and venue notified of new opinion")
         return created_opinion
 
     async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
+        Logger.info(f"Recieved opinion query request {query}")
         return await self.opinions.query_opinions(query)
 
     async def get_user_stats(self, user: str) -> UserStatData:
+        Logger.info(f"Recieved request for user => {user} stats")
         return await self.stats.get_user(user)
     
     async def get_venue_stats(self, venue: str) -> VenueStatData:
+        Logger.info(f"Recieved request for venue ==> {venue} stats")
         return await self.stats.get_venue(venue)

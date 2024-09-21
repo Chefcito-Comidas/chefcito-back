@@ -3,6 +3,7 @@ from fastapi import Response, status
 
 from src.model.commons.error import Error
 from src.model.commons.caller import delete, get, post, put, recover_json_data
+from src.model.commons.logger import Logger
 from src.model.venues.data.base import VenuesBase
 from src.model.venues.data.location_finder import Ranker
 from src.model.venues.data.schema import VenueSchema
@@ -115,29 +116,39 @@ class LocalVenuesProvider(VenuesProvider):
         self.db = base
 
     async def create_venue(self, venue: CreateInfo) -> Venue:
+        Logger.info(f"Recieved request to create new venue ==> {venue}")
         persistance = venue.into_venue().persistance()
+        Logger.info(f"Created id for new venue ==> {persistance.id}")
         response=Venue.from_schema(persistance)
         self.db.store_venue(persistance)
+        Logger.info(f"New venue ==> {response.id} created")
         return response
 
     async def update_venue(self, venue_id: str, venue_update: Update) -> Venue:
+        Logger.info(f"Recieved request to update venue ==> {venue_id} with data {venue_update}")
         schema = self.db.get_venue_by_id(venue_id)
         if schema:
+            Logger.info("Found venue in database")
             venue = Venue.from_schema(schema)
             venue = venue_update.modify(venue)
             self.db.update_venue(venue.persistance())
+            Logger.info(f"Updated venue ==> {venue_id}")
             return venue
         raise Exception("Venue does not exist")
 
     async def get_venues(self, query: VenueQuery) -> VenueQueryResult:
+        Logger.info(f"Looking for venues with query ==> {query}")
         return query.query(self.db)
     
     async def delete_venue(self, venue_id: str) -> None:
+        Logger.info(f"Recieved request to delete venue ==> {venue_id}")
         Venue.delete(venue_id, self.db)
 
     async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+        Logger.info(f"Ranking venue around: ({location[0]},{location[1]})")
         ranker = Ranker(self.db, location)
         result = await ranker.rank()
+        Logger.info("Ranked venues around that location")
         return VenueQueryResult(
             result=result,
             total=len(result)
