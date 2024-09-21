@@ -226,9 +226,9 @@ async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, De
 
 
 @app.get("/stats/user/{user}")
-async def get_user_stats(user: str) -> UserStatData:
+async def get_user_stats(user: str, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> UserStatData:
     return await service.get_user_stats(user)
 
 @app.get("/stats/venue/{venue}")
-async def get_venue_stats(venue: str) -> VenueStatData:
+async def get_venue_stats(venue: str, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> VenueStatData:
     return await service.get_venue_stats(venue)
