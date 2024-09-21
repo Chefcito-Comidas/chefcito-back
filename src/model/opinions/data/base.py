@@ -1,12 +1,13 @@
 import asyncio
 from datetime import datetime
 from typing import Any, Dict, List
-from src.model.opinions.data.OpinionSchema import OpinionSchema
+from src.model.opinions.data.OpinionSchema import OpinionSchema, SummarySchema
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 import motor.motor_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+from beanie.odm.queries.find import FindMany
 
 from src.model.summarizer.summary import Summary
 
@@ -31,7 +32,7 @@ class OpinionsDB:
 class MongoOpinionsDB(OpinionsDB):
     
     async def init(self):
-        self.db = await init_beanie(database=self.client.db_name, document_models=[OpinionSchema])
+        self.db = await init_beanie(database=self.client.db_name, document_models=[OpinionSchema, SummarySchema])
 
     def __init__(self, conn_string: str):
         client = AsyncIOMotorClient(conn_string)
@@ -54,6 +55,15 @@ class MongoOpinionsDB(OpinionsDB):
             )) if result else []
         total = await self.get_total(query)
         return OpinionQueryResponse(result=opinions, total=total)
+
+    async def store_summary(self, summary: Summary) -> None:
+        schema = SummarySchema.from_summary(summary)
+        await schema.save()
+
+    async def get_summaries(self, venue: str, since: datetime, limit: int = 1, skip: int = 0) -> List[Summary]:
+        query: FindMany[SummarySchema] = SummarySchema.find_many(SummarySchema.venue == venue).\
+        find_many(SummarySchema.date.__ge__(since))
+        return await query.limit(limit).skip(skip).sort("-date")
 
 class MockedOpinionsDB(OpinionsDB):
     

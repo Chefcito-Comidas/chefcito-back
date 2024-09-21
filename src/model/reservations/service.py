@@ -19,6 +19,7 @@ from src.model.reservations.reservationQuery import ReservationQuery, Reservatio
 from src.model.stats.provider import StatsProvider
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
+from src.model.summarizer.summary import Summary
 from src.model.venues.service import VenuesProvider
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.commons.logger import Logger, define_log_level
@@ -47,6 +48,12 @@ class ReservationsProvider:
         raise Exception("Interface mehotd should not be called")
     
     async def get_user_stats(self, user: str) -> UserStatData:
+        raise Exception("Interface method should not be called")
+    
+    async def get_venue_summary(self, venue: str) -> Summary:
+        raise Exception("Interface method should not be called")
+
+    async def  create_venue_summary(self, venue: str) -> Summary:
         raise Exception("Interface method should not be called")
 
 class ReservationsService:
@@ -96,6 +103,7 @@ class ReservationsService:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
 
+
     async def get_user_stats(self, user: str) -> UserStatData:
         try:
             return await self.provider.get_user_stats(user)
@@ -108,6 +116,24 @@ class ReservationsService:
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         try:
             return await self.provider.get_venue_stats(venue)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
+        
+    async def get_venue_summary(self, venue: str) -> Summary:
+        try:
+            return await self.provider.get_venue_summary(venue)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
+        
+    async def create_venue_summary(self, venue: str) -> Summary:
+        try:
+            return await self.provider.create_venue_summary(venue)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -176,6 +202,16 @@ class HttpReservationsProvider(ReservationsProvider):
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         endpoint = f"/stats/venue/{venue}"
         response = await get(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+
+    async def get_venue_summary(self, venue: str) -> Summary:
+        endpoint = f"/summaries/{venue}"
+        response = await get(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+    
+    async def create_venue_summary(self, venue: str) -> Summary:
+        endpoint = f"/summaries/{venue}"
+        response = await post(f"{self.url}{endpoint}")
         return await recover_json_data(response)
 
 class LocalReservationsProvider(ReservationsProvider):
@@ -292,3 +328,11 @@ class LocalReservationsProvider(ReservationsProvider):
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         Logger.info(f"Recieved request for venue ==> {venue} stats")
         return await self.stats.get_venue(venue)
+
+    async def get_venue_summary(self, venue: str) -> Summary:
+        Logger.info(f"Recovering venue ==> {venue} summary")
+        return await self.opinions.get_summary(venue)
+    
+    async def create_venue_summary(self, venue: str) -> Summary:
+        Logger.info(f"Creating venue ==> {venue} Summary")
+        return await self.opinions.create_new_summary(venue)

@@ -5,6 +5,7 @@ from src.model.commons.logger import Logger
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
+from src.model.summarizer.summary import Summary
 
 
 class OpinionsProvider:
@@ -14,13 +15,6 @@ class OpinionsProvider:
 
     async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
        raise Exception("Interface method should not be called")
-
-    async def get_summary(self, restaurant) -> Any:
-       raise Exception("Interface method should not be called")
-
-    async def create_new_summary(self, restaurant) -> Any:
-       raise Exception("Interface method should not be called")
-
 
 
 class HttpOpinionsProvider(OpinionsProvider):
