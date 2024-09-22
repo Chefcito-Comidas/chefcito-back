@@ -181,7 +181,9 @@ class HttpReservationsProvider(ReservationsProvider):
 
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         endpoint = "/opinions"
-        response = await post(f"{self.url}{endpoint}/{user}", body=opinion.model_dump())
+        body = opinion.model_dump()
+        body['time'] = body['time'].__str__()
+        response = await post(f"{self.url}{endpoint}/{user}", body=body)
         return await recover_json_data(response)
 
     async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
