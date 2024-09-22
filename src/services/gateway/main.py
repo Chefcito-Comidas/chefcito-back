@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import S
 from typing import Annotated, List, Optional, Tuple
 from fastapi import Body, Depends, FastAPI, Header, Path, Query, Response, status
 from pydantic_settings import BaseSettings
@@ -10,6 +11,7 @@ from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
+from src.model.summarizer.summary import Summary
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -224,6 +226,16 @@ async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, De
                          response: Response) -> Venue | Error:
     return await service.get_my_venue(credentials, response)
 
+
+@app.post("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_venue_summary(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                               venue: Annotated[str, Path()]) -> Summary:
+    return await service.create_venue_summary(credentials, venue)
+
+@app.get("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def get_venue_summary(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+                            venue: Annotated[str, Path()]) -> Summary:
+    return await service.get_venue_summary(venue)
 
 @app.get("/stats/user/{user}")
 async def get_user_stats(user: str, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> UserStatData:

@@ -22,7 +22,9 @@ class LocalSummarizerProvider(SummarizerProvider):
 
     async def create_summary(self, venue: str, since: datetime) -> Summary:
         Logger.info(f"Creating summary for venue ==> {venue} since: {since.__str__()}")
-        return await self.algo.generate(self.db, venue, since)  
+        summary = await self.algo.generate(self.db, venue, since)  
+        await self.db.store_summary(summary)
+        return summary
     
     async def get_summary(self, query: SummaryQuery) -> List[Summary]:
         Logger.info(f"Retrieving summary for venue ==> {query.venue}")

@@ -1,10 +1,15 @@
+from datetime import datetime, timedelta
 from typing import Any, List
 
 from src.model.commons.caller import get, post, recover_json_data
+from src.model.commons.error import Error
 from src.model.commons.logger import Logger
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
+from src.model.summarizer.provider import SummarizerProvider
+from src.model.summarizer.summary import Summary
+from src.model.summarizer.summary_query import SummaryQuery
 
 
 class OpinionsProvider:
@@ -15,13 +20,11 @@ class OpinionsProvider:
     async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
        raise Exception("Interface method should not be called")
 
-    async def get_summary(self, restaurant) -> Any:
-       raise Exception("Interface method should not be called")
-
-    async def create_new_summary(self, restaurant) -> Any:
-       raise Exception("Interface method should not be called")
-
-
+    async def create_venue_summary(self, venue: str) -> Summary:
+        raise Exception("Interface method should not be called")
+    
+    async def get_venue_summary(self, venue: str) -> Summary:
+        raise Exception("Interface method should not be called")
 
 class HttpOpinionsProvider(OpinionsProvider):
 
@@ -45,10 +48,21 @@ class HttpOpinionsProvider(OpinionsProvider):
         response = await get(f"{self.url}{endpoint}", params=params)
         return await recover_json_data(response)
 
+    async def create_venue_summary(self, venue: str) -> Summary:
+        endpoint = f"/summaries/{venue}"
+        response = await post(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+
+    async def get_venue_summary(self, venue: str) -> Summary:
+        endpoint = f"/summaries/{venue}"
+        response = await get(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+
 class LocalOpinionsProvider(OpinionsProvider):
 
-    def __init__(self, db: OpinionsDB):
+    def __init__(self, db: OpinionsDB, summaries: SummarizerProvider):
         self.db = db
+        self.summaries = summaries
 
     async def create_opinion(self, opinion: Opinion) -> Opinion:
         Logger.info(f"Storing new opinion for venue ==> {opinion.venue}")
@@ -59,3 +73,18 @@ class LocalOpinionsProvider(OpinionsProvider):
     async def query_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         Logger.info(f"Recieved opinions query: {query}")
         return await self.db.get(query)
+    
+    async def create_venue_summary(self, venue: str) -> Summary:
+        summary = await self.summaries.create_summary(venue, datetime.today() - timedelta(days=14)) 
+        if isinstance(summary, Error):
+            raise Exception(summary.description)
+        return summary
+
+    async def get_venue_summary(self, venue: str) -> Summary:
+        query = SummaryQuery(venue=venue,
+                             limit=1,
+                             skip=0)
+        result = await self.summaries.get_summary(query)
+        if isinstance(result, list):
+            return result.pop()
+        raise Exception(result.description)

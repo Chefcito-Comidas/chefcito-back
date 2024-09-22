@@ -11,7 +11,7 @@ from src.model.opinions.provider import LocalOpinionsProvider
 
 def test_a_created_opinion_can_be_retrieved():
     database = MockedOpinionsDB()
-    provider = LocalOpinionsProvider(database)
+    provider = LocalOpinionsProvider(database, None) # type: ignore
 
     opinion = Opinion(
             venue="Elegantland",
@@ -32,7 +32,7 @@ def test_a_created_opinion_can_be_retrieved():
 
 def test_opinions_from_different_restaurants_do_not_show_up_on_the_same_query():
     database = MockedOpinionsDB()
-    provider = LocalOpinionsProvider(database)
+    provider = LocalOpinionsProvider(database, None) # type: ignore
 
     opinion = Opinion(
             venue="Elegantland",
