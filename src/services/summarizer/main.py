@@ -46,12 +46,10 @@ summaries = SummarizerService(LocalSummarizerProvider(database, summarizer))
 
 @app.get("/summaries/{restaurant}")
 async def get_summary(restaurant: Annotated[str, Path()],
-                      since: Annotated[datetime, Query()],
                       limit: Annotated[int, Query()] = 3,
                       skip: Annotated[int, Query()] = 0) -> List[Summary] | Error:
     query = SummaryQuery(
         venue=restaurant,
-        since=since,
         limit=limit,
         skip=skip
     )

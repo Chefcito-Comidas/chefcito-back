@@ -15,6 +15,7 @@ from src.model.reservations.update import Update
 from src.model.stats.provider import HttpStatsProvider
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
+from src.model.summarizer.summary import Summary
 from src.model.venues.service import HttpVenuesProvider
 from src.model.opinions.provider import HttpOpinionsProvider
 
@@ -96,6 +97,13 @@ async def create_opinion(opinion: Annotated[Opinion, Body()],
                          response: Response):
     return await service.create_opinion(opinion, user, response)
 
+@app.post("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def create_summary(venue: Annotated[str, Path()]) -> Summary:
+    return await service.create_venue_summary(venue)
+
+@app.get("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
+async def get_summary(venue: Annotated[str, Path()]) -> Summary:
+    return await service.get_venue_summary(venue)
 
 @app.get("/stats/user/{user}")
 async def get_user_stats(user: Annotated[str, Path()]) -> UserStatData:

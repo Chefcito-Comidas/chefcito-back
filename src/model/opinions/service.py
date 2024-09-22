@@ -15,9 +15,8 @@ from src.model.summarizer.provider import SummarizerService
 
 class OpinionsService:
     
-    def __init__(self, provider: OpinionsProvider, summaries: SummarizerService):
+    def __init__(self, provider: OpinionsProvider):
         self.provider = provider 
-        self.summaries = summaries
 
     async def create_opinion(self, opinion: Opinion) -> Opinion | Error:
         try:
@@ -32,12 +31,9 @@ class OpinionsService:
         except Exception as e:
             return Error.from_exception(e)
 
-    async def get_summary(self, venue: str, limit: int, skip: int) -> Summary:
-        query = SummaryQuery(venue=venue,
-                             limit=limit,
-                             skip=skip)
+    async def get_summary(self, venue: str) -> Summary:
         try:
-            return await self.summaries.get_summary(query)
+           return await self.provider.get_venue_summary(venue) 
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -46,8 +42,7 @@ class OpinionsService:
 
     async def create_new_summary(self, venue: str) -> Summary:
         try:
-            summary = await self.summaries.create_summary(venue, datetime.today() - timedelta(days=14)) 
-            return summary
+           return await self.provider.create_venue_summary(venue) 
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

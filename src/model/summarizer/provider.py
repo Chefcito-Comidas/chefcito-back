@@ -39,11 +39,11 @@ class HttpSummarizerProvider(SummarizerProvider):
         self.host = host
 
     async def create_summary(self, venue: str, since: datetime) -> Summary:
-        endpoint = f"/summary/{venue}"
-        since = {
+        endpoint = f"/summaries/{venue}"
+        params = {
             "since": since.__str__()
         }
-        response = await post(f"{self.host}{endpoint}", params=since)
+        response = await post(f"{self.host}{endpoint}", params=params)
         return await recover_json_data(response)
 
     async def get_summary(self, query: SummaryQuery) -> List[Summary]:

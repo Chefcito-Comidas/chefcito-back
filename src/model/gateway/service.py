@@ -15,6 +15,7 @@ from src.model.reservations.service import  ReservationsService
 from src.model.reservations.update import Update
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
+from src.model.summarizer.summary import Summary
 from src.model.users.service import UsersProvider
 from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
@@ -195,3 +196,28 @@ class GatewayService:
                 detail=e.__str__()
             )
         
+    async def create_venue_summary(self, venue: str, credentials: Annotated[HTTPAuthorizationCredentials, None]) -> Summary:
+        try:
+           user = self.__get_user(credentials)
+           if user != venue:
+               raise HTTPException(
+                   status_code=status.HTTP_401_UNAUTHORIZED,
+                   detail="Forbidden Operation"
+               )
+           return await self.reservations.create_venue_summary(venue) 
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            )
+
+    async def get_venue_summary(self, venue: str) -> Summary:
+        try:
+            return await self.reservations.get_venue_summary(venue)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=e.__str__()
+            ) 

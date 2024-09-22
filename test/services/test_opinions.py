@@ -8,9 +8,14 @@ from src.model.opinions.data.base import MongoOpinionsDB, OpinionsDB
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.opinions.provider import LocalOpinionsProvider
+from src.model.opinions.service import OpinionsService
+from src.model.summarizer.process.algorithm import SummaryAlgorithm
+from src.model.summarizer.provider import SummarizerService
+from src.model.summarizer.service import LocalSummarizerProvider
+from src.model.summarizer.summary import Summary
 
 async def opinion_load_and_queried_by_venue(database: OpinionsDB):
-    provider = LocalOpinionsProvider(database)
+    provider = LocalOpinionsProvider(database, None) # type: ignore
     opinion = Opinion(
             venue="Elegantland",
             reservation="aReservationID",
@@ -48,7 +53,7 @@ def create_many_by_daterange(from_date: datetime, to_date: datetime) -> List[Opi
 
 
 async def opinions_load_and_queried_by_date(database: OpinionsDB):
-    provider = LocalOpinionsProvider(database)
+    provider = LocalOpinionsProvider(database, None) # type: ignore
     dates_range = create_many_by_daterange(datetime(2024, 7, 25, 20, 0, 0), 
                                            datetime(2024, 7, 26, 20, 0, 0))
     for value in list(                    
@@ -85,7 +90,19 @@ async def opinions_load_and_queried_by_date(database: OpinionsDB):
         pytest.fail(reason=f"failed at opinions_load_and_queried_by_date: {e}")
 
     
-
+async def storing_and_retrieving_summaries(database: OpinionsDB):
+    service = LocalOpinionsProvider(database, LocalSummarizerProvider(database, SummaryAlgorithm()))
+    await service.create_opinion(Opinion(
+        venue="TestSummaryVenue",
+        opinion="This is an opinion",
+        reservation="123",
+        date=datetime.now()
+    ))
+    generated = await service.create_venue_summary("TestSummaryVenue")
+    if not isinstance(generated, Summary):
+        pytest.fail(reason=f"Error generating Summary: {generated}")
+    summary = await service.get_venue_summary("TestSummaryVenue")
+    assert summary.text == "This is an opinion"
 
 
 @pytest.mark.asyncio
@@ -96,4 +113,4 @@ async def test_opinions_loop():
         await database.init()
         await opinion_load_and_queried_by_venue(database) 
         await opinions_load_and_queried_by_date(database)
-
+        await storing_and_retrieving_summaries(database)

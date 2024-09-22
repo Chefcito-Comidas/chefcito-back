@@ -61,9 +61,12 @@ class MongoOpinionsDB(OpinionsDB):
         await schema.save()
 
     async def get_summaries(self, venue: str, since: datetime, limit: int = 1, skip: int = 0) -> List[Summary]:
-        query: FindMany[SummarySchema] = SummarySchema.find_many(SummarySchema.venue == venue).\
-        find_many(SummarySchema.date.__ge__(since))
-        return await query.limit(limit).skip(skip).sort("-date")
+        query: FindMany[SummarySchema] = SummarySchema.find(SummarySchema.venue == venue).\
+        find(SummarySchema.date.__ge__(since))
+        return list(map(
+            lambda x: x.into_summary(), 
+            await query.limit(limit).skip(skip).sort("-date").to_list()
+        ))
 
 class MockedOpinionsDB(OpinionsDB):
     

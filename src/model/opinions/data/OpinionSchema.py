@@ -38,7 +38,7 @@ class OpinionSchema(Document):
 class SummarySchema(Document):
     
     venue: str
-    date: str
+    date: datetime
     opinion: str
 
 
@@ -53,3 +53,6 @@ class SummarySchema(Document):
     @classmethod
     def from_summary(cls, summary: Summary) -> 'SummarySchema':
         return cls(venue=summary.venue, opinion=summary.text, date=summary.date)
+    
+    def into_summary(self) -> Summary:
+        return Summary(text=self.opinion, date=self.date, venue=self.venue)

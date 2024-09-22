@@ -331,8 +331,8 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def get_venue_summary(self, venue: str) -> Summary:
         Logger.info(f"Recovering venue ==> {venue} summary")
-        return await self.opinions.get_summary(venue)
+        return await self.opinions.get_venue_summary(venue)
     
     async def create_venue_summary(self, venue: str) -> Summary:
         Logger.info(f"Creating venue ==> {venue} Summary")
-        return await self.opinions.create_new_summary(venue)
+        return await self.opinions.create_venue_summary(venue)
