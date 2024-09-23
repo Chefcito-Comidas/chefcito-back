@@ -25,3 +25,7 @@ class Point(BaseModel):
         if cls.is_negative(reservation):
             return cls(total=cls.__get_negative_points(reservation, update), user=reservation.user)
         return cls(total=50, user=reservation.user)
+    
+    @classmethod
+    def from_opinion(cls, reservation: Reservation) -> 'Point':
+        return cls.from_reservation(reservation, None)

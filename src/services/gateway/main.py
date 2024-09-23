@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
+from src.model.points.provider import HttpPointsProvider
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
@@ -25,12 +26,14 @@ from src.model.gateway.service import GatewayService
 from src.model.gateway.reservations_stubs import CreateInfo, Update, ReservationQuery
 import src.model.venues as v
 import src.model.gateway.venues_stubs as v_stubs
+import src.model.gateway.users_stubs as u_stubs
 
 class Settings(BaseSettings):
     proto: str = "http://"
     users: str = "users"
     venues: str = "venues"
     reservations: str = "reservations"
+    points: str = "points"
     auth_url: str = "/users/permissions"
     auth_avoided_urls: list[str] = ["/users"]
     information_prefix: str = "/users"
@@ -54,11 +57,12 @@ security = HTTPBearer()
 users = HttpUsersProvider(f"{settings.proto}{settings.users}")
 venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
 reservations = HttpReservationsProvider(f"{settings.proto}{settings.reservations}")
-service = GatewayService(users, ReservationsService(reservations),VenuesService(venues))
+points = HttpPointsProvider(f"{settings.proto}{settings.points}")
+service = GatewayService(users, ReservationsService(reservations),VenuesService(venues), points)
 
 @app.get("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                  response: Response) -> UserData | Error:
+                  response: Response) -> u_stubs.UserData | Error:
     return await service.sign_in(credentials, response)
 
 @app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})

@@ -11,6 +11,8 @@ from src.model.communications.service import CommunicationProvider, DummyCommuni
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.provider import OpinionsProvider
+from src.model.points.point import Point
+from src.model.points.provider import PointsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import CreateInfo, Reservation, ReservationStatus
@@ -217,13 +219,15 @@ class HttpReservationsProvider(ReservationsProvider):
 class LocalReservationsProvider(ReservationsProvider):
     
     def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider,
-                 stats: StatsProvider, 
+                 stats: StatsProvider,
+                 points: PointsProvider, 
                  comms: CommunicationProvider = DummyCommunicationProvider()):
         self.db = base
         self.venues = venues
         self.opinions = opinions
         self.communications = comms
         self.stats = stats
+        self.points = points
 
     async def __notify_user(self, user: str, message: str) -> None:
         to_send = Message(user=user, message=message)
@@ -281,7 +285,7 @@ class LocalReservationsProvider(ReservationsProvider):
         if schema:
             Logger.info("Updating reservation from schema")
             reservation = Reservation.from_schema(schema)
-            reservation = await reservation_update.modify(reservation, self.stats)
+            reservation = await reservation_update.modify(reservation, self.stats, self.points)
             Logger.info(f"Modified reservation: {reservation}")
             self.db.update_reservation(reservation.persistance())
             Logger.info("Persisted reservation")
@@ -312,6 +316,8 @@ class LocalReservationsProvider(ReservationsProvider):
             raise Exception("Reservation was not done by user")
         Logger.info("Creating opinion")
         created_opinion = await self.opinions.create_opinion(opinion)
+        Logger.info(f"Updating points for user: {user}")
+        await self.points.update_points(Point.from_opinion(result.result[0]))
         await self.__notify_user(result.result[0].venue,
                            message="Tenes una nueva opinion en tu local!\nPodes revisarla en nuestra web")
         Logger.info("Opinion created and venue notified of new opinion")
