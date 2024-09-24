@@ -174,4 +174,23 @@ def test_local_service_response():
         assert recovered == expected
         i += 1
        
+def test_points_updating_on_recovering_points():
+    base = MockedPointBase()
+    asyncio.run(
+            base.update_points(Point(user="User", total=200), time=datetime.datetime.now()-datetime.timedelta(days=14, minutes=1))
+            )
+    recovered = asyncio.run(base.recover_points("User"))
+    assert recovered is not None
+    assert recovered.total == 0
 
+def test_points_on_updating():
+    base = MockedPointBase()
+    asyncio.run(
+            base.update_points(Point(user="User", total=200), time=datetime.datetime.now()-datetime.timedelta(days=14, minutes=1))
+            )
+    asyncio.run(
+            base.update_points(Point(user="User", total=200))
+            )
+    recovered = asyncio.run(base.recover_points("User"))
+    assert recovered is not None
+    assert recovered.total == 200

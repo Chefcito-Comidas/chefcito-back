@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import pytest
 from sqlalchemy import create_engine
 from testcontainers.postgres import PostgresContainer
@@ -38,6 +39,17 @@ async def service_query_making(base: RelPointBase):
     points_2 = await service.get_points("User_2")
     assert points_2.total == 100
 
+async def service_update_making(base: RelPointBase):
+    """
+        Builds over service_query_making
+    """
+    provider = LocalPointsProvider(base)
+    service = PointService(provider)
+    points = Point(total=100, user="User_2")
+    await service.store_points(points)
+    points = await service.get_points("User_2")
+    assert points.total == 200
+
 async def service_levels_test(base: RelPointBase):
     levels = ["baby", "kid", "teen", "adult", "old"]
     provider = LocalPointsProvider(base, levels=levels)
@@ -51,18 +63,22 @@ async def service_levels_test(base: RelPointBase):
         result = await service.get_points(user_base+str(i))
         assert result.level == levels[i] if i < 5 else levels[4]
 
-
-
-async def service_update_making(base: RelPointBase):
-    """
-        Builds over service_query_making
-    """
+async def service_points_updating_on_update(base: RelPointBase):
     provider = LocalPointsProvider(base)
-    service = PointService(provider)
-    points = Point(total=100, user="User_2")
-    await service.store_points(points)
-    points = await service.get_points("User_2")
-    assert points.total == 200
+    user = "User_5"
+    await provider.update_points(Point(user=user, total=200), time=datetime.now()-timedelta(days=14))
+    await provider.update_points(Point(user=user, total=200))
+    result = await provider.get_points(user)
+    assert result.total == 200
+
+async def service_points_updating_on_get(base: RelPointBase):
+    provider = LocalPointsProvider(base)
+    user = "User_6"
+    await provider.update_points(Point(user=user, total=200), time=datetime.now()-timedelta(days=14))
+    result = await provider.get_points(user)
+    assert result.total == 0
+
+
 
 @pytest.mark.asyncio
 async def test_points_loop():
@@ -74,3 +90,5 @@ async def test_points_loop():
         await service_query_making(db)
         await service_update_making(db)
         await service_levels_test(db)
+        await service_points_updating_on_update(db)
+        await service_points_updating_on_get(db)

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from src.model.commons.caller import post, get, recover_json_data
 from src.model.points.data.base import PointBase
@@ -11,7 +12,7 @@ DEFAULT_LEVELS = ["Novato",
 
 class PointsProvider():
     
-    async def update_points(self, points: Point) -> None:
+    async def update_points(self, points: Point, time: datetime = datetime.now()) -> None:
         raise Exception("Interface method should not be called")
     
     async def get_points(self, user: str) -> PointResponse:
@@ -22,7 +23,7 @@ class HttpPointsProvider(PointsProvider):
     def __init__(self, url: str):
         self.url = url
 
-    async def update_points(self, points: Point) -> None:
+    async def update_points(self, points: Point, time: datetime = datetime.now()) -> None:
         endpoint = "/points"
         await post(f"{self.url}{endpoint}", body=points.model_dump())
     
@@ -37,8 +38,8 @@ class LocalPointsProvider(PointsProvider):
         self.base = base
         self.levels = levels
 
-    async def update_points(self, points: Point) -> None:
-        return await self.base.update_points(points)
+    async def update_points(self, points: Point, time: datetime = datetime.now()) -> None:
+        return await self.base.update_points(points, time=time)
 
     async def get_points(self, user: str) -> PointResponse:
         result = await self.base.recover_points(user)
