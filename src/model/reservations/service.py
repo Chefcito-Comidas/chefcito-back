@@ -186,7 +186,7 @@ class HttpReservationsProvider(ReservationsProvider):
         response = await post(f"{self.url}{endpoint}/{user}", body=body)
         return await recover_json_data(response)
 
-    async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         endpoint = "/opinions"
         params = query.model_dump(exclude_none=True)
         if params.get("from_time"):
@@ -252,7 +252,7 @@ class LocalReservationsProvider(ReservationsProvider):
             message = f"Tienes un cambio de estado en tu reserva en {name}!\n{new_state.status_message()}"
             await self.communications.send_message(Message(user=to, message=message)) 
         except Exception as e:
-            logging.error(f"Could not send message update to venue")
+            logging.error(f"Could not send message update to venue: {e}")
             
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         Logger.info(f"New reservation: {reservation}")

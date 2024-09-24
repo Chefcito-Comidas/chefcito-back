@@ -28,8 +28,8 @@ async def init_database(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=init_database)
-summaries = SummarizerService(HttpSummarizerProvider(f"{settings.proto}{settings.summaries}"))
-opinions = OpinionsService(LocalOpinionsProvider(database), summaries)
+summaries = HttpSummarizerProvider(f"{settings.proto}{settings.summaries}")
+opinions = OpinionsService(LocalOpinionsProvider(database, summaries))
 
 
 """
@@ -71,8 +71,8 @@ async def query_opinions(venue: Optional[str] = Query(default=None),
 @app.get("/summaries/{restaurant}")
 async def get_summary(restaurant: Annotated[str, Path()],
                       limit: Annotated[int, Query()] = 3,
-                      skip: Annotated[int, Query()] = 0) -> List[Summary] | Error:
-    return await opinions.get_summary(restaurant, limit, skip)
+                      skip: Annotated[int, Query()] = 0) -> Summary | Error:
+    return await opinions.get_summary(restaurant)
 
 @app.post("/summaries/{restaurant}")
 async def create_summary(restaurant: Annotated[str, Path()]) -> Any | Error:
