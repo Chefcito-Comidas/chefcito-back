@@ -26,12 +26,15 @@ class RelPointBase(PointBase):
     def __get_user_query(self, user: str) -> Callable[[Session], Optional[Point]]:
         def call(session: Session) -> Optional[Point]:
             query = select(PointSchema).where(PointSchema.user.__eq__(user))
-            return session.scalar(query)
+            result = session.scalar(query)
+            return result.into_points() if result else None
         return call
 
     def __get_update_query(self, points: Point) -> Callable[[Session], None]:
         def call(session: Session) -> None:
            value = session.get(PointSchema, points.user)
+           if value is None:
+               return
            value.total = points.total  
 
         return call
@@ -55,6 +58,7 @@ class RelPointBase(PointBase):
         call = self.__get_user_query(user)
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, with_no_commit(call), self.__engine) 
+
 
 class MockedPointBase(PointBase):
     

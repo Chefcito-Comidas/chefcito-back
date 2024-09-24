@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from src.model.points.point import Point
+from src.model.points.point import Point, PointResponse
 from src.model.points.provider import PointsProvider
 
 
@@ -17,7 +17,7 @@ class PointService():
                     detail=e.__str__()
                     )
     
-    async def get_points(self, user: str) -> Point:
+    async def get_points(self, user: str) -> PointResponse:
         try:
             return await self.provider.get_points(user)
         except Exception as e:

@@ -1,12 +1,41 @@
+from typing import List
+from haversine.haversine import math
 from pydantic import BaseModel
 
 from src.model.reservations.reservation import Canceled, Expired, Reservation
 
 
+class PointResponse(BaseModel):
+    user: str
+    total: int
+    level: str
+
+
+
 class Point(BaseModel):
     total: int
     user: str
-
+    
+    
+    def get_level(self) -> int:
+        """
+        if n is the level, it is defined by the minimum n such that 
+        the following inequality holds
+        2^n > (total/100)+1
+        """
+        #Take the log2 to get just n
+        #then return the floor 
+        level = math.log2((self.total/100) + 1)
+        return math.floor(level)
+    
+    def into_response(self, levels: List[str] = []) -> PointResponse:
+        level = self.get_level()
+        level = level if level < len(levels) else len(levels)-1
+        return PointResponse(
+                user=self.user,
+                total=self.total,
+                level=levels[level]
+                )
 
     @classmethod
     def is_negative(cls, reservation: Reservation) -> bool:

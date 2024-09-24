@@ -11,6 +11,10 @@ class PointSchema(PointsBaseSchema):
 
     total: Mapped[int] = mapped_column()
     user: Mapped[str] = mapped_column(primary_key=True)
+    
+    
+    def into_points(self) -> Point:
+        return Point(total=self.total, user=self.user)
 
     @classmethod
     def from_points(cls, points: Point) -> 'PointSchema':
