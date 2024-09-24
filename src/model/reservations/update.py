@@ -37,6 +37,6 @@ class Update(BaseModel):
 
         if reservation.notifiable():
             await stats.update(StatsUpdate.from_reservation(reservation))
-            await points.update_points(Point.from_reservation(self))
+            await points.update_points(Point.from_reservation(reservation, updater=self.user))
 
         return reservation

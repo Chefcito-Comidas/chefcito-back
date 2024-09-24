@@ -3,6 +3,8 @@ import pytest
 from testcontainers.postgres import PostgresContainer
 from src.model.opinions.data.base import MockedOpinionsDB
 from src.model.opinions.provider import LocalOpinionsProvider
+from src.model.points.data.base import MockedPointBase
+from src.model.points.provider import LocalPointsProvider
 from src.model.reservations.data.base import RelBase
 from src.model.reservations.reservation import Accepted, Assisted, Reservation, Uncomfirmed, create_reservation
 from src.model.reservations.reservationQuery import ReservationQuery
@@ -33,7 +35,8 @@ async def test_reservation_update():
         database.store_reservation(reservation.persistance())
         update = Update(user="venue", advance_forward=True)
         stats = LocalStatsProvider(MockedStatsDB())
-        reservation = await update.modify(reservation, stats)
+        points = LocalPointsProvider(MockedPointBase())
+        reservation = await update.modify(reservation, stats, points)
         database.update_reservation(reservation.persistance())
         result = database.get_reservation_by_id(reservation.id)
         assert result != None
@@ -55,7 +58,7 @@ async def test_reservation_pagination():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
         reservations = create_reservations(99)
-        opinions = LocalOpinionsProvider(MockedOpinionsDB()) 
+        opinions = LocalOpinionsProvider(MockedOpinionsDB(), None) #type: ignore
         database = RelBase(conn_string=postgres.get_connection_url())
         for reservation in reservations:
             database.store_reservation(reservation)
@@ -81,7 +84,7 @@ async def test_reservation_query_by_various_states():
         run('db_config.yaml', connection=postgres.get_connection_url())
         reservations = create_reservations(99)
         database = RelBase(conn_string=postgres.get_connection_url())
-        opinions = LocalOpinionsProvider(MockedOpinionsDB())
+        opinions = LocalOpinionsProvider(MockedOpinionsDB(), None) #type: ignore
         for reservation in reservations:
             database.store_reservation(reservation)
         query = ReservationQuery(

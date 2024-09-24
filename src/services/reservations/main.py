@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
+from src.model.points.point import Point
 from src.model.points.provider import HttpPointsProvider
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
@@ -118,3 +119,7 @@ async def get_user_stats(user: Annotated[str, Path()]) -> UserStatData:
 @app.get("/stats/venue/{venue}")
 async def get_venue_stats(venue: Annotated[str, Path()]) -> VenueStatData:
     return await service.get_venue_stats(venue)
+
+@app.get("/points/{user}")
+async def get_points(user: Annotated[str, Path()]) -> Point:
+    return await service.get_points(user)

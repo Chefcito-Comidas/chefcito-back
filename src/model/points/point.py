@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import BaseModel
 
 from src.model.reservations.reservation import Canceled, Expired, Reservation
@@ -27,4 +26,4 @@ class Point(BaseModel):
     
     @classmethod
     def from_opinion(cls, reservation: Reservation) -> 'Point':
-        return cls.from_reservation(reservation, None)
+        return cls.from_reservation(reservation, "")

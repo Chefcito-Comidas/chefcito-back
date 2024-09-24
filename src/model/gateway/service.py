@@ -37,7 +37,7 @@ class GatewayService:
         self.points = points
 
     async def sign_in(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
-                  response: Response) -> UserData | Error:
+                  response: Response) -> u_stubs.UserData | Error:
         """
         Gets data from the respective user
         """

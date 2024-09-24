@@ -4,6 +4,8 @@ from testcontainers.postgres import PostgresContainer
 from src.model.points.data.base import RelPointBase
 from src.model.points.data.schema import PointsBaseSchema, PointSchema
 from src.model.points.point import Point
+from src.model.points.provider import LocalPointsProvider
+from src.model.points.service import PointService
 
 def config(url: str):
     engine = create_engine(url)
@@ -26,6 +28,28 @@ async def update_user_points(base: RelPointBase):
     assert not recovered is None
     assert recovered.total == 100 * 2
 
+async def service_query_making(base: RelPointBase):
+    provider = LocalPointsProvider(base)
+    service = PointService(provider) 
+    points = Point(total=100, user="User_2")
+    await service.store_points(points)
+    points_1 = await service.get_points("User_1")
+    assert points_1.total == 200
+    points_2 = await service.get_points("User_2")
+    assert points_2.total == 100
+
+
+async def service_update_making(base: RelPointBase):
+    """
+        Builds over service_query_making
+    """
+    provider = LocalPointsProvider(base)
+    service = PointService(provider)
+    points = Point(total=100, user="User_2")
+    await service.store_points(points)
+    points = await service.get_points("User_2")
+    assert points.total == 200
+
 @pytest.mark.asyncio
 async def test_points_loop():
     with PostgresContainer('postgres:16') as postgres:
@@ -33,3 +57,5 @@ async def test_points_loop():
         db = RelPointBase(postgres.get_connection_url())
         await store_user_points(db)
         await update_user_points(db)
+        await service_query_making(db)
+        await service_update_making(db)

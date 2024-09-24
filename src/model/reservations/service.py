@@ -57,6 +57,9 @@ class ReservationsProvider:
 
     async def  create_venue_summary(self, venue: str) -> Summary:
         raise Exception("Interface method should not be called")
+    
+    async def get_points(self, user: str) -> Point:
+        raise Exception("Interface method should not be called")
 
 class ReservationsService:
 
@@ -141,6 +144,15 @@ class ReservationsService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
+    
+    async def get_points(self, user: str) -> Point:
+        try:
+            return await self.provider.get_points(user)
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )
 
 class HttpReservationsProvider(ReservationsProvider):
     def __init__(self, service_url: str):
@@ -186,7 +198,7 @@ class HttpReservationsProvider(ReservationsProvider):
         response = await post(f"{self.url}{endpoint}/{user}", body=opinion.model_dump())
         return await recover_json_data(response)
 
-    async def get_opinions(self, query: OpinionQuery) -> List[Opinion]:
+    async def get_opinions(self, query: OpinionQuery) -> OpinionQueryResponse:
         endpoint = "/opinions"
         params = query.model_dump(exclude_none=True)
         if params.get("from_time"):
@@ -214,6 +226,11 @@ class HttpReservationsProvider(ReservationsProvider):
     async def create_venue_summary(self, venue: str) -> Summary:
         endpoint = f"/summaries/{venue}"
         response = await post(f"{self.url}{endpoint}")
+        return await recover_json_data(response)
+    
+    async def get_points(self, user: str) -> Point:
+        endpoint = f"/points/{user}"
+        response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
 
 class LocalReservationsProvider(ReservationsProvider):
@@ -342,3 +359,6 @@ class LocalReservationsProvider(ReservationsProvider):
     async def create_venue_summary(self, venue: str) -> Summary:
         Logger.info(f"Creating venue ==> {venue} Summary")
         return await self.opinions.create_venue_summary(venue)
+
+    async def get_points(self, user: str) -> Point:
+        return await self.points.get_points(user)
