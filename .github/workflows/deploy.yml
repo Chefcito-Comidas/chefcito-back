@@ -72,6 +72,12 @@ jobs:
                 file: containerfiles/communications/CONTAINERFILE
                 push: true
                 tags: chefcitoacr.azurecr.io/communications:latest
+            - name: build-push points 
+              uses: docker/build-push-action@v3
+              with:
+                file: containerfiles/points/CONTAINERFILE
+                push: true
+                tags: chefcitoacr.azurecr.io/points:latest
             
 
     deploy:
@@ -134,4 +140,11 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                     az containerapp revision copy -n communications -g chefcito-rg --revision-suffix ${SHORT_SHA}
+               
+            - name: deploy points 
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                    az containerapp revision copy -n points -g chefcito-rg --revision-suffix ${SHORT_SHA}
             

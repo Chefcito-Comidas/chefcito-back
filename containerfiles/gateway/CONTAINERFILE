@@ -19,6 +19,7 @@ COPY ./src/model/opinions /code/src/model/opinions
 COPY ./src/model/summarizer /code/src/model/summarizer
 COPY ./src/model/communications /code/src/model/communications
 COPY ./src/model/stats /code/src/model/stats
+COPY ./src/model/points /code/src/model/points
 COPY ./config.py /code/config.py
 
 COPY ./src/services/gateway/main.py /code/main.py

@@ -107,6 +107,13 @@ jobs:
           push: true
           tags: chefcitoacr.azurecr.io/staging/communications:latest
 
+      - name: build-push points 
+        uses: docker/build-push-action@v3
+        with:
+          file: containerfiles/points/CONTAINERFILE
+          push: true
+          tags: chefcitoacr.azurecr.io/staging/points:latest
+
 
       
 
