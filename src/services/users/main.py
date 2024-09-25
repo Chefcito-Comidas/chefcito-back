@@ -5,6 +5,7 @@ from src.model.communications.service import HttpCommunicationProvider
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseClient
 from src.model.users.permissions.base import DBEngine
+from src.model.users.update import UserUpdate
 from src.model.users.user_data import UserData, UserToken
 from typing import Annotated, Any, Dict
 from src.model.users.service import LocalUsersProvider, UsersService
@@ -42,6 +43,11 @@ async def sign_in(email: Annotated[str, Query()], password: Annotated[str, Query
 @app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
     return await service.get_data(auth, response)
+
+@app.put("/users")
+async def update_data(auth: Annotated[UserToken, Body(embed=True, alias="auth")], 
+                      update: Annotated[UserUpdate, Body(embed=True, alias="update")]) -> UserData:
+    return await service.update(auth, update)    
 
 @app.post("/users/permissions",responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response) -> None | Error:

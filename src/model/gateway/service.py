@@ -18,6 +18,7 @@ from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
 from src.model.users.service import UsersProvider
+from src.model.users.update import UserUpdate
 from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
@@ -55,6 +56,24 @@ class GatewayService:
             return Error.from_exception(e, "/users")
 
 
+    async def update(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+                     update: Annotated[UserUpdate, None]) -> u_stubs.UserData:
+        try:
+            Logger.info("Updating user data")
+            data = UserToken(id_token=credentials.credentials)
+            u_data = await self.users.update(data, update)
+            points = await self.points.get_points(f"user/{u_data.localid}")
+            return u_stubs.UserData(
+                data=u_data,
+                points=points
+            ) 
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )
+
+              
 
     async def sign_up(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
                   user_type: Annotated[str, Body()],
