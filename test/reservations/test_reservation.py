@@ -110,7 +110,7 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
                                                  slots=[],
                                                  location="almendra 270",
                                                  capacity=150,
-                                                 characteristics= ["hamburgueseria", "pizzeria"], 
+                                                 characteristics= ["Arepas", "Cafeteria"], 
                                                  vacations=[datetime.now()], 
                                                  reservationLeadTime=10,
                                                  menu="Menu")))
