@@ -9,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from src.model.commons.logger import Logger
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
+from src.model.points.provider import PointsProvider
 from src.model.reservations.reservation import Reservation
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.reservations.service import  ReservationsService
@@ -17,6 +18,7 @@ from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
 from src.model.users.service import UsersProvider
+from src.model.users.update import UserUpdate
 from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
@@ -25,30 +27,53 @@ from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
 from src.model.venues.update import Update      
 import src.model.gateway.venues_stubs as v_stubs
-
+import src.model.gateway.users_stubs as u_stubs
 
 class GatewayService:
     
-    def __init__(self, users: UsersProvider, reservations: ReservationsService, venues: VenuesService):
+    def __init__(self, users: UsersProvider, reservations: ReservationsService, venues: VenuesService, points: PointsProvider):
         self.users = users 
         self.reservations = reservations
         self.venues = venues
-
+        self.points = points
 
     async def sign_in(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
-                  response: Response) -> UserData | Error:
+                  response: Response) -> u_stubs.UserData | Error:
         """
         Gets data from the respective user
         """
         try:
             Logger.info("Signing in new user")
             data = UserToken(id_token=credentials.credentials)
-            return await self.users.get_data(data)
+            u_data = await self.users.get_data(data)
+            points = await self.points.get_points(f"user/{u_data.localid}")
+            return u_stubs.UserData(
+                data=u_data,
+                points=points
+            ) 
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, "/users")
 
 
+    async def update(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+                     update: Annotated[UserUpdate, None]) -> u_stubs.UserData:
+        try:
+            Logger.info("Updating user data")
+            data = UserToken(id_token=credentials.credentials)
+            u_data = await self.users.update(data, update)
+            points = await self.points.get_points(f"user/{u_data.localid}")
+            return u_stubs.UserData(
+                data=u_data,
+                points=points
+            ) 
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )
+
+              
 
     async def sign_up(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
                   user_type: Annotated[str, Body()],

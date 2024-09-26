@@ -1,8 +1,10 @@
+from typing import Optional
 from pydantic import BaseModel
 
 from src.model.users.firebase.api_instance import FirebaseAuth
 from src.model.users.permissions.base import Database
 from src.model.users.permissions.schema import AssociatedData, User
+from src.model.users.update import UserUpdate
 
 # TODO: How we name this token should be configurable
 ANONYMOUS_TOKEN = 'anonymous'
@@ -25,7 +27,13 @@ class UserData(BaseModel):
     def get_type(self, base: Database) -> str:
         user, _ = base.get_user(self.localid)
         return User.check_anonymous(user).user_type 
-
+    
+    async def update(self, update: UserUpdate, base: Database) -> None:
+        await base.update_data(self.localid, update)
+        if update.name:
+            self.name = update.name
+        if update.phone:
+            self.phone_number = update.phone
 
 class UserToken(BaseModel):
     id_token: str 

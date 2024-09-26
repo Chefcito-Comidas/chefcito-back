@@ -1,12 +1,13 @@
 from typing import Annotated, Any, Dict, Self
-from fastapi import Body, Query, status, Response
-from src.model.commons.caller import post, recover_json_data
+from fastapi import Body, HTTPException, Query, status, Response
+from src.model.commons.caller import post, put, recover_json_data
 from src.model.commons.error import Error
 from src.model.commons.logger import Logger
 from src.model.communications.service import CommunicationProvider
 from src.model.users.auth_request import AuthRequest
 from src.model.users.firebase.api_instance import FirebaseAuth
 from src.model.users.permissions.base import Database
+from src.model.users.update import UserUpdate
 from src.model.users.user_data import UserData, UserToken
 import src.model.communications.user as c
 
@@ -20,6 +21,9 @@ class UsersProvider:
         raise Exception("Interface method should not be called")
 
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
+        raise Exception("Interface method should not be called")
+    
+    async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         raise Exception("Interface method should not be called")
 
 class HttpUsersProvider(UsersProvider):
@@ -52,6 +56,16 @@ class HttpUsersProvider(UsersProvider):
         endpoint = f"{self.host}/users/permissions"
         users_response = await post(endpoint, body=auth.model_dump())
         return users_response.status
+    
+    async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
+        endpoint = f"{self.host}/update"
+        update_body = update.model_dump()
+        body = {
+                "auth": auth.model_dump(),
+                "update": update_body
+                }
+        response = await put(endpoint, body=body)
+        return await recover_json_data(response)
 
 class LocalUsersProvider(UsersProvider):
     
@@ -84,6 +98,10 @@ class LocalUsersProvider(UsersProvider):
         Logger.info(f"Validating permissions for {auth.endpoint}")
         return status.HTTP_200_OK if await auth.is_allowed(self.authentication, self.database) \
                     else status.HTTP_403_FORBIDDEN
+    async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
+        data = await auth.get_data(self.authentication, self.database)
+        await data.update(update, self.database)
+        return data
 
 class UsersService:
 
@@ -121,4 +139,11 @@ class UsersService:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, endpoint="/permissions")
 
-
+    async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
+        try:
+            return await self.provider.update(auth, update)
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )

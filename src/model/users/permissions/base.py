@@ -2,6 +2,7 @@ from typing import Tuple
 from sqlalchemy import BinaryExpression, Column, create_engine, select
 from sqlalchemy.orm import Session
 from src.model.users.permissions.schema import AssociatedData, User, Permission
+from src.model.users.update import UserUpdate
 
 # TODO: This pool size makes more sense if it is configurable
 DEFAULT_POOL_SIZE = 10
@@ -30,6 +31,12 @@ class Database():
         Inserts a new user into the database
         """
         raise Exception("Interface method")
+    
+    async def update_data(self, user: str, update: UserUpdate) -> None:
+        """
+            Updates user data based on the values present at update
+        """
+        raise Exception("Interface method should not be called")
 
 class DBEngine(Database):
 
@@ -76,25 +83,36 @@ class DBEngine(Database):
         session.add(data)
         session.commit()
         session.close()
-
+    
+    async def update_data(self, user: str, update: UserUpdate) -> None:
+        session = Session(self.__engine)
+        value = session.scalar(select(AssociatedData).where(AssociatedData.uid.__eq__(user)))
+        if value and update.name:
+            value.name = update.name
+        if value and update.phone:
+            value.phone_number = update.phone
+        session.commit()
+        session.close()
 
 class DBMock(Database):
    
-    def __init__(self, base_mock: dict[str, dict[str, str]]) -> None:
+    def __init__(self, base_mock: dict[str, Tuple[User, AssociatedData]], permissions: dict[str, bool]) -> None:
        super().__init__()
        self.base = base_mock
+       self.permissions = permissions
 
     def get_user(self, uid: str) -> Tuple[User | None, AssociatedData | None]:
-        user_type = self.base.get('users', {}).get(uid, 'anonymous')
+        
+        user_type = self.base.get(uid, None)
         if user_type:
-           return User(uid=uid, email="testmail@user.com", user_type=user_type), None 
+           return user_type 
 
-        return None, None 
+        return User(uid=uid, email="", user_type="anonymous"), None 
     
     def __check_all(self, endpoint: str, user_type: str) -> bool:
         endpoints = [endpoint, self._add_param_at(endpoint)]
         return any(
-                map(lambda endpoint: self.base.get('permissions', {}).get(f"{user_type}:{endpoint}", None) != None,
+                map(lambda endpoint: self.permissions.get(f"{user_type}:{endpoint}", None) != None,
                 endpoints)
                 )
 
@@ -104,6 +122,13 @@ class DBMock(Database):
         return self.__check_all(endpoint, user.user_type) 
 
     def insert_user(self, user: User, data: AssociatedData) -> None:
-        users = self.base.get('users', {})
-        users[user.uid] = user.user_type
-        self.base['users'] = users
+        self.base[user.uid] = (user,data)
+        
+    async def update_data(self, user: str, update: UserUpdate) -> None:
+        (user, data) = self.base.get(user, (None, None)) #type: ignore
+        if data:
+            if update.phone:
+               data.phone_number = update.phone
+            if update.name:
+                data.name = update.name
+            self.base[data.uid] = (user, data) #type: ignore
