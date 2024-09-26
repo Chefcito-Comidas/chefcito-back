@@ -11,3 +11,5 @@ langchain
 langchain-google-vertexai
 twilio
 haversine
+azure-servicebus
+azure-identity
