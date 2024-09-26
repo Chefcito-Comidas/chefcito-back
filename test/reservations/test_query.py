@@ -51,7 +51,7 @@ def all_same_venue(venue: str, result: List[Reservation]) -> bool:
 
 def test_get_all_by_one_user():
     database = MockBase()
-    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    opinions = LocalOpinionsProvider(MockedOpinionsDB(), None )
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
@@ -64,7 +64,7 @@ def test_get_all_by_one_user():
 
 def test_get_all_by_one_venue():
     database = MockBase()
-    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    opinions = LocalOpinionsProvider(MockedOpinionsDB(), None)
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
@@ -76,7 +76,7 @@ def test_get_all_by_one_venue():
 
 def test_limiting_the_amount_of_reservations():
     database = MockBase()
-    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    opinions = LocalOpinionsProvider(MockedOpinionsDB(), None)
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(
@@ -89,7 +89,7 @@ def test_limiting_the_amount_of_reservations():
 
 def test_stepping_with_limit_the_amount_of_reservations():
     database = MockBase()
-    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    opinions = LocalOpinionsProvider(MockedOpinionsDB(), None)
     for reservation in create_reservations(9):
         database.store_reservation(reservation)
     query = ReservationQuery(

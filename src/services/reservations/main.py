@@ -7,6 +7,8 @@ from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
+from src.model.points.point import Point
+from src.model.points.provider import HttpPointsProvider
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
@@ -24,6 +26,7 @@ class Settings(BaseSettings):
     venues: str = "venues"
     opinions: str = "opinions"
     stats: str = "stats"
+    points: str = "points"
     proto: str = "https://"
 
 settings = Settings()
@@ -33,7 +36,8 @@ database =  RelBase(settings.db_string)
 venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
 opinions = HttpOpinionsProvider(f"{settings.proto}{settings.opinions}")
 stats = HttpStatsProvider(f"{settings.proto}{settings.stats}") 
-service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats))
+points = HttpPointsProvider(f"{settings.proto}{settings.points}")
+service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -115,3 +119,7 @@ async def get_user_stats(user: Annotated[str, Path()]) -> UserStatData:
 @app.get("/stats/venue/{venue}")
 async def get_venue_stats(venue: Annotated[str, Path()]) -> VenueStatData:
     return await service.get_venue_stats(venue)
+
+@app.get("/points/{user}")
+async def get_points(user: Annotated[str, Path()]) -> Point:
+    return await service.get_points(user)

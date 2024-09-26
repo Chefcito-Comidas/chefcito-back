@@ -37,21 +37,21 @@ def test_a_confirmed_reservation_is_unconfirmed_when_modified():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
     update = Update(people=3, user="user")
     provider = LocalStatsProvider(MockedStatsDB())
-    reservation = asyncio.run(update.modify(reservation, provider))
+    reservation = asyncio.run(update.modify(reservation, provider, None))
     assert reservation.get_status() == Uncomfirmed().get_status() 
 
 def test_the_user_cannot_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 3)
     update = Update(advance_forward=True, user="user")
     provider = LocalStatsProvider(MockedStatsDB())
-    reservation = asyncio.run(update.modify(reservation, provider))
+    reservation = asyncio.run(update.modify(reservation, provider, None))
     assert reservation.get_status() == Uncomfirmed().get_status()
 
 def test_the_venue_can_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 2)
     update = Update(advance_forward=True, user="user/venue")
     provider = LocalStatsProvider(MockedStatsDB())
-    reservation = asyncio.run(update.modify(reservation,provider))
+    reservation = asyncio.run(update.modify(reservation,provider, None))
     assert reservation.get_status() == Accepted().get_status()
 
 def test_a_new_reservation_has_no_id():
@@ -86,7 +86,7 @@ def test_a_reservation_cannot_be_done_if_the_venue_does_not_exists():
     venues_db = v_base.MockBase() 
     venues = LocalVenuesProvider(venues_db)
     provider = LocalStatsProvider(MockedStatsDB())
-    service = LocalReservationsProvider(database, venues, None, provider) # type: ignore
+    service = LocalReservationsProvider(database, venues, None, provider, None) # type: ignore
     
     reservation = CreateInfo(user="juanCarlos",
                              venue="Lo de Carlitos",
@@ -99,9 +99,9 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     database = MockBase()
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
-    opinions = LocalOpinionsProvider(MockedOpinionsDB())
+    opinions = LocalOpinionsProvider(MockedOpinionsDB(), None)
     provider = LocalStatsProvider(MockedStatsDB())
-    service = LocalReservationsProvider(database, venues, opinions, provider)
+    service = LocalReservationsProvider(database, venues, opinions, provider, None)
     asyncio.run(venues.create_venue(v.CreateInfo(
                                                  id="ADSAF",
                                                  name="Lo de Carlitos",

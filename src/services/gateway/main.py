@@ -8,10 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
+from src.model.points.provider import HttpPointsProvider
 from src.model.reservations.reservationQuery import ReservationQueryResponse
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
+from src.model.users.update import UserUpdate
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
@@ -25,12 +27,14 @@ from src.model.gateway.service import GatewayService
 from src.model.gateway.reservations_stubs import CreateInfo, Update, ReservationQuery
 import src.model.venues as v
 import src.model.gateway.venues_stubs as v_stubs
+import src.model.gateway.users_stubs as u_stubs
 
 class Settings(BaseSettings):
     proto: str = "http://"
     users: str = "users"
     venues: str = "venues"
     reservations: str = "reservations"
+    points: str = "points"
     auth_url: str = "/users/permissions"
     auth_avoided_urls: list[str] = ["/users"]
     information_prefix: str = "/users"
@@ -54,11 +58,12 @@ security = HTTPBearer()
 users = HttpUsersProvider(f"{settings.proto}{settings.users}")
 venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
 reservations = HttpReservationsProvider(f"{settings.proto}{settings.reservations}")
-service = GatewayService(users, ReservationsService(reservations),VenuesService(venues))
+points = HttpPointsProvider(f"{settings.proto}{settings.points}")
+service = GatewayService(users, ReservationsService(reservations),VenuesService(venues), points)
 
 @app.get("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def sign_in(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                  response: Response) -> UserData | Error:
+                  response: Response) -> u_stubs.UserData | Error:
     return await service.sign_in(credentials, response)
 
 @app.post("/users", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -68,6 +73,10 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
                   number: Annotated[str, Body(embed=True, alias="number")]) -> UserData | Error:
     return await service.sign_up(credentials, user_type, name, number)
 
+@app.put("/users")
+async def update_data(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
+                      update: Annotated[UserUpdate, Body()]) -> u_stubs.UserData:
+    return await service.update(credentials, update)    
 
 @app.post("/venues",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
                                          status.HTTP_200_OK: {"model": Venue}})

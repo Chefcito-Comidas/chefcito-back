@@ -66,7 +66,7 @@ async def test_venue_pagination():
 async def test_venue_deletion():
     with PostgresContainer('postgres:16') as postgres:
         run('db_config.yaml', connection=postgres.get_connection_url()) 
-        venue = create_venue("La Pizzerias", "126 Main St", 51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["hamburgueseria", "pizzeria"], vacations=[datetime.now()], reservationLeadTime=10,menu="comidas.url")
+        venue = create_venue("La Pizzerias", "126 Main St", 51, logo="foto.url", pictures = ["foto1", "foto2"], slots=[datetime.now()], characteristics= ["Arepas", "Cafeteria"], vacations=[datetime.now()], reservationLeadTime=10,menu="comidas.url")
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_venue(venue.persistance())
         assert database.get_venue_by_id(venue.id) != None
@@ -84,7 +84,7 @@ async def test_venue_filter():
 
         query = VenueQuery(
                 name="name_1",
-                characteristics=["charact1_1"],
+                characteristics=["Arepas", "Cafeteria"],
                 
                 )
         result_1 = query.query(database)
