@@ -15,7 +15,7 @@ from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
 from src.model.users.update import UserUpdate
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
 
 from src.model.reservations.reservation import Reservation
@@ -142,7 +142,7 @@ async def get_venues(response: Response,
 async def get_venues_near_to(response: Response,
                              credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              location: Tuple[str, str] = Query(default=("-34.594174","-58.4566507")),
-                             ) -> VenueQueryResult | Error:
+                             ) -> VenueDistanceQueryResult | Error:
     return await service.get_venues_near_to(location, response)
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})

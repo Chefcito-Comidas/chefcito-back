@@ -10,7 +10,7 @@ from src.model.venues.data.schema import VenueSchema
 from src.model.venues.venue import CreateInfo, Venue
 
 from src.model.venues.update import Update
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 
 
 class VenuesProvider:
@@ -27,7 +27,7 @@ class VenuesProvider:
     async def delete_venue(self, venue_id: str) -> None:
         raise Exception("Interface method should not be called")
 
-    async def get_venues_near_to(self, localtion: Tuple[str, str]) -> VenueQueryResult:
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueDistanceQueryResult:
         raise Exception("Interface method should not be called")
 
 class VenuesService:
@@ -65,7 +65,7 @@ class VenuesService:
         finally:
             return
 
-    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueDistanceQueryResult | Error:
         try:
             return await self.provider.get_venues_near_to(location)
         except Exception as e:
@@ -106,7 +106,7 @@ class HttpVenuesProvider(VenuesProvider):
         await delete(f"{self.url}{endpoint}/{venue_id}")
         return  
         
-    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueDistanceQueryResult:
         endpoint = "/venues/near"
         response = await get(f"{self.url}{endpoint}", params={'location': location})
         return await recover_json_data(response)
@@ -144,12 +144,12 @@ class LocalVenuesProvider(VenuesProvider):
         Logger.info(f"Recieved request to delete venue ==> {venue_id}")
         Venue.delete(venue_id, self.db)
 
-    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueQueryResult:
+    async def get_venues_near_to(self, location: Tuple[str, str]) -> VenueDistanceQueryResult:
         Logger.info(f"Ranking venue around: ({location[0]},{location[1]})")
         ranker = Ranker(self.db, location)
         result = await ranker.rank()
         Logger.info("Ranked venues around that location")
-        return VenueQueryResult(
+        return VenueDistanceQueryResult(
             result=result,
             total=len(result)
         ) 

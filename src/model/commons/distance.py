@@ -1,4 +1,4 @@
-from typing import List, Self
+from typing import List, Self, Tuple
 import haversine as hs
 
 class LocalPosition:
@@ -89,12 +89,12 @@ class DistanceRanker:
             result.append(left.pop(0))
         self.rank.append(result)
 
-    def sort(self) -> List[LocalPosition]:
+    def sort(self) -> List[Tuple[LocalPosition, int]]:
         while len(self.rank) > 1:
             self.__merge_two()
         return list(
             map(
-            lambda value: value.to,
+            lambda value: (value.to, int(value.distance*1000)),  
             self.rank[0]
             )
         )

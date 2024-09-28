@@ -23,7 +23,7 @@ from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
 from src.model.venues.update import Update      
 import src.model.gateway.venues_stubs as v_stubs
@@ -129,7 +129,7 @@ class GatewayService:
         Logger.info(f"Querying venues ==> {venue_query}")
         return await self.venues.get_venues(venue_query, response)
 
-    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueDistanceQueryResult | Error:
         Logger.info(f"Querying venues around ({location[0]}, {location[1]})")
         return await self.venues.get_venues_near_to(location, response)
 
