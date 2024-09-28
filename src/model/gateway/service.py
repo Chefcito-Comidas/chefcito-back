@@ -1,7 +1,8 @@
 from ast import Dict
+from datetime import datetime
 from logging import log
 import logging
-from typing import Annotated, List, Tuple
+from typing import Annotated, List, Optional, Tuple
 from fastapi import Body, HTTPException, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
@@ -175,14 +176,24 @@ class GatewayService:
         Logger.info(f"Deleting reservation {reservation_id}")
         return await self.reservations.delete_reservation(reservation_id)
     
-    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> ReservationQueryResponse | Error:
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+            from_time: Optional[datetime], 
+            to_time: Optional[datetime],
+            limit: int, 
+            start: int,
+            venue: bool,
+            response: Response) -> ReservationQueryResponse | Error:
         user = await self.__get_user(credentials)
         venue_id = None
         Logger.info(f"Retrieving reservation history for {"user" if not venue else "venue"} ==> {user}")
         if venue:
             venue_id = user
             user = None
-        query = r_stubs.ReservationQuery(venue=venue_id, limit=limit, start=start).with_user('')
+        query = r_stubs.ReservationQuery(venue=venue_id,
+                                         from_time=from_time,
+                                         to_time=to_time,
+                                         limit=limit, 
+                                         start=start).with_user('')
         query.user = user
         return await self.reservations.get_reservations(query, response)
         
