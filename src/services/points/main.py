@@ -3,7 +3,7 @@ from fastapi import Body, FastAPI, Path
 from pydantic_settings import BaseSettings
 
 from src.model.points.data.base import RelPointBase
-from src.model.points.point import Point
+from src.model.points.point import Point, PointResponse
 from src.model.points.provider import LocalPointsProvider
 from src.model.points.service import PointService 
 
@@ -20,7 +20,7 @@ app = FastAPI()
 
 
 @app.get("/points/{user}")
-async def retrieve_points(user: Annotated[str, Path()]) -> Point:
+async def retrieve_points(user: Annotated[str, Path()]) -> PointResponse:
     return await service.get_points(user)
 
 @app.post("/points")
