@@ -26,6 +26,7 @@ from src.model.gateway.users_middleware import AuthMiddleware
 from src.model.gateway.service import GatewayService
 from src.model.gateway.reservations_stubs import CreateInfo, Update, ReservationQuery
 import src.model.venues as v
+from src.model.venues.update import Update as VUpdate
 import src.model.gateway.venues_stubs as v_stubs
 import src.model.gateway.users_stubs as u_stubs
 
@@ -90,7 +91,7 @@ async def create_venue(credentials: Annotated[HTTPAuthorizationCredentials, Depe
 @app.put("/venues/{venue_id}",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
                                          status.HTTP_200_OK: {"model": Venue}})
 async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-                              venue: Annotated[v.update.Update, Body()],
+                              venue: Annotated[VUpdate, Body()],
                               venue_id: Annotated[str, Path()],
                               response: Response
                               ) -> Venue | Error:
@@ -239,7 +240,7 @@ async def get_venue_info(credentials: Annotated[HTTPAuthorizationCredentials, De
 @app.post("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_venue_summary(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                                venue: Annotated[str, Path()]) -> Summary:
-    return await service.create_venue_summary(credentials, venue)
+    return await service.create_venue_summary(venue, credentials)
 
 @app.get("/summaries/{venue}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_venue_summary(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
