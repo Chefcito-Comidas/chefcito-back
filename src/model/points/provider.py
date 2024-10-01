@@ -29,6 +29,7 @@ class HttpPointsProvider(PointsProvider):
     
     async def get_points(self, user: str) -> PointResponse:
         endpoint = f"/points/{user}"
+        print(f"{self.url}{endpoint}")
         response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
 

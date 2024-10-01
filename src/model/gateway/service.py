@@ -64,7 +64,7 @@ class GatewayService:
             data = UserToken(id_token=credentials.credentials)
             u_data = await self.users.update(data, update)
             Logger.info(f"Updated data: {u_data}")
-            points = await self.points.get_points(u_data.localid)
+            points = await self.points.get_points(u_data['localid'])
             return u_stubs.UserData(
                 data=u_data,
                 points=points
@@ -185,6 +185,7 @@ class GatewayService:
             venue: bool,
             response: Response) -> ReservationQueryResponse | Error:
         user = await self.__get_user(credentials)
+        user = f"user/{user}"
         venue_id = None
         Logger.info(f"Retrieving reservation history for {"user" if not venue else "venue"} ==> {user}")
         if venue:
