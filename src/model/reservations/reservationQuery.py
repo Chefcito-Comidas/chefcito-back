@@ -43,7 +43,7 @@ class ReservationQuery(BaseModel):
             value = await result
             if isinstance(value, dict) and value['total'] > 0:
                 op = value['result'].pop()
-                final[op.reservation] = op
+                final[op['reservation']] = op
             elif not isinstance(value, dict) and value.total > 0:
                 op = value.result.pop()
                 final[op.reservation] = op
