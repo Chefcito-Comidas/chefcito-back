@@ -47,7 +47,7 @@ class GatewayService:
             Logger.info("Signing in new user")
             data = UserToken(id_token=credentials.credentials)
             u_data = await self.users.get_data(data)
-            points = await self.points.get_points(f"user/{u_data.localid}")
+            points = await self.points.get_points(u_data.localid)
             return u_stubs.UserData(
                 data=u_data,
                 points=points
@@ -63,7 +63,8 @@ class GatewayService:
             Logger.info("Updating user data")
             data = UserToken(id_token=credentials.credentials)
             u_data = await self.users.update(data, update)
-            points = await self.points.get_points(f"user/{u_data.localid}")
+            Logger.info(f"Updated data: {u_data}")
+            points = await self.points.get_points(u_data.localid)
             return u_stubs.UserData(
                 data=u_data,
                 points=points
