@@ -15,7 +15,7 @@ from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
 from src.model.users.update import UserUpdate
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.service import HttpVenuesProvider, VenuesService
 
 from src.model.reservations.reservation import Reservation
@@ -142,7 +142,7 @@ async def get_venues(response: Response,
 async def get_venues_near_to(response: Response,
                              credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                              location: Tuple[str, str] = Query(default=("-34.594174","-58.4566507")),
-                             ) -> VenueQueryResult | Error:
+                             ) -> VenueDistanceQueryResult | Error:
     return await service.get_venues_near_to(location, response)
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -194,16 +194,20 @@ async def get_reservations(credentials: Annotated[HTTPAuthorizationCredentials, 
 @app.get("/reservations/history", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                       response: Response,
+                      from_time: Optional[datetime] = Query(default=None),
+                      to_time: Optional[datetime] = Query(default=None),
                       limit: int = Query(default=10),
                       start: int = Query(default=0)) -> ReservationQueryResponse | Error:
-    return await service.get_history(credentials, limit, start, False, response)
+    return await service.get_history(credentials, from_time, to_time, limit, start, False, response)
 
 @app.get("/reservations/venue", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def get_venue_history(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                             response: Response,
+                            from_time: Optional[datetime] = Query(default=None),
+                            to_time: Optional[datetime] = Query(default=None),
                             limit: int = Query(default=10),
                             start: int = Query(default=0)) -> ReservationQueryResponse | Error:
-    return await service.get_history(credentials, limit, start, True, response)
+    return await service.get_history(credentials, from_time, to_time, limit, start, True, response)
 
 @app.get("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],

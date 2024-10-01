@@ -99,7 +99,7 @@ def test_venue_ranking_by_distance():
     for venue in create_venues_by_distance():
         base.store_venue(venue.persistance())
     ranker = Ranker(base, my_location)
-    result = [value.location for value in asyncio.run(ranker.rank())]
+    result = [value.venue.location for value in asyncio.run(ranker.rank())]
     locations = get_locations()
     all_equal = list(filter(
         lambda x: x[0] == x[1],

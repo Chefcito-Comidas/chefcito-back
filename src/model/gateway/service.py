@@ -1,7 +1,8 @@
 from ast import Dict
+from datetime import datetime
 from logging import log
 import logging
-from typing import Annotated, List, Tuple
+from typing import Annotated, List, Optional, Tuple
 from fastapi import Body, HTTPException, Response, status
 from starlette.status import HTTP_403_FORBIDDEN
 from src.model.commons.error import Error
@@ -23,7 +24,7 @@ from src.model.users.user_data import UserData, UserToken
 import src.model.gateway.reservations_stubs as r_stubs 
 from src.model.venues import venue
 from src.model.venues.venue import Venue
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
 from src.model.venues.update import Update      
 import src.model.gateway.venues_stubs as v_stubs
@@ -129,7 +130,7 @@ class GatewayService:
         Logger.info(f"Querying venues ==> {venue_query}")
         return await self.venues.get_venues(venue_query, response)
 
-    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueQueryResult | Error:
+    async def get_venues_near_to(self, location: Tuple[str, str], response: Response) -> VenueDistanceQueryResult | Error:
         Logger.info(f"Querying venues around ({location[0]}, {location[1]})")
         return await self.venues.get_venues_near_to(location, response)
 
@@ -175,14 +176,24 @@ class GatewayService:
         Logger.info(f"Deleting reservation {reservation_id}")
         return await self.reservations.delete_reservation(reservation_id)
     
-    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None], limit: int, start: int, venue: bool, response: Response) -> ReservationQueryResponse | Error:
+    async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
+            from_time: Optional[datetime], 
+            to_time: Optional[datetime],
+            limit: int, 
+            start: int,
+            venue: bool,
+            response: Response) -> ReservationQueryResponse | Error:
         user = await self.__get_user(credentials)
         venue_id = None
         Logger.info(f"Retrieving reservation history for {"user" if not venue else "venue"} ==> {user}")
         if venue:
             venue_id = user
             user = None
-        query = r_stubs.ReservationQuery(venue=venue_id, limit=limit, start=start).with_user('')
+        query = r_stubs.ReservationQuery(venue=venue_id,
+                                         from_time=from_time,
+                                         to_time=to_time,
+                                         limit=limit, 
+                                         start=start).with_user('')
         query.user = user
         return await self.reservations.get_reservations(query, response)
         

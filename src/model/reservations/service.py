@@ -15,7 +15,7 @@ from src.model.points.point import Point
 from src.model.points.provider import PointsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
-from src.model.reservations.reservation import CreateInfo, Reservation, ReservationStatus
+from src.model.reservations.reservation import Assisted, CreateInfo, Reservation, ReservationStatus
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.stats.provider import StatsProvider
@@ -196,7 +196,7 @@ class HttpReservationsProvider(ReservationsProvider):
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         endpoint = "/opinions"
         body = opinion.model_dump()
-        body['time'] = body['time'].__str__()
+        body['date'] = body['date'].__str__()
         response = await post(f"{self.url}{endpoint}/{user}", body=body)
         return await recover_json_data(response)
 
@@ -328,7 +328,8 @@ class LocalReservationsProvider(ReservationsProvider):
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         Logger.info(f"Opinion creation for reservation {opinion.reservation}")
         query = ReservationQuery(
-            id=opinion.reservation
+            id=opinion.reservation,
+            status=[Assisted().get_status()]
         )
         result = await self.get_reservations(query)
         if result.total == 0 and user not in result.result[0].user:

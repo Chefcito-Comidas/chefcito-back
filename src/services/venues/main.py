@@ -1,5 +1,5 @@
 from src.model.commons.error import Error
-from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
+from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.update import Update
 from typing import Annotated, List, Tuple
 from fastapi import Body, FastAPI, Path, Query, Response, status
@@ -70,5 +70,5 @@ async def get_venues(response: Response,
 @app.get("/venues/near")
 async def get_venues_near_to(response: Response,
                              location: Tuple[str, str] = Query(default=("-34.594174","-58.4566507"))
-                             ) -> VenueQueryResult | Error:
+                             ) -> VenueDistanceQueryResult | Error:
     return await service.get_venues_near_to(location, response)

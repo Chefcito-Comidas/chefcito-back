@@ -61,5 +61,5 @@ def test_ranking_distances_without_filtering():
     final_result = ranker.sort()
     print(len(final_result))
     for i in range(0,200):
-        assert final_result[i] == places_copied[i] 
+        assert final_result[i][0] == places_copied[i] 
     

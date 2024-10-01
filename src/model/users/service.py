@@ -58,7 +58,7 @@ class HttpUsersProvider(UsersProvider):
         return users_response.status
     
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
-        endpoint = f"{self.host}/update"
+        endpoint = f"{self.host}/users"
         update_body = update.model_dump()
         body = {
                 "auth": auth.model_dump(),

@@ -5,6 +5,15 @@ from src.model.venues.venue import Venue
 from typing import List, Optional, Tuple
 import datetime
 
+
+class VenueDistance(BaseModel):
+    venue: Venue
+    distance: int
+
+class VenueDistanceQueryResult(BaseModel):
+    result: List[VenueDistance]
+    total: int
+
 class VenueQueryResult(BaseModel):
     result: List[Venue]
     total: int
