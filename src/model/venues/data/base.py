@@ -78,6 +78,7 @@ class RelBase(VenuesBase):
         value.pictures = venue.pictures
         value.slots = venue.slots
         value.characteristics = venue.characteristics
+        value.features = venue.features
         value.vacations = venue.vacations
         value.reservationLeadTime = venue.reservationLeadTime
         value.menu = venue.menu
