@@ -236,7 +236,9 @@ class GatewayService:
         
     async def create_venue_summary(self, venue: str, credentials: Annotated[HTTPAuthorizationCredentials, None]) -> Summary:
         try:
-           user = self.__get_user(credentials)
+           user = await self.__get_user(credentials)
+           print(user)
+           print(venue)
            if user != venue:
                raise HTTPException(
                    status_code=status.HTTP_401_UNAUTHORIZED,
