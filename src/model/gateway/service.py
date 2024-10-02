@@ -189,7 +189,7 @@ class GatewayService:
         venue_id = None
         Logger.info(f"Retrieving reservation history for {"user" if not venue else "venue"} ==> {user}")
         if venue:
-            venue_id = user
+            venue_id = user.lstrip("user/")
             user = None
         query = r_stubs.ReservationQuery(venue=venue_id,
                                          from_time=from_time,
