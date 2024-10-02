@@ -1,6 +1,12 @@
 {
     "features": [
         "Estacionamiento",
-        "Wifi"
+        "Wifi",
+        "Mascotas",
+        "Aire libre",
+        "Veggie",
+        "Movilidad reducida",
+        "Musica en vivo",
+        "Area fumadores"
     ]
 }
