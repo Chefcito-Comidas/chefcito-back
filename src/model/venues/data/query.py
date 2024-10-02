@@ -39,6 +39,7 @@ class QueryBuilder:
             pictures: Optional[List[str]],
             slots: Optional[List[datetime.datetime]],
             characteristics: Optional[List[str]],
+            features: Optional[List[str]],
             vacations: Optional[List[datetime.datetime]],
             reservationLeadTime: Optional[int],
             menu: Optional[str],
@@ -66,8 +67,14 @@ class RelBuilder(QueryBuilder):
             query = query.where(VenueSchema.characteristics.contains(characteristic))
             count = count.where(VenueSchema.characteristics.contains(characteristic))
         return query, count
+    
+    def __add_feature_filter(self, feature: Optional[List[str]], query: Select, count: Select) -> Tuple[Select, Select]:
+        if feature: 
+            query = query.where(VenueSchema.features.contains(feature))
+            count = count.where(VenueSchema.features.contains(feature))
+        return query, count
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int], logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], feature: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str],limit: int, start: int) -> Tuple[List[VenueSchema],int]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None  or vacations != None or reservationLeadTime != None or menu != None:
             raise Exception("Capacity, location, logo, pictures, menu and slots query not implemented")
         if id:
@@ -78,7 +85,8 @@ class RelBuilder(QueryBuilder):
         count = self.__get_total()
 
         query, count = self.__add_name_filter(name, query, count)
-        query, count = self.__add_characteristic_filter(characteristic, query, count) #TODO: TEST FALLA
+        query, count = self.__add_characteristic_filter(characteristic, query, count)  
+        query, count = self.__add_feature_filter(feature, query, count) 
 
         return self.db.get_by_eq(query, count)     
 
@@ -104,8 +112,13 @@ class MockedBuilder(QueryBuilder):
         def filter(value: VenueSchema) -> bool:
             return any([c in value.characteristics for c in characteristic])
         return filter
+    
+    def __filter_by_feature(self, feature: List[str]) -> Callable[[VenueSchema], bool]:
+        def filter(value: VenueSchema) -> bool:
+            return any([c in value.features for c in feature])
+        return filter
 
-    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
+    def get(self, id: Optional[str], name: Optional[str], location: Optional[str], capacity: Optional[int] , logo: Optional[str], pictures: Optional[List[str]], slots: Optional[List[datetime.datetime]], characteristic: Optional[List[str]], feature: Optional[List[str]], vacations: Optional[List[datetime.datetime]], reservationLeadTime: Optional[int], menu: Optional[str], limit: int, start: int) -> Tuple[List[VenueSchema], int]:
         if capacity != None or location != None or logo != None or pictures != None or slots != None or  vacations != None or reservationLeadTime != None or menu != None:
             raise Exception("Capacity, location, logo, pictures, menu and slots query not implemented")
 
@@ -113,13 +126,13 @@ class MockedBuilder(QueryBuilder):
             result = self._get_by_id(id)
             return result, 1 if result else 0
 
-        result = self.__filter_by_eq(name, characteristic, limit, start)
+        result = self.__filter_by_eq(name, characteristic, feature, limit, start)
 
         return result, len(result) 
 
 
 
-    def __filter_by_eq(self, name: Optional[str], characteristic: Optional[List[str]], limit: int, start: int) -> List[VenueSchema]:
+    def __filter_by_eq(self, name: Optional[str], characteristic: Optional[List[str]], feature: Optional[List[str]], limit: int, start: int) -> List[VenueSchema]:
         result = self.db.base
 
         if name:
@@ -127,4 +140,8 @@ class MockedBuilder(QueryBuilder):
 
         if characteristic:
             result = self.__filter(result, self.__filter_by_characteristic(characteristic), limit, start)
+
+        if feature:
+            result = self.__filter(result, self.__filter_by_feature(feature), limit, start)
+
         return result

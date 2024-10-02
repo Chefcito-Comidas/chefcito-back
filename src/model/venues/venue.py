@@ -15,6 +15,11 @@ json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'charac
 with open(json_path) as f:
     FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
 
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'features.json')
+
+with open(json_path) as f:
+    FIXED_FEATURES = json.load(f)["features"]
+
 
 def validate_characteristics(characteristics: List[str]):
     for characteristic in characteristics:
@@ -22,8 +27,15 @@ def validate_characteristics(characteristics: List[str]):
             raise ValueError(f"Invalid characteristic: {characteristic}")
     return characteristics
 
-def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], vacations: List[datetime.datetime], reservationLeadTime: int, menu: str) -> 'Venue':
+def validate_features(features: List[str]):
+    for feature in features:
+        if feature not in FIXED_FEATURES:
+            raise ValueError(f"Invalid feature: {feature}")
+    return features
+
+def create_venue(name: str, location: str, capacity: int, logo: str, pictures: List[str], slots: List[datetime.datetime], characteristics: List[str], features: List[str],vacations: List[datetime.datetime], reservationLeadTime: int, menu: str) -> 'Venue':
     characteristics = validate_characteristics(characteristics)
+    features = validate_features(features)
     return Venue(id="",
                  name=name, 
                  location=location, 
@@ -32,6 +44,7 @@ def create_venue(name: str, location: str, capacity: int, logo: str, pictures: L
                  pictures=pictures,
                  slots=slots,
                  characteristics=characteristics, 
+                 features=features,
                  vacations=vacations, 
                  reservationLeadTime=reservationLeadTime,
                  menu=menu,
@@ -74,6 +87,7 @@ class CreateInfo(BaseModel):
     pictures: List[str]
     slots: List[datetime.datetime]
     characteristics: List[str]
+    features: List[str]
     vacations: List[datetime.datetime]
     reservationLeadTime: int
     menu: str
@@ -81,6 +95,10 @@ class CreateInfo(BaseModel):
     @field_validator('characteristics', mode='before')
     def validate_characteristics(cls, characteristics: List[str]):
         return validate_characteristics(characteristics)
+    
+    @field_validator('features', mode='before')
+    def validate_features(cls, features: List[str]):
+        return validate_features(features)
     
     def into_venue(self) -> 'Venue':
         return Venue(id=self.id, 
@@ -90,7 +108,8 @@ class CreateInfo(BaseModel):
                      logo=self.logo, 
                      pictures=self.pictures, 
                      slots=self.slots,
-                     characteristics=self.characteristics, 
+                     characteristics=self.characteristics,
+                     features=self.features, 
                      vacations=self.vacations, 
                      reservationLeadTime=self.reservationLeadTime,
                      menu=self.menu,
@@ -107,6 +126,7 @@ class Venue(BaseModel):
     pictures: List[str]
     slots: List[datetime.datetime]
     characteristics: List[str]
+    features: List[str]
     vacations: List[datetime.datetime]
     reservationLeadTime: int
     menu: str
@@ -115,6 +135,10 @@ class Venue(BaseModel):
     @field_validator('characteristics', mode='before')
     def validate_characteristics(cls, characteristics: List[str]):
         return validate_characteristics(characteristics)
+    
+    @field_validator('features', mode='before')
+    def validate_features(cls, features: List[str]):
+        return validate_features(features)
     
     def get_status(self) -> str:
         return self.status.get_status()
@@ -148,6 +172,7 @@ class Venue(BaseModel):
                     self.pictures, 
                     self.slots,
                     self.characteristics, 
+                    self.features,
                     self.vacations, 
                     self.reservationLeadTime,
                     self.menu,
@@ -165,6 +190,7 @@ class Venue(BaseModel):
                     pictures=self.pictures, 
                     slots=self.slots,
                     characteristics=self.characteristics, 
+                    features=self.features,
                     vacations=self.vacations, 
                     reservationLeadTime=self.reservationLeadTime,
                     menu=self.menu,
@@ -185,6 +211,7 @@ class Venue(BaseModel):
                    pictures=schema.pictures, 
                    slots=schema.slots,
                    characteristics=schema.characteristics, 
+                   features=schema.features,
                    vacations=schema.vacations, 
                    reservationLeadTime=schema.reservationLeadTime,
                    menu=schema.menu,

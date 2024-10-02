@@ -19,6 +19,11 @@ json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'charac
 with open(json_path) as f:
     FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
 
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'features.json')
+
+with open(json_path) as f:
+    FIXED_FEATURES = json.load(f)["features"]
+
 
 
 TYPES_KEY = 'usertypes'
@@ -55,13 +60,15 @@ class VenueSchema(Base):
     pictures: Mapped[List[str]] = mapped_column(ARRAY(String))
     slots: Mapped[List[datetime]] = mapped_column(ARRAY(DateTime))
     characteristics: Mapped[List[str]] = mapped_column(ARRAY(String))
+    features: Mapped[List[str]] = mapped_column(ARRAY(String))
     vacations: Mapped[List[datetime]] = mapped_column(ARRAY(DateTime))
     reservationLeadTime: Mapped[int] = mapped_column()
     menu: Mapped[str] = mapped_column()
     status: Mapped[str] = mapped_column()
     
     __table_args__ = (
-        CheckConstraint("ARRAY_LENGTH(characteristics, 1) <= 20", name="max_characteristics"),
+        CheckConstraint("ARRAY_LENGTH(characteristics, 1) <= 30", name="max_characteristics"),
+        CheckConstraint("ARRAY_LENGTH(features, 1) <= 30", name="max_features"),
     )
 
     @validates('characteristics')
@@ -70,12 +77,19 @@ class VenueSchema(Base):
             if characteristic not in FIXED_CHARACTERISTICS:
                 raise ValueError(f"Invalid characteristic: {characteristic}")
         return characteristics
+    
+    @validates('features')
+    def validate_features(self, key, features):
+        for feature in features:
+            if feature not in FIXED_FEATURES:
+                raise ValueError(f"Invalid feature: {feature}")
+        return features
 
     def __repr__(self) -> str:
         return (f"Venue(id={self.id}, name={self.name}, location={self.location}, "
                 f"capacity={self.capacity}, "
                 f"logo={self.logo}, pictures={self.pictures}, slots={self.slots}), "
-                f"characteristics={self.characteristics}), vacations={self.vacations}), "
+                f"characteristics={self.characteristics}), features={self.features}) ,vacations={self.vacations}), "
                 f"reservationLeadTime={self.reservationLeadTime}), menu={self.menu}, status={self.status}")
 
 

@@ -11,6 +11,11 @@ json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'charac
 with open(json_path) as f:
     FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
 
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'features.json')
+
+with open(json_path) as f:
+    FIXED_FEATURES = json.load(f)["features"]
+
 class CreateInfo(BaseModel):
     name: str
     location: str
@@ -19,6 +24,7 @@ class CreateInfo(BaseModel):
     pictures: List[str]
     slots: List[datetime.datetime]
     characteristics: List[str]
+    features: List[str]
     vacations: List[datetime.datetime]
     reservationLeadTime: int
     menu: str
@@ -32,6 +38,15 @@ class CreateInfo(BaseModel):
                 raise ValueError(f"Invalid characteristic: {characteristic}")
         return characteristics
 
+    @field_validator('features', mode='before')
+    def validate_features(cls, features: List[str]):
+        if not isinstance(features, list):
+            raise ValueError("Features must be a list")
+        for feature in features:
+            if feature not in FIXED_FEATURES:
+                raise ValueError(f"Invalid feature: {feature}")
+        return features
+    
     def into_create_info(self, id: str) -> venues.CreateInfo:
         return venues.CreateInfo(
             id=id,
@@ -42,6 +57,7 @@ class CreateInfo(BaseModel):
             pictures=self.pictures,
             slots=self.slots,
             characteristics=self.characteristics,
+            features=self.features,
             vacations=self.vacations,
             reservationLeadTime=self.reservationLeadTime,
             menu=self.menu

@@ -20,6 +20,7 @@ def create_venues(amount: int) -> List[VenueSchema]:
             pictures=[f"picture_{i}_1.jpg", f"picture_{i}_2.jpg"],
             slots=[datetime(year=2024, month=i%12 + 1, day=i%28 + 1)],
             characteristics=["Arepas", "Cafeteria"],
+            features= ["Estacionamiento"], 
             vacations=[datetime(year=2024, month=i%12 + 1, day=i%28 + 1)],
             reservationLeadTime=f"{i%5}",
             menu=f"menu_{i}.url",

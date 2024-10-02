@@ -11,6 +11,11 @@ json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'charac
 with open(json_path) as f:
     FIXED_CHARACTERISTICS = json.load(f)["characteristics"]
 
+json_path = os.path.join(PROJECT_ROOT, 'src', 'model', 'venues', 'data', 'features.json')
+
+with open(json_path) as f:
+    FIXED_FEATURES = json.load(f)["features"]
+
 class Update(BaseModel):
     name: Optional[str] = None
     location: Optional[str] = None
@@ -19,6 +24,7 @@ class Update(BaseModel):
     pictures: Optional[List[str]] = None
     slots: Optional[List[datetime.datetime]] = None
     characteristics: Optional[List[str]] = None
+    features: Optional[List[str]] = None
     vacations: Optional[List[datetime.datetime]] = None
     reservationLeadTime: Optional[int] = None
     menu: Optional[str] = None
@@ -34,6 +40,14 @@ class Update(BaseModel):
                 if characteristic not in FIXED_CHARACTERISTICS:
                     raise ValueError(f"Invalid characteristic: {characteristic}")
         return characteristics
+    
+    @field_validator('features', mode='before')
+    def validate_features(cls, features: Optional[List[str]]):
+        if features:
+            for feature in features:
+                if feature not in FIXED_FEATURES:
+                    raise ValueError(f"Invalid feature: {feature}")
+        return features
     
     def modify(self, venue: Venue) -> Venue:
 
@@ -75,6 +89,10 @@ class Update(BaseModel):
 
         if self.characteristics:
             venue.characteristics = self.characteristics
+            venue.unconfirm()
+
+        if self.features:
+            venue.features = self.features
             venue.unconfirm()
 
         if self.vacations:
