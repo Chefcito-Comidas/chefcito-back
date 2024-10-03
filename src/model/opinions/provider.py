@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, List
 
 from src.model.commons.caller import get, post, recover_json_data
@@ -75,7 +75,8 @@ class LocalOpinionsProvider(OpinionsProvider):
         return await self.db.get(query)
     
     async def create_venue_summary(self, venue: str) -> Summary:
-        summary = await self.summaries.create_summary(venue, datetime.today() - timedelta(days=14)) 
+        since = datetime.today() - timedelta(days=14)
+        summary = await self.summaries.create_summary(venue, since.replace(timezone.utc)) 
         if isinstance(summary, Error):
             raise Exception(summary.description)
         return summary
