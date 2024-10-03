@@ -54,8 +54,8 @@ def get_template() -> PromptTemplate:
     opinion. The summary should take into account the date of the opinions and
     show how to they changed over time without being explicit the time at which each
     opinion was given. If the opinions contain no relevant information for a restaurant, don't use them to create a summary.
-    the output should be in the same language as the opinions and it shouldn't be a longer than a paragraph.
-    The output musst not contain the name of the restaurant and it should be written in a simple manner.
+    the output should be in spanish and it shouldn't be a longer than a paragraph.
+    The output must not contain the name of the restaurant and it should be written in plain spanish and only using letters and punctiation marks.
     """
     return PromptTemplate.from_template(map_template)
 
