@@ -76,7 +76,7 @@ class LocalOpinionsProvider(OpinionsProvider):
     
     async def create_venue_summary(self, venue: str) -> Summary:
         since = datetime.today() - timedelta(days=14)
-        summary = await self.summaries.create_summary(venue, since.replace(timezone.utc)) 
+        summary = await self.summaries.create_summary(venue, since.replace(tzinfo=timezone.utc)) 
         if isinstance(summary, Error):
             raise Exception(summary.description)
         return summary
@@ -86,6 +86,9 @@ class LocalOpinionsProvider(OpinionsProvider):
                              limit=1,
                              skip=0)
         result = await self.summaries.get_summary(query)
-        if isinstance(result, list):
+        if isinstance(result, list) and len(result) > 0:
             return result.pop()
-        raise Exception(result.description)
+        else:
+            return Summary(text="Este restaurant aun no tiene un resumen de opiniones disponible",
+                           date=datetime.now(tz=timezone.utc),
+                           venue=venue)
