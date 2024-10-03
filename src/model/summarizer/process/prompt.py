@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Tuple
 
 from langchain_core.documents import Document
 
+from src.model.commons.logger import Logger
 from src.model.opinions.opinion import Opinion
 from src.model.summarizer.summary import Summary
 from langchain_core.prompts import PromptTemplate 
@@ -31,7 +32,6 @@ def get_cred(private_key: str, private_key_id: str) -> Dict:
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/summarizer-service%40chefcito-comidas.iam.gserviceaccount.com",
             "universe_domain": "googleapis.com"
             }
-    log(level=logging.CRITICAL, msg=cred)
     return cred
 
 def init_google(private_key: str, private_key_id: str) -> Tuple[Any, str | None]:
@@ -48,13 +48,14 @@ def init(private_key: str, private_key_id: str, model: str = 'gemini-1.0-pro'):
             )
 
 def get_template() -> PromptTemplate:
-    map_template = """The following is a set of opinions
+    map_template = """The following is a set of opinions about a single restaurant
     {opinions}
     Based on this list of opinions, please generate a summarized
     opinion. The summary should take into account the date of the opinions and
     show how to they changed over time without being explicit the time at which each
-    opinion was given
-    the output should be in the same language as the opinions and it shouldn't be longer than 200 characters:
+    opinion was given. If the opinions contain no relevant information for a restaurant, don't use them to create a summary.
+    the output should be in the same language as the opinions and it shouldn't be a longer than a paragraph.
+    The output musst not contain the name of the restaurant and it should be written in a simple manner.
     """
     return PromptTemplate.from_template(map_template)
 
@@ -102,6 +103,6 @@ async def create_prompt(opinions: List[Opinion], summaries: List[Summary]):
             )
     docs = get_documents(opinions, summaries)
     spliter = CharacterTextSplitter()
-     
-    return await map_reduce_chain.ainvoke(spliter.create_documents(docs))
+    
+    return await map_reduce_chain.arun(spliter.create_documents(docs))
     

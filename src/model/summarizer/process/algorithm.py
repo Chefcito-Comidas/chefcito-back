@@ -1,6 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
+
 from typing import List
 
+from src.model.commons.logger import Logger
 from src.model.opinions.data.base import OpinionsDB
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.summarizer.summary import Summary
@@ -48,13 +50,15 @@ class SummaryAlgorithm:
         """
             Returns a datetime 14 days ago
         """
-        return datetime.today() - timedelta(days=14)
-    
+        min = datetime.now() - timedelta(days=14)
+        return min.replace(tzinfo=timezone.utc)
+
     def __is_too_past(self, some_date: datetime) -> bool:
         """
             Returns True if the date passed is older than 14 days ago (+- 12 hours)
         """
         max_diff = timedelta(hours=12)
+        Logger.info(f"{some_date} vs {self.__get_min_date()}")
         diff = some_date - self.__get_min_date()
         return max_diff <= abs(diff) and diff <= timedelta(hours=12)
 
@@ -80,10 +84,12 @@ class SummaryAlgorithm:
             Generates summaries from since to today (may generate more than one summary)
         """
         query = self.generate_query(venue, since)
+        Logger.info("Generated query to create summary")
         summaries = await self.get_older_summaries(db, venue, since)
         opinions = await db.get(query)
-        
+        Logger.info("Got all the information to create the summary") 
         summary = await self.summarizer.summarize(since, venue, opinions.result, summaries) 
+        Logger.info(f"Generated summary: {summary}")
         await db.store_summary(summary)
         if query.to_date:
             return await self.generate(db, venue, query.to_date)
