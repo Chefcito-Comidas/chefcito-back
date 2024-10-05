@@ -32,7 +32,7 @@ class OpinionsDB:
 class MongoOpinionsDB(OpinionsDB):
     
     async def init(self):
-        self.db = await init_beanie(database=self.client.db_name, document_models=[OpinionSchema, SummarySchema])
+        self.db = await init_beanie(database=self.client["chefcito-mongo-db"], document_models=[OpinionSchema, SummarySchema])
 
     def __init__(self, conn_string: str):
         client = AsyncIOMotorClient(conn_string)

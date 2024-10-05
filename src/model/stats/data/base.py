@@ -27,7 +27,7 @@ class StatsDB:
 
 class MongoStatsDB(StatsDB):
     async def init(self):
-        self.db = await init_beanie(database=self.client.db_name, document_models=[UserDataDocument, VenueDataDocument])
+        self.db = await init_beanie(database=self.client["chefcito-mongo-db"], document_models=[UserDataDocument, VenueDataDocument])
 
     def __init__(self, conn_string: str):
         client = AsyncIOMotorClient(conn_string)
