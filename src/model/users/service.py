@@ -101,6 +101,7 @@ class LocalUsersProvider(UsersProvider):
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         data = await auth.get_data(self.authentication, self.database)
         await data.update(update, self.database)
+        await self.communications.update_user(c.User(localid=data.localid, number=data.phone_number)) 
         return data
 
 class UsersService:

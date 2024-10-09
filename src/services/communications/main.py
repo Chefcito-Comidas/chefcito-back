@@ -34,6 +34,10 @@ service = CommunicationService(
 async def store_user(user: Annotated[User, Body()]):
     return await service.store_user(user)
 
+@app.put("/user")
+async def update_user(user: Annotated[User, Body()]) -> User:
+    return await service.update_user(user)
+
 @app.post("/messages", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def send_message(message: Annotated[Message, Body()]):
     return await service.send_message(message)

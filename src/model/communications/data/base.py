@@ -15,7 +15,9 @@ class CommunicationsBase():
     
     async def get_user(self, user_id: str) -> User | None:
         raise Exception("Interface method should not be called")
-
+    
+    async def update_user(self, user: User) -> None:
+        raise Exception("Interface method should not be called")
 
 class RelCommunicationsBase(CommunicationsBase):
     
@@ -36,6 +38,14 @@ class RelCommunicationsBase(CommunicationsBase):
             return User.from_schema(result)
 
         return call 
+    
+    def __update_call(self, user: User) -> Callable[[Session], None]:
+        def call(session: Session) -> None:
+            query = select(UserSchema).where(UserSchema.id.__eq__(user.localid))
+            recovered = session.execute(query).scalar()
+            if recovered:
+                recovered.number = user.number
+        return call
 
     async def store_user(self, user: User) -> None:
         call = self.__store_call(user)
@@ -44,6 +54,10 @@ class RelCommunicationsBase(CommunicationsBase):
     async def get_user(self, user_id: str) -> User | None:
         call = self.__get_call(user_id)
         return with_no_commit(call)(self.__engine) 
+    
+    async def update_user(self, user: User) -> None:
+        call = self.__update_call(user)
+        with_session(call)(self.__engine)
 
 class MockedCommunicationsBase(CommunicationsBase):
     

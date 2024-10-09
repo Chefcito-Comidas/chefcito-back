@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 from src.model.opinions.data.base import MockedOpinionsDB
 from src.model.opinions.opinion import Opinion
@@ -20,7 +20,7 @@ def generate_same_text_opinions(
                 Opinion(
                     venue=venue,
                     opinion=opinion,
-                    date=datetime.today(),
+                    date=datetime.today().replace(tzinfo=timezone.utc),
                     reservation="SomeInvalidReservation"
                     )
                 )
@@ -35,14 +35,14 @@ def test_summary_text_has_all_opinions():
         asyncio.run(opinions.create_opinion(opinion))
     
     summary = asyncio.run(
-            summarizer.create_summary("Lo de Carlitos", since=datetime.today() - timedelta(days=1))
+            summarizer.create_summary("Lo de Carlitos", since=(datetime.today() - timedelta(days=1)).replace(tzinfo=timezone.utc))
             )
 
     assert summary.text == generic_opinion * 10
 
 def test_summary_algorithm_generates_correct_query():
     summary_algo = SummaryAlgorithm()
-    from_date = datetime.today() - timedelta(days=14)
+    from_date = (datetime.today() - timedelta(days=14)).replace(tzinfo=timezone.utc)
     expected_query = OpinionQuery(
             venue="VenueIdPassedToAlgorithm",
             from_date=from_date
@@ -54,7 +54,7 @@ def test_summary_algorithm_generates_correct_query():
 
 def test_summary_algorithm_generated_query_for_14_days():
     summary_algo = SummaryAlgorithm()
-    since = datetime.today() - timedelta(days=20)
+    since = (datetime.today() - timedelta(days=20)).replace(tzinfo=timezone.utc)
     expected_query = OpinionQuery(
             venue="Chachito's",
             from_date=since,
@@ -81,7 +81,7 @@ def test_summary_algorithm_generates_a_summary_for_14_days_and_adds_it_to_the_ne
         asyncio.run(db.store(opinion))
 
     summarizer = SummaryAlgorithm()
-    asyncio.run(summarizer.generate(db, venue="Chachito's", since=(datetime.today() - timedelta(days=20))))
+    asyncio.run(summarizer.generate(db, venue="Chachito's", since=(datetime.today() - timedelta(days=20)).replace(tzinfo=timezone.utc)))
 
     final_list = db.opinions["Chachito's"]['summaries']
     summaries_text = [value.text for value in final_list]

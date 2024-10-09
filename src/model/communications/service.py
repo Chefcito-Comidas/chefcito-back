@@ -1,7 +1,7 @@
 import json
-from fastapi import logger
+from fastapi import HTTPException, logger, status
 from src.model.commons import error
-from src.model.commons.caller import post
+from src.model.commons.caller import post, put
 from src.model.communications.comms.messager import CommunicationsMessager, MockedCommunicationsMessager
 from src.model.communications.data.base import CommunicationsBase
 from src.model.communications.message import Message
@@ -18,6 +18,9 @@ class CommunicationProvider():
         raise Exception("Interface method should not be called")
 
     async def send_message(self, message: Message) -> None:
+        raise Exception("Interface method should not be called")
+    
+    async def update_user(self, user: User) -> User:
         raise Exception("Interface method should not be called")
 
 class CommunicationService():
@@ -46,6 +49,15 @@ class CommunicationService():
             await self.provider.send_message(message)
         except Exception as e:
             return error.Error.from_exception(e)
+    
+    async def update_user(self, user: User) -> User:
+        try:
+            return await self.provider.update_user(user)
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )
 
 class DummyCommunicationProvider(CommunicationProvider):
     async def store_user(self, user: User) -> User:
@@ -56,6 +68,9 @@ class DummyCommunicationProvider(CommunicationProvider):
     
     async def send_message(self, message: Message) -> None:
         logger.logger.info(f"{message.message} sent to {message.user}")
+    
+    async def update_user(self, user: User) -> User:
+        return await super().update_user(user)
 
 class HttpCommunicationProvider(CommunicationProvider):
     def __init__(self, url: str):
@@ -69,6 +84,11 @@ class HttpCommunicationProvider(CommunicationProvider):
     async def send_message(self, message: Message) -> None:
         endpoint = "/messages"
         await post(f"{self.url}{endpoint}", body=message.model_dump())
+    
+    async def update_user(self, user: User) -> User:
+        endpoint = "/user"
+        await put(f"{self.url}{endpoint}", body=user.model_dump())
+        return user
 
 class QueueCommunicationProvider(CommunicationProvider):
 
@@ -105,4 +125,8 @@ class LocalCommunicationProvider(CommunicationProvider):
         destination = await self.db.get_user(message.user)
         if not destination:
             raise Exception("User does not exists")
-        return await self.messager.send_message(message, destination.number) 
+        return await self.messager.send_message(message, destination.number)
+
+    async def update_user(self, user: User) -> User:
+        await self.db.update_user(user)
+        return user
