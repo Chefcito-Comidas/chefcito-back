@@ -5,6 +5,7 @@ from fastapi import Body, FastAPI, Path, Query, Response, status
 from pydantic_settings import BaseSettings
 
 from src.model.commons.error import Error
+from src.model.communications.service import HttpCommunicationProvider
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
 from src.model.points.point import Point
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
     opinions: str = "opinions"
     stats: str = "stats"
     points: str = "points"
+    communications: str = "communications"
     proto: str = "https://"
 
 settings = Settings()
@@ -37,6 +39,7 @@ venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
 opinions = HttpOpinionsProvider(f"{settings.proto}{settings.opinions}")
 stats = HttpStatsProvider(f"{settings.proto}{settings.stats}") 
 points = HttpPointsProvider(f"{settings.proto}{settings.points}")
+comms = HttpCommunicationProvider(f"{settings.proto}{settings.communications}")
 service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points))
 
 
