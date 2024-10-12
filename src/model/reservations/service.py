@@ -11,7 +11,7 @@ from src.model.communications.service import CommunicationProvider, DummyCommuni
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery, OpinionQueryResponse
 from src.model.opinions.provider import OpinionsProvider
-from src.model.points.point import Point
+from src.model.points.point import Point, PointResponse
 from src.model.points.provider import PointsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
@@ -22,6 +22,7 @@ from src.model.stats.provider import StatsProvider
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
+from src.model.users.service import UsersProvider
 from src.model.venues.service import VenuesProvider
 from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.commons.logger import Logger, define_log_level
@@ -58,7 +59,7 @@ class ReservationsProvider:
     async def  create_venue_summary(self, venue: str) -> Summary:
         raise Exception("Interface method should not be called")
     
-    async def get_points(self, user: str) -> Point:
+    async def get_points(self, user: str) -> PointResponse:
         raise Exception("Interface method should not be called")
 
 class ReservationsService:
@@ -145,7 +146,7 @@ class ReservationsService:
                 detail=e.__str__()
             )
     
-    async def get_points(self, user: str) -> Point:
+    async def get_points(self, user: str) -> PointResponse:
         try:
             return await self.provider.get_points(user)
         except Exception as e:
@@ -230,7 +231,7 @@ class HttpReservationsProvider(ReservationsProvider):
         response = await post(f"{self.url}{endpoint}")
         return await recover_json_data(response)
     
-    async def get_points(self, user: str) -> Point:
+    async def get_points(self, user: str) -> PointResponse:
         endpoint = f"/points/{user}"
         response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
@@ -239,7 +240,8 @@ class LocalReservationsProvider(ReservationsProvider):
     
     def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider,
                  stats: StatsProvider,
-                 points: PointsProvider, 
+                 points: PointsProvider,
+                 users: UsersProvider,
                  comms: CommunicationProvider = DummyCommunicationProvider()):
         self.db = base
         self.venues = venues
@@ -247,6 +249,7 @@ class LocalReservationsProvider(ReservationsProvider):
         self.communications = comms
         self.stats = stats
         self.points = points
+        self.users = users
 
     async def __notify_user(self, user: str, message: str) -> None:
         to_send = Message(user=user, message=message)
@@ -319,7 +322,7 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         Logger.info(f"Reservation query recieved: {query}")
-        return await query.query(self.db, self.opinions)
+        return await query.query(self.db, self.opinions, self.users)
 
     async def delete_reservation(self, reservation_id: str) -> None:
         Logger.info(f"Reservation deletion for reservation id: {reservation_id}")
@@ -332,12 +335,12 @@ class LocalReservationsProvider(ReservationsProvider):
             status=[Assisted().get_status()]
         )
         result = await self.get_reservations(query)
-        if result.total == 0 and user not in result.result[0].user:
+        if result.total == 0 and user not in result.result[0].user.id:
             raise Exception("Reservation was not done by user")
         Logger.info("Creating opinion")
         created_opinion = await self.opinions.create_opinion(opinion)
         Logger.info(f"Updating points for user: {user}")
-        await self.points.update_points(Point.from_opinion(result.result[0]))
+        await self.points.update_points(Point.from_opinion(result.result[0].into_reservation()))
         await self.__notify_user(result.result[0].venue,
                            message="Tenes una nueva opinion en tu local!\nPodes revisarla en nuestra web")
         Logger.info("Opinion created and venue notified of new opinion")
@@ -363,5 +366,5 @@ class LocalReservationsProvider(ReservationsProvider):
         Logger.info(f"Creating venue ==> {venue} Summary")
         return await self.opinions.create_venue_summary(venue)
 
-    async def get_points(self, user: str) -> Point:
+    async def get_points(self, user: str) -> PointResponse:
         return await self.points.get_points(user)

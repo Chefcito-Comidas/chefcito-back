@@ -18,6 +18,7 @@ COPY ./src/services/reservations/main.py /code/main.py
 COPY ./src/model/communications /code/src/model/communications
 COPY ./src/model/stats /code/src/model/stats
 COPY ./src/model/points /code/src/model/points
+COPY ./src/model/users /code/src/model/users
 COPY ./config.py /code/config.py
 
 # 

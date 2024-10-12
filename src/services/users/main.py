@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, status, Query, Body
+from fastapi import FastAPI, Path, Response, status, Query, Body
 from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
 from src.model.communications.service import HttpCommunicationProvider
@@ -48,6 +48,10 @@ async def get_data(auth: Annotated[UserToken, Body()], response: Response) -> Us
 async def update_data(auth: Annotated[UserToken, Body(embed=True, alias="auth")], 
                       update: Annotated[UserUpdate, Body(embed=True, alias="update")]) -> UserData:
     return await service.update(auth, update)    
+
+@app.get("/user/{user}")
+async def get_user(user: Annotated[str, Path()]) -> UserData:
+    return await service.get_user(user)
 
 @app.post("/users/permissions",responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def is_allowed(auth: Annotated[AuthRequest, Body()], response: Response) -> None | Error:

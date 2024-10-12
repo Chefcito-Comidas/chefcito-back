@@ -8,7 +8,7 @@ from src.model.commons.error import Error
 from src.model.communications.service import HttpCommunicationProvider
 from src.model.opinions.opinion import Opinion
 from src.model.opinions.opinion_query import OpinionQuery
-from src.model.points.point import Point
+from src.model.points.point import Point, PointResponse
 from src.model.points.provider import HttpPointsProvider
 from src.model.reservations.data.base import MockBase, RelBase
 from src.model.reservations.reservation import CreateInfo, Reservation
@@ -19,6 +19,7 @@ from src.model.stats.provider import HttpStatsProvider
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
 from src.model.summarizer.summary import Summary
+from src.model.users.service import HttpUsersProvider
 from src.model.venues.service import HttpVenuesProvider
 from src.model.opinions.provider import HttpOpinionsProvider
 
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
     opinions: str = "opinions"
     stats: str = "stats"
     points: str = "points"
+    users: str = "users"
     communications: str = "communications"
     proto: str = "https://"
 
@@ -40,7 +42,8 @@ opinions = HttpOpinionsProvider(f"{settings.proto}{settings.opinions}")
 stats = HttpStatsProvider(f"{settings.proto}{settings.stats}") 
 points = HttpPointsProvider(f"{settings.proto}{settings.points}")
 comms = HttpCommunicationProvider(f"{settings.proto}{settings.communications}")
-service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points))
+users = HttpUsersProvider(f"{settings.proto}{settings.users}")
+service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points, users))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -124,5 +127,5 @@ async def get_venue_stats(venue: Annotated[str, Path()]) -> VenueStatData:
     return await service.get_venue_stats(venue)
 
 @app.get("/points/{user}")
-async def get_points(user: Annotated[str, Path()]) -> Point:
+async def get_points(user: Annotated[str, Path()]) -> PointResponse:
     return await service.get_points(user)

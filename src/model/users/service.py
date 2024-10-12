@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Dict, Self
 from fastapi import Body, HTTPException, Query, status, Response
-from src.model.commons.caller import post, put, recover_json_data, with_retry
+from src.model.commons.caller import get, post, put, recover_json_data, with_retry
 from src.model.commons.error import Error
 from src.model.commons.logger import Logger
 from src.model.communications.service import CommunicationProvider
@@ -18,6 +18,9 @@ class UsersProvider:
         raise Exception("Interface method should not be called")
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
+        raise Exception("Interface method should not be called")
+    
+    async def get_user(self, user: str) -> UserData:
         raise Exception("Interface method should not be called")
 
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
@@ -57,6 +60,11 @@ class HttpUsersProvider(UsersProvider):
         users_response = await post(endpoint, body=auth.model_dump())
         return users_response.status
     
+    async def get_user(self, user: str) -> UserData:
+        endpoint = f"{self.host}/{user}"
+        users_response = await get(endpoint)
+        return await recover_json_data(users_response)
+
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         endpoint = f"{self.host}/users"
         update_body = update.model_dump()
@@ -103,6 +111,12 @@ class LocalUsersProvider(UsersProvider):
         await data.update(update, self.database)
         await self.communications.update_user(c.User(localid=data.localid, number=data.phone_number)) 
         return data
+    
+    async def get_user(self, user: str) -> UserData:
+        recovered, data = self.database.get_user(user)
+        assert recovered is not None
+        assert data is not None
+        return UserData(localid=recovered.uid, email=recovered.email, name=data.name, phone_number=data.phone_number) 
 
 class UsersService:
 
@@ -143,6 +157,14 @@ class UsersService:
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         try:
             return await self.provider.update(auth, update)
+        except Exception as e:
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=e.__str__()
+                    )
+    async def get_user(self, user: str) -> UserData:
+        try:
+            return await self.provider.get_user(user)
         except Exception as e:
             raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
