@@ -5,6 +5,8 @@ from typing import Any, Awaitable, Callable
 import aiohttp
 import asyncio
 
+from fastapi import status
+
 
 type HTTPMethod = Callable[..., Awaitable[aiohttp.ClientResponse]]
 
@@ -30,6 +32,20 @@ async def delete(url: str, body: dict = {}, data: dict = {}, params: dict = {}) 
 
 async def post(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
    return await __call(aiohttp.ClientSession.post, url, body, data, params) 
+
+async def with_retry(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> Any:
+    max_tries = 3
+    count = 0
+    while count < max_tries:
+        try:
+            response = await method(url, body=body, data=data, params=params)
+            if response.status != status.HTTP_200_OK:
+                count += 1
+            else:
+                return await response.json()
+        except Exception:
+            count += 1
+    raise Exception("Failed retry")
 
 async def back_off(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> Any:
     wait_time = 0.5

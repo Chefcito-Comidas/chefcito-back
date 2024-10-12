@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Dict, Self
 from fastapi import Body, HTTPException, Query, status, Response
-from src.model.commons.caller import post, put, recover_json_data
+from src.model.commons.caller import post, put, recover_json_data, with_retry
 from src.model.commons.error import Error
 from src.model.commons.logger import Logger
 from src.model.communications.service import CommunicationProvider
@@ -43,7 +43,7 @@ class HttpUsersProvider(UsersProvider):
     
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         endpoint = f"{self.host}/users"
-        users_response = await post(endpoint, body=auth.model_dump())
+        users_response = await with_retry(post, endpoint, body=auth.model_dump())
         content = users_response.headers.get('content-type', 'invalid')
         if 'json' not in content:
             raise Exception("Invalid response from users") 
