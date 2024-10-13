@@ -3,7 +3,7 @@ from datetime import datetime
 from logging import log
 import logging
 from typing import Annotated, List
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, HTTPException, Path, Query, status
 from contextlib import asynccontextmanager
 from pydantic_settings import BaseSettings
 from src.model.commons.error import Error
@@ -58,6 +58,9 @@ async def get_summary(venue: Annotated[str, Query()],
 @app.post("/summaries/{restaurant}")
 async def create_summary(restaurant: Annotated[str, Path()],
                          since: Annotated[datetime, Query()]) -> Summary | Error:
-    return await summaries.create_summary(restaurant, since)
+    raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Deprecated endpoint"
+            ) 
 
 

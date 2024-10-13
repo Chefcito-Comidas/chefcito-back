@@ -28,5 +28,7 @@ class LocalSummarizerProvider(SummarizerProvider):
     
     async def get_summary(self, query: SummaryQuery) -> List[Summary]:
         Logger.info(f"Retrieving summary for venue ==> {query.venue}")
-        return await query.make_query(self.db) 
-
+        result =  await query.make_query(self.db) 
+        if len(result) == 0 or result[0].is_too_old():
+            result = await query.create_if_enough(self.db, self.algo)
+        return result
