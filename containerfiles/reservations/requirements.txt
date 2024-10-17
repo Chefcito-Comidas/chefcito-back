@@ -9,3 +9,5 @@ twilio
 haversine
 azure-servicebus
 azure-identity
+langchain
+langchain-google-vertexai
