@@ -42,7 +42,7 @@ async def with_retry(method: HTTPMethod, url: str, body: dict = {}, data: dict =
             if response.status != status.HTTP_200_OK:
                 count += 1
             else:
-                return await response.json()
+                return response
         except Exception:
             count += 1
     raise Exception("Failed retry")
@@ -50,13 +50,15 @@ async def with_retry(method: HTTPMethod, url: str, body: dict = {}, data: dict =
 async def back_off(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> Any:
     wait_time = 0.5
     while wait_time <= 4:
+        response = None
         try:
             response = await method(url, body=body, data=data, params=params)
             returnable_data = await asyncio.wait_for(response.json(), wait_time)
             response.close()
             return returnable_data
         except TimeoutError:
-            response.close()
+            if response is not None:
+                response.close()
             wait_time *= 2
 
     raise Exception("Failed to connect to firebase server")
