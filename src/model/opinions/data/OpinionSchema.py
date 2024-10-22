@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Self
 from beanie import Document, Indexed
 import pymongo
@@ -55,4 +55,4 @@ class SummarySchema(Document):
         return cls(venue=summary.venue, opinion=summary.text, date=summary.date)
     
     def into_summary(self) -> Summary:
-        return Summary(text=self.opinion, date=self.date, venue=self.venue)
+        return Summary(text=self.opinion, date=self.date.replace(tzinfo=timezone.utc), venue=self.venue)
