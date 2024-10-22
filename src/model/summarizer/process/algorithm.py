@@ -24,7 +24,7 @@ class MockSummarizer(Summarizer):
             text += summary.text
         
         return Summary(
-                date = since + timedelta(days=14),
+                date = (since + timedelta(days=14)).replace(tzinfo=timezone.utc),
                 text = text,
                 venue = venue
                 )
@@ -36,7 +36,7 @@ class VertexSummarizer(Summarizer):
         
         summary: str = await prompt.create_prompt(opinions, summaries)
         return Summary(
-                date = since + timedelta(days=14),
+                date = (since + timedelta(days=14)).replace(tzinfo=timezone.utc),
                 text = summary,
                 venue = venue
                 )
