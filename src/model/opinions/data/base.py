@@ -62,7 +62,7 @@ class MongoOpinionsDB(OpinionsDB):
 
     async def get_summaries(self, venue: str, since: datetime, limit: int = 1, skip: int = 0) -> List[Summary]:
         query: FindMany[SummarySchema] = SummarySchema.find(SummarySchema.venue == venue).\
-        find(SummarySchema.date.__ge__(since))
+        find(SummarySchema.date.__ge__(since.replace(tzinfo=None))
         return list(map(
             lambda x: x.into_summary(), 
             await query.limit(limit).skip(skip).sort("-date").to_list()
