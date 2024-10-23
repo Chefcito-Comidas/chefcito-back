@@ -110,3 +110,63 @@ Se debe seguir el mismo flujo que para un bug fix no critico, con la salvedad de
 
 ![arquitectura](img/ChefcitoServices.png)
 
+## Despliegue utilizando Github Actions
+
+Existen dos pipelines de github actions definidos para este repositorio.
+El primero; *python-test* se ejecuta siempre que se realice un pull
+request de chefcito a main y siempre que modifique la rama main.
+El segunndo; *deploy* se ejecuta unicamente cuando se modifica la rama main del repositorio.
+
+#### Python test
+
+Este primer pipeline ejecuta los tests del sistema y despliega las imagenes de los servicios
+en el container registry de staging.
+Para que este pipeline se ejecute correctamente es necesario configurar los siguientes secretos:
+
+1. GATEWAY_REGISTRY_USERNAME
+2. GATEWAY_REGISTRY_PASSWORD
+
+estos corresponden al username del container registry y la contraseña del mismo.
+Para obtener los mismos desde un *Azure Container Registry* se debe:
+
+1. Ingresar al registry desde la consola.
+2. Ir a Settings >> Access keys
+3. Copiar el *Username* y definir el valor de GATEWAY_REGISTRY_USERNAME
+4. Copiar o bien *password* o bien *password2* y definir el valor de GATEWAY_REGISTRY_PASSWORD
+
+#### Deploy
+
+Este segudo pipeline se encarga de realizar el despliegue de las imagenes de docker al registry
+para produccion y de redesplegar los *Container Apps* sobre los cuales se ejecutan los servicios 
+de chefcito.
+
+En este caso, hay que configurar, ademas, el siguiente secreto:
+
+1. AZURE_CCREDENTIALS
+
+este secreto es un JSON con el siguiente formato:
+
+```json
+{
+    "clientSecret":  "******",
+    "subscriptionId":  "******",
+    "tenantId":  "******",
+    "clientId":  "******"
+}
+```
+
+A continuacion se detalla como obtener cada uno de estos datos:
+
+1. ClientSecret y ClientID 
+    - Estos valores se obtienen de la App Registration creada
+    para poder ejecutar el pipeline de infraestructura, como 
+    se explica en [este otro repositorio](https://github.com/Chefcito-Comidas/infra)
+2. SubscriptionID 
+    - En la consola de Azure ir a Subscriptions y copiar el 
+    ID de la subscripcion sobre la cual se va a desplegar el
+    sistema.
+3. TenantID
+    - Ir a App registrations, seleccionar la aplicacion creada
+    y desde la pantalla de overview, copiar el Directory (tenant) ID.
+
+

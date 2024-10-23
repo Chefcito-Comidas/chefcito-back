@@ -21,7 +21,7 @@ endpoints:
   - name: "/reservations/param"
     allowed: ["anonymous"]
   - name: "/summaries/param"
-    allowed: ["restaurant"]
+    allowed: ["anonymous", "client", "restaurant"]
   - name: "/summaries"
     allowed: ["anonymous"]
   - name: "/reservations/history"
