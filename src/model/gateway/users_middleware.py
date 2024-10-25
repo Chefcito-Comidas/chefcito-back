@@ -7,7 +7,7 @@ from starlette.types import ASGIApp
 import asyncio
 import aiohttp
 
-from src.model.commons.caller import post, recover_json_data
+from src.model.commons.caller import post, recover_json_data, with_retry
 from src.model.users.auth_request import AuthRequest
 from src.model.users.user_data import UserToken 
 
@@ -78,7 +78,8 @@ class ProdMiddleware(Middleware):
     async def __auth_call(self, token: str, endpoint: str) -> aiohttp.ClientResponse:
         token = self.__parse_token(token)
         body = AuthRequest(id_token=token, endpoint=endpoint).model_dump()
-        response = await post(self.authUrl, body=body)
+        
+        response = await with_retry(post, self.authUrl, body=body)
         return response 
 
     def __not_authorized(self) -> Response:
