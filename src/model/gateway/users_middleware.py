@@ -78,8 +78,8 @@ class ProdMiddleware(Middleware):
     async def __auth_call(self, token: str, endpoint: str) -> aiohttp.ClientResponse:
         token = self.__parse_token(token)
         body = AuthRequest(id_token=token, endpoint=endpoint).model_dump()
-        
-        response = await with_retry(post, self.authUrl, body=body)
+        expected_status = [status.HTTP_200_OK, status.HTTP_403_FORBIDDEN] 
+        response = await with_retry(post, self.authUrl, body=body, expected_status = expected_status)
         return response 
 
     def __not_authorized(self) -> Response:

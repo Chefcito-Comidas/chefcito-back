@@ -1,7 +1,7 @@
 """
 Caller provides a simple interface to manage aihttp calls
 """
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, List
 import aiohttp
 import asyncio
 
@@ -33,13 +33,13 @@ async def delete(url: str, body: dict = {}, data: dict = {}, params: dict = {}) 
 async def post(url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> aiohttp.ClientResponse:
    return await __call(aiohttp.ClientSession.post, url, body, data, params) 
 
-async def with_retry(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}) -> Any:
+async def with_retry(method: HTTPMethod, url: str, body: dict = {}, data: dict = {}, params: dict = {}, expected_status: List[int] = [status.HTTP_200_OK]) -> Any:
     max_tries = 3
     count = 0
     while count < max_tries:
         try:
             response = await method(url, body=body, data=data, params=params)
-            if response.status != status.HTTP_200_OK:
+            if response.status not in expected_status:
                 count += 1
             else:
                 return response
