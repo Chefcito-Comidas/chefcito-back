@@ -50,8 +50,8 @@ app.add_middleware(CORSMiddleware,
                    allow_methods=["*"],
                    allow_headers=["*"])
 
-app.add_middleware(AuthMiddleware, 
-                   authUrl=f"{settings.proto}{settings.users}{settings.auth_url}", 
+app.add_middleware(AuthMiddleware,
+                   authUrl=f"{settings.proto}{settings.users}{settings.auth_url}",
                    avoided_urls=settings.auth_avoided_urls,
                    dev_mode=settings.dev)
 
@@ -75,9 +75,9 @@ async def sign_up(credentials: Annotated[HTTPAuthorizationCredentials, Depends(s
     return await service.sign_up(credentials, user_type, name, number)
 
 @app.put("/users")
-async def update_data(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], 
+async def update_data(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
                       update: Annotated[UserUpdate, Body()]) -> u_stubs.UserData:
-    return await service.update(credentials, update)    
+    return await service.update(credentials, update)
 
 @app.post("/venues",responses={status.HTTP_400_BAD_REQUEST: {"model": Error},
                                          status.HTTP_200_OK: {"model": Venue}})
@@ -95,7 +95,7 @@ async def update_venues(credentials: Annotated[HTTPAuthorizationCredentials, Dep
                               venue_id: Annotated[str, Path()],
                               response: Response
                               ) -> Venue | Error:
-    
+
     answer = await service.update_venue(credentials,venue_id, venue, response)
     return answer
 
@@ -232,7 +232,7 @@ async def query_opinions(credentials: Annotated[HTTPAuthorizationCredentials, De
 @app.post("/opinions", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
 async def create_opinion(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)], opinion: Opinion, response: Response) -> Opinion | Error:
     return await service.create_opinion(credentials, opinion, response)
- 
+
 
 @app.get("/venue", responses={
     status.HTTP_400_BAD_REQUEST: {"model": Error},
@@ -260,3 +260,11 @@ async def get_user_stats(user: str, credentials: Annotated[HTTPAuthorizationCred
 @app.get("/stats/venue/{venue}")
 async def get_venue_stats(venue: str, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> VenueStatData:
     return await service.get_venue_stats(venue)
+
+
+@app.get("/venues/promotions")
+async def get_promoted_venues() -> VenueQueryResult:
+    """
+    Returns Some mocked results based on a couple Queries
+    """
+    return await service.get_promotions()

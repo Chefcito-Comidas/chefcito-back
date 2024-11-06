@@ -18,16 +18,16 @@ class UserData(BaseModel):
     phone: str
     times_assisted: int
     times_expired: int
-    
+
 
 class ReservationResponse(BaseModel):
     id: str
-    user: UserData 
+    user: UserData
     venue: str
     time: datetime
     people: int
     status: ReservationStatus
-    
+
     def into_reservation(self) -> Reservation:
         return Reservation(
                 id=self.id,
@@ -46,7 +46,7 @@ class ReservationQueryResponse(BaseModel):
 
 
 class ReservationQuery(BaseModel):
-    
+
     limit: int = 10
     start: int = 0
     status: Optional[List[str]] = None
@@ -56,7 +56,7 @@ class ReservationQuery(BaseModel):
     from_time: Optional[datetime] = None
     to_time: Optional[datetime] = None
     people: Optional[Tuple[int, int]] = None
-    
+
     def change_user(self, user: str):
         self.user = f"user/{user}"
 
@@ -65,7 +65,7 @@ class ReservationQuery(BaseModel):
         promises = list(
             map(
                 lambda x: opinions.query_opinions(OpinionQuery(venue=x.venue, reservation=x.id)),
-                reservations 
+                reservations
             )
         )
         for result in promises:
@@ -77,23 +77,22 @@ class ReservationQuery(BaseModel):
                 op = value.result.pop()
                 final[op.reservation] = op
 
-        return final 
-    
+        return final
+
     async def get_user_data(self, user: str, venue: str, users: UsersProvider, db: ReservationsBase) -> UserData:
         builder = get_builder(db)
         assited = await builder.get(None, user, [Assisted().get_status()], venue, None, None, 10, 0)
         not_assited = await builder.get(None, user, [Expired().get_status()], venue, None, None, 10, 0)
         user_data = await users.get_user(user)
-        logger.Logger.info("Hello from here") 
         try:
-            return UserData(id=user_data['localid'],
-                        name=user_data['name'],
-                        phone=user_data['phone_number'],
+            return UserData(id=user_data['localid'] if isinstance(user_data, dict) else user_data.localid,
+                        name=user_data['name'] if isinstance(user_data, dict) else user_data.name,
+                        phone=user_data['phone_number']if isinstance(user_data, dict) else user_data.name,
                         times_expired=not_assited.total,
-                        times_assisted=assited.total) 
-        except:
+                        times_assisted=assited.total)
+        except Exception as e:
             return UserData(id="None", name="None", phone="None", times_expired=0, times_assisted=0)
-    async def query(self, db: ReservationsBase, opinions: OpinionsProvider, users: UsersProvider) -> ReservationQueryResponse: 
+    async def query(self, db: ReservationsBase, opinions: OpinionsProvider, users: UsersProvider) -> ReservationQueryResponse:
         builder = get_builder(db)
         time = (self.from_time, self.to_time) if self.from_time != None and self.to_time != None else None
         result = await builder.get(self.id, self.user, self.status, self.venue, time, self.people, self.limit, self.start)
@@ -105,6 +104,6 @@ class ReservationQuery(BaseModel):
             ))
         opinions_result = await self.__search_opinions(reservations, opinions)
         Logger.info(f"Queried reservations and obtained: {reservations}, {opinions_result}")
-        return ReservationQueryResponse(result=result_reservations, 
+        return ReservationQueryResponse(result=result_reservations,
                                         opinions=opinions_result,
                                         total=result.total)

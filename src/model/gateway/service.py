@@ -21,19 +21,21 @@ from src.model.summarizer.summary import Summary
 from src.model.users.service import UsersProvider
 from src.model.users.update import UserUpdate
 from src.model.users.user_data import UserData, UserToken
-import src.model.gateway.reservations_stubs as r_stubs 
+import src.model.gateway.reservations_stubs as r_stubs
 from src.model.venues import venue
 from src.model.venues.venue import Venue
 from src.model.venues.venueQuery import VenueDistanceQueryResult, VenueQuery, VenueQueryResult
 from src.model.venues.service import VenuesService
-from src.model.venues.update import Update      
+from src.model.venues.update import Update
 import src.model.gateway.venues_stubs as v_stubs
 import src.model.gateway.users_stubs as u_stubs
 
+PROMOTED_IDS = []
+
 class GatewayService:
-    
+
     def __init__(self, users: UsersProvider, reservations: ReservationsService, venues: VenuesService, points: PointsProvider):
-        self.users = users 
+        self.users = users
         self.reservations = reservations
         self.venues = venues
         self.points = points
@@ -51,7 +53,7 @@ class GatewayService:
             return u_stubs.UserData(
                 data=u_data,
                 points=points
-            ) 
+            )
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, "/users")
@@ -68,14 +70,14 @@ class GatewayService:
             return u_stubs.UserData(
                 data=u_data,
                 points=points
-            ) 
+            )
         except Exception as e:
             raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=e.__str__()
                     )
 
-              
+
 
     async def sign_up(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
                   user_type: Annotated[str, Body()],
@@ -87,16 +89,16 @@ class GatewayService:
         try:
             Logger.info("Signing up new user")
             data= UserToken(id_token=credentials.credentials)
-            result = await self.users.sign_up(user_type, data, name, number) 
+            result = await self.users.sign_up(user_type, data, name, number)
             Logger.info(f"New user signed up ==> {result.localid}")
             return result
         except Exception as e:
             return Error.from_exception(e, endpoint="/users")
-    
+
     async def __check_user(self,token: Annotated[HTTPAuthorizationCredentials, None], user: str, response: Response) -> bool:
         """
             Returns False if the check does not pass
-            That would mean the user is not the same as 
+            That would mean the user is not the same as
             the token.
             It also sets the response status code as 403 (Forbidden)
         """
@@ -104,7 +106,7 @@ class GatewayService:
         result = tokens_user == user
         if not result:
             response.status_code = HTTP_403_FORBIDDEN
-        return result 
+        return result
 
     async def __get_user(self, credentials: Annotated[HTTPAuthorizationCredentials, None]) -> str:
         """
@@ -115,11 +117,11 @@ class GatewayService:
 
     async def create_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], venue: v_stubs.CreateInfo, response: Response) -> Venue | Error:
         Logger.info("Creating new venue")
-        id = await self.users.get_data(UserToken(id_token=credentials.credentials)) 
+        id = await self.users.get_data(UserToken(id_token=credentials.credentials))
         Logger.info(f"Recovered user ID ==> {id}")
         new_venue = await self.venues.create_venue(venue.into_create_info(id.localid), response)
         Logger.info(f"Venue created with response: {new_venue}")
-        return new_venue 
+        return new_venue
 
     async def update_venue(self,credentials: Annotated[HTTPAuthorizationCredentials, None], venue_id: str, venue_update: Update, response: Response) -> Venue | Error:
         Logger.info(f"Updating venue ==> {venue_id}")
@@ -147,22 +149,22 @@ class GatewayService:
         return await self.reservations.create_reservation(reservation.with_user(user), response)
 
     async def update_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, reservation_update: r_stubs.Update, response: Response) -> Reservation | Error:
-        user = await self.__get_user(credentials) 
+        user = await self.__get_user(credentials)
         Logger.info(f"Updating reservation ==> {reservation_id} for user ==> {user}")
-        update = reservation_update.with_user(user) 
+        update = reservation_update.with_user(user)
         return await self.reservations.update_reservation(reservation_id, update, response)
 
     async def get_reservations(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_query: r_stubs.ReservationQuery, response: Response) -> ReservationQueryResponse | Error:
-        user = await self.__get_user(credentials) 
+        user = await self.__get_user(credentials)
         Logger.info(f"Querying users ==> {user} reservations")
         r_query = reservation_query.with_user(user)
         return await self.reservations.get_reservations(r_query, response)
-    
+
     async def get_my_venue(self, credentials: Annotated[HTTPAuthorizationCredentials, None], response: Response) -> Venue | Error:
         user = await self.__get_user(credentials)
         venue_query = VenueQuery(id=user)
         result = await self.venues.get_venues(venue_query, response)
-        Logger.info("Retrieving venue data for user ==> {user}") 
+        Logger.info("Retrieving venue data for user ==> {user}")
         try:
             as_result: dict = result  # type: ignore
             if as_result['total'] > 0:
@@ -170,17 +172,17 @@ class GatewayService:
             return result # type: ignore
         except Exception as e:
             Logger.critical(e)
-            return Error.from_exception(Exception("Invalid user")) 
-        
+            return Error.from_exception(Exception("Invalid user"))
+
 
     async def delete_reservation(self,credentials: Annotated[HTTPAuthorizationCredentials, None], reservation_id: str, response: Response) -> None:
         Logger.info(f"Deleting reservation {reservation_id}")
         return await self.reservations.delete_reservation(reservation_id)
-    
+
     async def get_history(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
-            from_time: Optional[datetime], 
+            from_time: Optional[datetime],
             to_time: Optional[datetime],
-            limit: int, 
+            limit: int,
             start: int,
             venue: bool,
             response: Response) -> ReservationQueryResponse | Error:
@@ -194,11 +196,11 @@ class GatewayService:
         query = r_stubs.ReservationQuery(venue=venue_id,
                                          from_time=from_time,
                                          to_time=to_time,
-                                         limit=limit, 
+                                         limit=limit,
                                          start=start).with_user('')
         query.user = user
         return await self.reservations.get_reservations(query, response)
-        
+
 
 
     async def create_opinion(self, credentials: Annotated[HTTPAuthorizationCredentials, None],
@@ -223,7 +225,7 @@ class GatewayService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
-    
+
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         try:
             Logger.info(f"Retrieving venue ==> {venue} stats")
@@ -233,7 +235,7 @@ class GatewayService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
-        
+
     async def create_venue_summary(self, venue: str, credentials: Annotated[HTTPAuthorizationCredentials, None]) -> Summary:
         try:
            user = await self.__get_user(credentials)
@@ -244,7 +246,7 @@ class GatewayService:
                    status_code=status.HTTP_401_UNAUTHORIZED,
                    detail="Forbidden Operation"
                )
-           return await self.reservations.create_venue_summary(venue) 
+           return await self.reservations.create_venue_summary(venue)
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -260,4 +262,18 @@ class GatewayService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
-            ) 
+            )
+
+    async def get_promotions(self, response: Response) -> VenueQueryResult:
+        """
+            This method is mocked and should be changed when the promotional model
+            is well stablished (only for demo purposes)
+        """
+        results = [await self.venues.get_venues(VenueQuery(id=id), response) for id in PROMOTED_IDS]
+        if response.status_code != status.HTTP_200_OK:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not get promoted venues")
+
+        return VenueQueryResult(
+            result=[result.result.pop(0) for result in results], #type: ignore
+            total=len(PROMOTED_IDS)
+        )

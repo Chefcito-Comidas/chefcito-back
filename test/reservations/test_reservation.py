@@ -12,15 +12,20 @@ from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.stats.data.base import MockedStatsDB
 from src.model.stats.provider import LocalStatsProvider
+from src.model.users.permissions.base import DBMock
+from src.model.users.service import LocalUsersProvider, UsersProvider
 from src.model.venues.service import LocalVenuesProvider
 import src.model.venues.data.base as v_base
 import src.model.venues.venue as v
 from src.model.venues.venueQuery import VenueQuery
 
 
+def get_mocked_users() -> UsersProvider:
+    return LocalUsersProvider(None, DBMock({}, {}), None)
+
 def test_new_reservation_is_not_confirmed():
     reservation = create_reservation("user", "venue", datetime.now(), 5)
-    assert reservation.get_status() == Uncomfirmed().get_status() 
+    assert reservation.get_status() == Uncomfirmed().get_status()
 
 
 def test_an_unaccepted_reservation_is_canceled():
@@ -38,7 +43,7 @@ def test_a_confirmed_reservation_is_unconfirmed_when_modified():
     update = Update(people=3, user="user")
     provider = LocalStatsProvider(MockedStatsDB())
     reservation = asyncio.run(update.modify(reservation, provider, None))
-    assert reservation.get_status() == Uncomfirmed().get_status() 
+    assert reservation.get_status() == Uncomfirmed().get_status()
 
 def test_the_user_cannot_accept_through_an_update():
     reservation = create_reservation("user", "venue", datetime.now(), 3)
@@ -60,7 +65,7 @@ def test_a_new_reservation_has_no_id():
 
 def test_a_schema_has_an_id():
     reservation = create_reservation("user", "venue", datetime.now(), 6)
-    assert reservation.persistance().id != "" 
+    assert reservation.persistance().id != ""
 
 def test_after_persisting_a_reservation_it_can_be_recovered_with_its_id():
     reservation = create_reservation("user", "venue", datetime.now(), 9)
@@ -83,25 +88,25 @@ def test_after_deleting_a_reservation_it_can_no_longer_be_recovered():
 
 def test_a_reservation_cannot_be_done_if_the_venue_does_not_exists():
     database = MockBase()
-    venues_db = v_base.MockBase() 
+    venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
     provider = LocalStatsProvider(MockedStatsDB())
-    service = LocalReservationsProvider(database, venues, None, provider, None) # type: ignore
-    
+    service = LocalReservationsProvider(database, venues, None, provider, None, get_mocked_users()) # type: ignore
+
     reservation = CreateInfo(user="juanCarlos",
                              venue="Lo de Carlitos",
                              time=datetime.now(),
                              people=9)
-    
-    pytest.raises(Exception, lambda: asyncio.run(service.create_reservation(reservation)))    
-    
+
+    pytest.raises(Exception, lambda: asyncio.run(service.create_reservation(reservation)))
+
 def test_a_reservation_is_done_if_the_venue_does_exist():
     database = MockBase()
     venues_db = v_base.MockBase()
     venues = LocalVenuesProvider(venues_db)
     opinions = LocalOpinionsProvider(MockedOpinionsDB(), None)
     provider = LocalStatsProvider(MockedStatsDB())
-    service = LocalReservationsProvider(database, venues, opinions, provider, None)
+    service = LocalReservationsProvider(database, venues, opinions, provider, None, get_mocked_users())
     asyncio.run(venues.create_venue(v.CreateInfo(
                                                  id="ADSAF",
                                                  name="Lo de Carlitos",
@@ -110,14 +115,14 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
                                                  slots=[],
                                                  location="almendra 270",
                                                  capacity=150,
-                                                 characteristics= ["Arepas", "Cafeteria"], 
-                                                 features= ["Estacionamiento"], 
-                                                 vacations=[datetime.now()], 
+                                                 characteristics= ["Arepas", "Cafeteria"],
+                                                 features= ["Estacionamiento"],
+                                                 vacations=[datetime.now()],
                                                  reservationLeadTime=10,
                                                  menu="Menu")))
-                                                
+
     id = asyncio.run(venues.get_venues(VenueQuery())).result.pop().id
-    
+
     reservation = CreateInfo(user="juanCarlos",
                              venue=id,
                              time=datetime.now(),
@@ -127,6 +132,3 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
     reservation_venue_id = asyncio.run(service.get_reservations(ReservationQuery())).result.pop().venue
 
     assert reservation_venue_id == id
-    
-
-

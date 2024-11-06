@@ -11,14 +11,19 @@ from src.model.reservations.reservationQuery import ReservationQuery
 from src.model.reservations.update import Update
 from src.model.stats.data.base import MockedStatsDB
 from src.model.stats.provider import LocalStatsProvider
+from src.model.users.permissions.base import DBMock
+from src.model.users.service import LocalUsersProvider, UsersProvider
 from test.reservations.test_query import all_different, create_reservations
 from test.services.db_load import run
 
 
+def get_mocked_users() -> UsersProvider:
+    return LocalUsersProvider(None, DBMock({}, {}), None)
+
 @pytest.mark.asyncio
 async def test_reservation_persistance():
     with PostgresContainer('postgres:16') as postgres:
-        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        run('db_config.yaml', connection=postgres.get_connection_url())
         reservation = create_reservation(user="user",venue="venus",time=datetime.now(),people=3)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
@@ -29,7 +34,7 @@ async def test_reservation_persistance():
 @pytest.mark.asyncio
 async def test_reservation_update():
     with PostgresContainer('postgres:16') as postgres:
-        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        run('db_config.yaml', connection=postgres.get_connection_url())
         reservation = create_reservation(user="user", venue="venue",time=datetime.now(),people=4)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
@@ -45,33 +50,33 @@ async def test_reservation_update():
 @pytest.mark.asyncio
 async def test_reservation_deletion():
     with PostgresContainer('postgres:16') as postgres:
-        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        run('db_config.yaml', connection=postgres.get_connection_url())
         reservation = create_reservation(user="user", venue="venue",time=datetime.now(),people=4)
         database = RelBase(conn_string=postgres.get_connection_url())
         database.store_reservation(reservation.persistance())
-        
+
         Reservation.delete(reservation.id, database)
         assert database.get_reservation_by_id(reservation.id) == None
 
 @pytest.mark.asyncio
 async def test_reservation_pagination():
     with PostgresContainer('postgres:16') as postgres:
-        run('db_config.yaml', connection=postgres.get_connection_url()) 
+        run('db_config.yaml', connection=postgres.get_connection_url())
         reservations = create_reservations(99)
         opinions = LocalOpinionsProvider(MockedOpinionsDB(), None) #type: ignore
         database = RelBase(conn_string=postgres.get_connection_url())
         for reservation in reservations:
             database.store_reservation(reservation)
-        
+
         query = ReservationQuery(
                 user="user_1",
                 limit=5
                 )
-        result_1 = await query.query(database, opinions)
+        result_1 = await query.query(database, opinions, get_mocked_users())
         query.start=6
-        result_2 = await query.query(database, opinions)
+        result_2 = await query.query(database, opinions, get_mocked_users())
         query.start=11
-        result_3= await query.query(database, opinions)
+        result_3= await query.query(database, opinions, get_mocked_users())
         assert result_1.total == result_2.total == result_3.total == 33
         assert len(result_1.result) == len(result_2.result) == len(result_3.result) == 5
         assert all_different(result_1.result, result_2.result)
@@ -93,25 +98,25 @@ async def test_reservation_query_by_various_states():
             status=[Uncomfirmed().get_status()],
             limit=8
         )
-        result = await query.query(database, opinions)
+        result = await query.query(database, opinions, get_mocked_users())
         for reservation in result.result:
             reservation.status = Accepted()
-            database.update_reservation(reservation.persistance()) 
-        result = await query.query(database, opinions)
+            database.update_reservation(reservation.into_reservation().persistance())
+        result = await query.query(database, opinions, get_mocked_users())
         for reservation in result.result:
             reservation.status = Assisted()
-            database.update_reservation(reservation.persistance())
-        
+            database.update_reservation(reservation.into_reservation().persistance())
+
         query_final = ReservationQuery(
             venue="venue_1",
             status=[Accepted().get_status(), Assisted().get_status()],
             limit=20
         )
-        result = await query_final.query(database, opinions)
+        result = await query_final.query(database, opinions, get_mocked_users())
         accepted_result = list(filter(lambda x: x.status.get_status() == Accepted().get_status(),
                                  result.result))
         assisted_result = list(filter(lambda x: x.status.get_status() == Assisted().get_status(),
-                                     result.result)) 
+                                     result.result))
         assert result.total == 16
         assert len(accepted_result) == 8
         assert len(assisted_result) == 8

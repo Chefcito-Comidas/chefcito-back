@@ -8,12 +8,17 @@ from src.model.opinions.provider import LocalOpinionsProvider
 from src.model.reservations.data.base import MockBase
 from src.model.reservations.data.schema import ReservationSchema
 from src.model.reservations.reservation import Reservation, Uncomfirmed, create_reservation
-from src.model.reservations.reservationQuery import ReservationQuery
+from src.model.reservations.reservationQuery import ReservationQuery, ReservationResponse
+from src.model.users.permissions.base import DBMock
+from src.model.users.service import LocalUsersProvider, UsersProvider
 
+
+def get_mocked_users() -> UsersProvider:
+    return LocalUsersProvider(None, DBMock({}, {}), None)
 
 def create_reservations(amount: int) -> List[ReservationSchema]:
     """
-        Creates a list of reservations for 3 users and 
+        Creates a list of reservations for 3 users and
         2 venues with incremental ids
     """
     reservations = []
@@ -37,13 +42,13 @@ def all_different(list_1: List[Reservation], list_2: List[Reservation]) -> bool:
             )
         )
 
-def all_same_user(user: str, result: List[Reservation]) -> bool:
+def all_same_user(user: str, result: List[ReservationResponse]) -> bool:
     for reservation in result:
-        if reservation.user != user:
+        if reservation.user.id != user:
             return False
     return True
 
-def all_same_venue(venue: str, result: List[Reservation]) -> bool:
+def all_same_venue(venue: str, result: List[ReservationResponse]) -> bool:
     for reservation in result:
         if reservation.venue != venue:
             return False
@@ -57,8 +62,9 @@ def test_get_all_by_one_user():
     query = ReservationQuery(
             user="user_0"
             )
-    result = asyncio.run(query.query(database, opinions))
+    result = asyncio.run(query.query(database, opinions, get_mocked_users()))
     assert result.total == 3
+
     assert all_same_user("user_0", result.result)
 
 
@@ -70,7 +76,7 @@ def test_get_all_by_one_venue():
     query = ReservationQuery(
             venue="venue_1"
             )
-    result = asyncio.run(query.query(database, opinions))
+    result = asyncio.run(query.query(database, opinions, get_mocked_users()))
     assert result.total == 4
     assert all_same_venue("venue_1", result.result)
 
@@ -83,7 +89,7 @@ def test_limiting_the_amount_of_reservations():
             venue="venue_1",
             limit=2
             )
-    result = asyncio.run(query.query(database, opinions))
+    result = asyncio.run(query.query(database, opinions, get_mocked_users()))
     assert result.total == 2
     assert all_same_venue("venue_1", result.result)
 
@@ -96,9 +102,9 @@ def test_stepping_with_limit_the_amount_of_reservations():
             venue="venue_1",
             limit=2
             )
-    result_1 = asyncio.run(query.query(database, opinions))
+    result_1 = asyncio.run(query.query(database, opinions, get_mocked_users()))
     query.start = 2
-    result_2 = asyncio.run(query.query(database, opinions))
+    result_2 = asyncio.run(query.query(database, opinions, get_mocked_users()))
     assert result_1.total == 2
     assert result_2.total == 2
-    assert all_different(result_1.result, result_2.result) 
+    assert all_different(result_1.result, result_2.result)

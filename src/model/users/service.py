@@ -13,27 +13,27 @@ import src.model.communications.user as c
 
 
 class UsersProvider:
-    
+
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         raise Exception("Interface method should not be called")
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         raise Exception("Interface method should not be called")
-    
+
     async def get_user(self, user: str) -> UserData:
         raise Exception("Interface method should not be called")
 
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
         raise Exception("Interface method should not be called")
-    
+
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         raise Exception("Interface method should not be called")
 
 class HttpUsersProvider(UsersProvider):
-    
+
     def __init__(self, users_host: str) -> None:
-        self.host = users_host 
-    
+        self.host = users_host
+
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         endpoint = f"{self.host}/users/signup/{user_type}"
         body = token.model_dump()
@@ -43,11 +43,11 @@ class HttpUsersProvider(UsersProvider):
         request['phone_number'] = phone_number
         users_response = await post(endpoint, body=request)
         return UserData(**await recover_json_data(users_response))
-    
+
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
         endpoint = f"{self.host}/users"
         users_response = await with_retry(post, endpoint, body=auth.model_dump())
-        
+
         try:
             return UserData(**await recover_json_data(users_response))
         except:
@@ -57,7 +57,7 @@ class HttpUsersProvider(UsersProvider):
         endpoint = f"{self.host}/users/permissions"
         users_response = await post(endpoint, body=auth.model_dump())
         return users_response.status
-    
+
     async def get_user(self, user: str) -> UserData:
         endpoint = f"{self.host}/{user}"
         users_response = await get(endpoint)
@@ -74,12 +74,12 @@ class HttpUsersProvider(UsersProvider):
         return await recover_json_data(response)
 
 class LocalUsersProvider(UsersProvider):
-    
+
     def __init__(self, authentication: FirebaseAuth, database: Database, communications: CommunicationProvider) -> None:
         self.authentication = authentication
         self.database = database
         self.communications = communications
-    
+
     async def sign_up(self, user_type: str, token: Annotated[UserToken, Body()], name: str, phone_number: str) -> UserData:
         Logger.info(f"Retrieving data for new user")
         user = await token.get_data(self.authentication, self.database)
@@ -94,12 +94,12 @@ class LocalUsersProvider(UsersProvider):
         return user
 
     async def get_data(self, auth: Annotated[UserToken, Body()]) -> UserData:
-        """ 
+        """
         Returns all data from the user, including its type
         """
         Logger.info("Retrieving data for a user")
-        return await auth.get_data(self.authentication, self.database) 
-    
+        return await auth.get_data(self.authentication, self.database)
+
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()]) -> int:
         Logger.info(f"Validating permissions for {auth.endpoint}")
         return status.HTTP_200_OK if await auth.is_allowed(self.authentication, self.database) \
@@ -107,14 +107,14 @@ class LocalUsersProvider(UsersProvider):
     async def update(self, auth: Annotated[UserToken, Body()], update: UserUpdate) -> UserData:
         data = await auth.get_data(self.authentication, self.database)
         await data.update(update, self.database)
-        await self.communications.update_user(c.User(localid=data.localid, number=data.phone_number)) 
+        await self.communications.update_user(c.User(localid=data.localid, number=data.phone_number))
         return data
-    
+
     async def get_user(self, user: str) -> UserData:
         recovered, data = self.database.get_user(user)
         assert recovered is not None
         assert data is not None
-        return UserData(localid=recovered.uid, email=recovered.email, name=data.name, phone_number=data.phone_number) 
+        return UserData(localid=recovered.uid, email=recovered.email, name=data.name, phone_number=data.phone_number)
 
 class UsersService:
 
@@ -127,27 +127,27 @@ class UsersService:
         to the database
         """
         try:
-           return await self.provider.sign_up(user_type, token, name, phone_number) 
+           return await self.provider.sign_up(user_type, token, name, phone_number)
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
-            return Error.from_exception(e, endpoint="/signup") 
-    
+            return Error.from_exception(e, endpoint="/signup")
+
     async def get_data(self, auth: Annotated[UserToken, Body()], response: Response) -> UserData | Error:
-        """ 
+        """
         Returns all data from the user, including its type
         """
         try:
-            return await self.provider.get_data(auth) 
+            return await self.provider.get_data(auth)
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
-            return Error.from_exception(e, endpoint="/users") 
-    
+            return Error.from_exception(e, endpoint="/users")
+
     async def is_allowed(self, auth: Annotated[AuthRequest, Body()], response: Response) -> None | Error:
         """
         Checks if the user is allowed or not to access a certain endpoint
         """
         try:
-            response.status_code = await self.provider.is_allowed(auth) 
+            response.status_code = await self.provider.is_allowed(auth)
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e, endpoint="/permissions")
