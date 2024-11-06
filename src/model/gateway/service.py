@@ -270,10 +270,11 @@ class GatewayService:
             is well stablished (only for demo purposes)
         """
         results = [await self.venues.get_venues(VenueQuery(id=id), response) for id in PROMOTED_IDS]
-        if response.status_code != status.HTTP_200_OK:
+        if response.status_code is not None and response.status_code != status.HTTP_200_OK:
+            print(response.status_code)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not get promoted venues")
 
         return VenueQueryResult(
-            result=[result.result.pop(0) for result in results], #type: ignore
+            result=[result['result'].pop(0) for result in results], #type: ignore
             total=len(PROMOTED_IDS)
         )
