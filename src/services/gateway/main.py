@@ -263,8 +263,8 @@ async def get_venue_stats(venue: str, credentials: Annotated[HTTPAuthorizationCr
 
 
 @app.get("/venues/promotions")
-async def get_promoted_venues() -> VenueQueryResult:
+async def get_promoted_venues(response: Response) -> VenueQueryResult:
     """
     Returns Some mocked results based on a couple Queries
     """
-    return await service.get_promotions()
+    return await service.get_promotions(response)
