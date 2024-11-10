@@ -24,7 +24,7 @@ class MockedCommunicationsMessager(CommunicationsMessager):
 
 class TwilioCommunicationsMessager(CommunicationsMessager):
 
-    def __init__(self, account_sid: str, auth_token: str, from_number: str = "from_=MG3a426d4e392e6a12875647d3e4e7b5be"):
+    def __init__(self, account_sid: str, auth_token: str, from_number: str = "MG3a426d4e392e6a12875647d3e4e7b5be"):
         self.client = Client(account_sid, auth_token)
         self.number = from_number
 
