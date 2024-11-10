@@ -39,11 +39,11 @@ app = FastAPI()
 database =  RelBase(settings.db_string)
 venues = HttpVenuesProvider(f"{settings.proto}{settings.venues}")
 opinions = HttpOpinionsProvider(f"{settings.proto}{settings.opinions}")
-stats = HttpStatsProvider(f"{settings.proto}{settings.stats}") 
+stats = HttpStatsProvider(f"{settings.proto}{settings.stats}")
 points = HttpPointsProvider(f"{settings.proto}{settings.points}")
 comms = HttpCommunicationProvider(f"{settings.proto}{settings.communications}")
 users = HttpUsersProvider(f"{settings.proto}{settings.users}")
-service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points, users))
+service = ReservationsService(LocalReservationsProvider(database, venues, opinions, stats, points, users, comms))
 
 
 @app.post("/reservations", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
@@ -102,7 +102,7 @@ async def query_opinions(
     return await service.get_opinions(query, response)
 
 @app.post("/opinions/{user}", responses={status.HTTP_400_BAD_REQUEST: {"model": Error}})
-async def create_opinion(opinion: Annotated[Opinion, Body()], 
+async def create_opinion(opinion: Annotated[Opinion, Body()],
                          user: Annotated[str, Path()],
                          response: Response):
     return await service.create_opinion(opinion, user, response)
@@ -117,7 +117,7 @@ async def get_summary(venue: Annotated[str, Path()]) -> Summary:
 
 @app.get("/stats/user/{user}")
 async def get_user_stats(user: Annotated[str, Path()]) -> UserStatData:
-    
+
     response = await service.get_user_stats(user)
     print(response)
     return response
