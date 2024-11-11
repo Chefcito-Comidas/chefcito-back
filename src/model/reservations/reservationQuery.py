@@ -41,7 +41,7 @@ class ReservationResponse(BaseModel):
     def __expired(self) -> bool:
         actual_time = datetime.now().replace(tzinfo=timezone.utc)
         delta_max = timedelta(minutes=15)
-        return delta_max <= (actual_time - self.time)
+        return delta_max <= (actual_time - self.time.replace(tzinfo=timezone.utc))
 
     def should_change_to_expired(self) -> bool:
         return self.__expired() and self.status.get_status() == Accepted().get_status()
