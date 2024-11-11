@@ -9,7 +9,7 @@ from src.model.opinions.opinion_query import OpinionQuery
 from src.model.opinions.provider import OpinionsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.query import get_builder
-from src.model.reservations.reservation import Assisted, Expired, Reservation, ReservationStatus
+from src.model.reservations.reservation import Accepted, Assisted, Expired, Reservation, ReservationStatus
 from src.model.users.service import UsersProvider
 
 class UserData(BaseModel):
@@ -44,7 +44,7 @@ class ReservationResponse(BaseModel):
         return delta_max <= (actual_time - self.time)
 
     def should_change_to_expired(self) -> bool:
-        return self.__expired() and self.status.get_status() != Expired().get_status()
+        return self.__expired() and self.status.get_status() == Accepted().get_status()
 
 
 class ReservationQueryResponse(BaseModel):
