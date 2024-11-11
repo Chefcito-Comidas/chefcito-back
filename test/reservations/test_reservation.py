@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime,timezone
 import pytest
 from src.model.opinions.data.base import MockedOpinionsDB
 from src.model.opinions.provider import LocalOpinionsProvider
@@ -125,7 +125,7 @@ def test_a_reservation_is_done_if_the_venue_does_exist():
 
     reservation = CreateInfo(user="juanCarlos",
                              venue=id,
-                             time=datetime.now(),
+                             time=datetime.now().replace(tzinfo=timezone.utc),
                              people=9)
 
     asyncio.run(service.create_reservation(reservation))

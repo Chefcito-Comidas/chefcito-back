@@ -15,7 +15,7 @@ from src.model.points.point import Point, PointResponse
 from src.model.points.provider import PointsProvider
 from src.model.reservations.data.base import ReservationsBase
 from src.model.reservations.data.schema import ReservationSchema
-from src.model.reservations.reservation import Assisted, CreateInfo, Reservation, ReservationStatus
+from src.model.reservations.reservation import Assisted, CreateInfo, Expired, Reservation, ReservationStatus
 from src.model.reservations.update import Update
 from src.model.reservations.reservationQuery import ReservationQuery, ReservationQueryResponse
 from src.model.stats.provider import StatsProvider
@@ -28,16 +28,16 @@ from src.model.venues.venueQuery import VenueQuery, VenueQueryResult
 from src.model.commons.logger import Logger, define_log_level
 
 class ReservationsProvider:
-    
+
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         raise Exception("Interface method should not be called")
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         raise Exception("Interface method should not be called")
-    
+
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         raise Exception("Interface method should not be called")
-    
+
     async def delete_reservation(self, reservation_id: str) -> None:
         raise Exception("Interface method should not be called")
 
@@ -49,16 +49,16 @@ class ReservationsProvider:
 
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         raise Exception("Interface mehotd should not be called")
-    
+
     async def get_user_stats(self, user: str) -> UserStatData:
         raise Exception("Interface method should not be called")
-    
+
     async def get_venue_summary(self, venue: str) -> Summary:
         raise Exception("Interface method should not be called")
 
     async def  create_venue_summary(self, venue: str) -> Summary:
         raise Exception("Interface method should not be called")
-    
+
     async def get_points(self, user: str) -> PointResponse:
         raise Exception("Interface method should not be called")
 
@@ -67,28 +67,28 @@ class ReservationsService:
     def __init__(self, provider: ReservationsProvider):
         self.provider = provider
 
-    
+
     async def create_reservation(self, reservation: CreateInfo, response: Response) -> Reservation | Error:
         try:
            return await self.provider.create_reservation(reservation)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
            return Error.from_exception(e, endpoint="/reservations")
-    
+
     async def update_reservation(self, reservation: str, update: Update, response: Response) -> Reservation | Error:
         try:
            return await self.provider.update_reservation(reservation, update)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
            return Error.from_exception(e)
-    
+
     async def get_reservations(self, query: ReservationQuery, response: Response) -> ReservationQueryResponse | Error:
         try:
            return await self.provider.get_reservations(query)
         except Exception as e:
            response.status_code = status.HTTP_400_BAD_REQUEST
            return Error.from_exception(e)
-    
+
     async def delete_reservation(self, reservation_id: str) -> None:
         try:
             await self.provider.delete_reservation(reservation_id)
@@ -101,7 +101,7 @@ class ReservationsService:
         except Exception as e:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return Error.from_exception(e)
-    
+
     async def get_opinions(self, query: OpinionQuery, response: Response) -> OpinionQueryResponse | Error:
         try:
             return await self.provider.get_opinions(query)
@@ -127,7 +127,7 @@ class ReservationsService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
-        
+
     async def get_venue_summary(self, venue: str) -> Summary:
         try:
             return await self.provider.get_venue_summary(venue)
@@ -136,7 +136,7 @@ class ReservationsService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
-        
+
     async def create_venue_summary(self, venue: str) -> Summary:
         try:
             return await self.provider.create_venue_summary(venue)
@@ -145,7 +145,7 @@ class ReservationsService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=e.__str__()
             )
-    
+
     async def get_points(self, user: str) -> PointResponse:
         try:
             return await self.provider.get_points(user)
@@ -165,7 +165,7 @@ class HttpReservationsProvider(ReservationsProvider):
         body['time'] = body['time'].__str__()
         Logger.info(f"Sending create reservation request with data: {body}")
         response = await post(f"{self.url}{endpoint}", body=body)
-        data = await recover_json_data(response) 
+        data = await recover_json_data(response)
         data['time'] = datetime.fromisoformat(data['time'])
         return data
 
@@ -175,7 +175,7 @@ class HttpReservationsProvider(ReservationsProvider):
         if body.get('time'):
             body['time'] = body['time'].__str__()
         response = await put(f"{self.url}{endpoint}/{reservation_id}", body=body)
-        data = await recover_json_data(response) 
+        data = await recover_json_data(response)
         data['time'] = datetime.fromisoformat(data['time'])
         return data
 
@@ -183,16 +183,16 @@ class HttpReservationsProvider(ReservationsProvider):
         endpoint = "/reservations"
         body = query.model_dump(exclude_none=True)
         if body.get('from_time'):
-            body['from_time'] = body['from_time'].__str__() 
+            body['from_time'] = body['from_time'].__str__()
         if body.get('to_time'):
-            body['to_time'] = body['to_time'].__str__() 
+            body['to_time'] = body['to_time'].__str__()
         response = await get(f"{self.url}{endpoint}", params=body)
         return await recover_json_data(response)
 
     async def delete_reservation(self, reservation_id: str) -> None:
         endpoint = "/reservations"
         await delete(f"{self.url}{endpoint}/{reservation_id}")
-        return  
+        return
 
     async def create_opinion(self, opinion: Opinion, user: str) -> Opinion:
         endpoint = "/opinions"
@@ -215,7 +215,7 @@ class HttpReservationsProvider(ReservationsProvider):
         endpoint = f"/stats/user/{user}"
         response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
-    
+
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         endpoint = f"/stats/venue/{venue}"
         response = await get(f"{self.url}{endpoint}")
@@ -225,19 +225,19 @@ class HttpReservationsProvider(ReservationsProvider):
         endpoint = f"/summaries/{venue}"
         response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
-    
+
     async def create_venue_summary(self, venue: str) -> Summary:
         endpoint = f"/summaries/{venue}"
         response = await post(f"{self.url}{endpoint}")
         return await recover_json_data(response)
-    
+
     async def get_points(self, user: str) -> PointResponse:
         endpoint = f"/points/{user}"
         response = await get(f"{self.url}{endpoint}")
         return await recover_json_data(response)
 
 class LocalReservationsProvider(ReservationsProvider):
-    
+
     def __init__(self, base: ReservationsBase, venues: VenuesProvider, opinions: OpinionsProvider,
                  stats: StatsProvider,
                  points: PointsProvider,
@@ -272,12 +272,12 @@ class LocalReservationsProvider(ReservationsProvider):
                 name = venue['result'].pop()['name']
             else:
                 name = venue.result.pop().name
-                
+
             message = f"Tienes un cambio de estado en tu reserva en {name}!\n{new_state.status_message()}"
-            await self.communications.send_message(Message(user=to, message=message)) 
+            await self.communications.send_message(Message(user=to, message=message))
         except Exception as e:
             logging.error(f"Could not send message update to venue: {e}")
-            
+
     async def create_reservation(self, reservation: CreateInfo) -> Reservation:
         Logger.info(f"New reservation: {reservation}")
         if not await self._find_venue(reservation.venue):
@@ -298,8 +298,8 @@ class LocalReservationsProvider(ReservationsProvider):
             reservation.venue,
             message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
         )
-        Logger.info("=Sent notification to venue") 
-        return response 
+        Logger.info("=Sent notification to venue")
+        return response
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
         Logger.info(f"Update request for reservation: {Update}")
@@ -322,7 +322,13 @@ class LocalReservationsProvider(ReservationsProvider):
 
     async def get_reservations(self, query: ReservationQuery) -> ReservationQueryResponse:
         Logger.info(f"Reservation query recieved: {query}")
-        return await query.query(self.db, self.opinions, self.users)
+        response = await query.query(self.db, self.opinions, self.users)
+        for reservation in response.result:
+            if reservation.should_change_to_expired():
+                update = Update(user="", advance_forward=False)
+                await self.update_reservation(reservation.id, update)
+                reservation.status = Expired()
+        return response
 
     async def delete_reservation(self, reservation_id: str) -> None:
         Logger.info(f"Reservation deletion for reservation id: {reservation_id}")
@@ -353,7 +359,7 @@ class LocalReservationsProvider(ReservationsProvider):
     async def get_user_stats(self, user: str) -> UserStatData:
         Logger.info(f"Recieved request for user => {user} stats")
         return await self.stats.get_user(user)
-    
+
     async def get_venue_stats(self, venue: str) -> VenueStatData:
         Logger.info(f"Recieved request for venue ==> {venue} stats")
         return await self.stats.get_venue(venue)
@@ -361,7 +367,7 @@ class LocalReservationsProvider(ReservationsProvider):
     async def get_venue_summary(self, venue: str) -> Summary:
         Logger.info(f"Recovering venue ==> {venue} summary")
         return await self.opinions.get_venue_summary(venue)
-    
+
     async def create_venue_summary(self, venue: str) -> Summary:
         Logger.info(f"Creating venue ==> {venue} Summary")
         return await self.opinions.create_venue_summary(venue)

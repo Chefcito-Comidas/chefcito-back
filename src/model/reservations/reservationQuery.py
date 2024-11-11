@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
 from src.model.commons import logger
@@ -37,6 +37,14 @@ class ReservationResponse(BaseModel):
                 people=self.people,
                 status=self.status
                 )
+
+    def __expired(self) -> bool:
+        actual_time = datetime.now().replace(tzinfo=timezone.utc)
+        delta_max = timedelta(minutes=15)
+        return delta_max <= (actual_time - self.time)
+
+    def should_change_to_expired(self) -> bool:
+        return self.__expired() and self.status.get_status() != Expired().get_status()
 
 
 class ReservationQueryResponse(BaseModel):
@@ -92,6 +100,7 @@ class ReservationQuery(BaseModel):
                         times_assisted=assited.total)
         except Exception as e:
             return UserData(id="None", name="None", phone="None", times_expired=0, times_assisted=0)
+
     async def query(self, db: ReservationsBase, opinions: OpinionsProvider, users: UsersProvider) -> ReservationQueryResponse:
         builder = get_builder(db)
         time = (self.from_time, self.to_time) if self.from_time != None and self.to_time != None else None
