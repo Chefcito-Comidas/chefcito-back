@@ -274,7 +274,7 @@ class LocalReservationsProvider(ReservationsProvider):
                 name = venue.result.pop().name
 
             message = f"Tienes un cambio de estado en tu reserva en {name}!\n{new_state.status_message()}"
-            await self.communications.send_message(Message(user=to, message=message))
+            await self.communications.send_message(Message(user=to.removeprefix("user/"), message=message))
         except Exception as e:
             logging.error(f"Could not send message update to venue: {e}")
 
@@ -298,7 +298,7 @@ class LocalReservationsProvider(ReservationsProvider):
             reservation.venue,
             message=f"Crearon una nueva reserva para el dia {response.time.date()}, podes verla agregada en la web!"
         )
-        Logger.info("=Sent notification to venue")
+        Logger.info("Sent notification to venue")
         return response
 
     async def update_reservation(self, reservation_id: str, reservation_update: Update) -> Reservation:
