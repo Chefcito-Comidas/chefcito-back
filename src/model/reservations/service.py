@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone, tzinfo
 from logging import log
 import logging
 from typing import List
@@ -252,7 +252,7 @@ class LocalReservationsProvider(ReservationsProvider):
         self.users = users
 
     async def __notify_user(self, user: str, message: str) -> None:
-        to_send = Message(user=user, message=message)
+        to_send = Message(user=user.removeprefix("user/"), message=message)
         try:
             await self.communications.send_message(to_send)
         except Exception as e:
