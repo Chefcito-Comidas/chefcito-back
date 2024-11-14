@@ -189,7 +189,7 @@ class GatewayService:
         user = await self.__get_user(credentials)
         user = f"user/{user}"
         venue_id = None
-        Logger.info(f"Retrieving reservation history for {"user" if not venue else "venue"} ==> {user}")
+        Logger.info(f"Retrieving reservation history for {'user' if not venue else 'venue'} ==> {user}")
         if venue:
             venue_id = user.removeprefix("user/")
             user = None
