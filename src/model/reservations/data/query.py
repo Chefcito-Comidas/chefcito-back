@@ -100,7 +100,7 @@ class RelBuilder(QueryBuilder):
         query, count_query = self.__add_venue_filter(query,count_query, venue)
         query, count_query = self.__add_time_filter(query,count_query, time)
         query, count_query = self.__add_people_filter(query,count_query, people)
-        result = loop.run_in_executor(None,self.db.get_by_eq, query.order_by(ReservationSchema.time))
+        result = loop.run_in_executor(None,self.db.get_by_eq, query.order_by(ReservationSchema.time.desc))
         count = loop.run_in_executor(None, self.db.run_count,count_query)
         return QueryResult(result=await result, total=await count)
 
