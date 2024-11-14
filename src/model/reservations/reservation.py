@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Self
 from pydantic import BaseModel
 
@@ -8,9 +8,9 @@ from src.model.reservations.data.schema import ReservationSchema
 
 def create_reservation(user: str, venue: str, time: datetime, people: int) -> 'Reservation':
     return Reservation(id="",
-                        user=user, 
-                        venue=venue, 
-                        time=time, 
+                        user=user,
+                        venue=venue,
+                        time=time - timedelta(hours=-3),
                         people=people,
                         status=Uncomfirmed())
 
@@ -33,7 +33,7 @@ class ReservationStatus(BaseModel):
         return self.status
 
     def advance(self, forward: bool = True) -> 'ReservationStatus':
-        
+
         return self
 
     def notifiable(self) -> bool:
@@ -49,9 +49,9 @@ class Uncomfirmed(ReservationStatus):
     def advance(self, forward: bool = True) -> ReservationStatus:
         print("==> Advancing uncomfirmed reservation")
         if not forward:
-            return Canceled() 
+            return Canceled()
         return Accepted()
-    
+
     def status_message(self) -> str:
         return "La reserva aun no esta confirmada"
 
@@ -74,7 +74,7 @@ class Accepted(ReservationStatus):
         if not forward:
             return Expired()
         return Assisted()
-    
+
     def status_message(self) -> str:
         return "La reserva fue aceptada por el local!"
 
@@ -102,17 +102,17 @@ class Expired(ReservationStatus):
 class CreateInfo(BaseModel):
     user: str
     venue: str
-    time: datetime 
+    time: datetime
     people: int
 
     def into_reservation(self) -> 'Reservation':
-        return create_reservation(self.user, self.venue, self.time, self.people) 
+        return create_reservation(self.user, self.venue, self.time, self.people)
 
     def change_user(self, new_user: str):
         self.user = f"user/{new_user}"
 
 class Reservation(BaseModel):
-    
+
     id: str
     user: str
     venue: str
@@ -148,7 +148,7 @@ class Reservation(BaseModel):
                     )
             self.id = schema.id.__str__()
             return schema
-            
+
         else:
             return ReservationSchema(
                     id=self.id,
@@ -158,7 +158,7 @@ class Reservation(BaseModel):
                     people=self.people,
                     status=self.status.get_status()
                     )
-    
+
     @staticmethod
     def delete(id: str, database: ReservationsBase) -> None:
         return database.delete_reservation(id)

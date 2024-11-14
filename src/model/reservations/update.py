@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 
@@ -10,12 +10,12 @@ from src.model.stats.stats_update import StatsUpdate
 
 
 class Update(BaseModel):
-    user: str 
+    user: str
     advance_forward: Optional[bool] = None
     cancel: bool = False
-    time: Optional[datetime] = None 
-    people: Optional[int] = None 
-    
+    time: Optional[datetime] = None
+    people: Optional[int] = None
+
     def change_user(self, new_user: str):
         self.user = f"user/{new_user}"
 
@@ -28,6 +28,7 @@ class Update(BaseModel):
             reservation.advance(self.advance_forward, self.user)
 
         if self.time:
+            self.time = self.time - timedelta(hours=-3)
             reservation.time = self.time
             reservation.modified()
 
