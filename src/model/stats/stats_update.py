@@ -27,7 +27,7 @@ class UserCancelUpdate(DataUpdate):
     async def update(self, db: StatsDB):
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase_canceled()
-        venue.increase_canceled() 
+        venue.increase_canceled()
         await self._update_both(db, user, venue)
 
 class UserExpiredUpdate(DataUpdate):
@@ -37,7 +37,7 @@ class UserExpiredUpdate(DataUpdate):
     async def update(self, db: StatsDB):
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase_expired()
-        venue.increase_expired() 
+        venue.increase_expired()
         await self._update_both(db, user, venue)
 
 class UserTotalUpdate(DataUpdate):
@@ -50,9 +50,9 @@ class UserTotalUpdate(DataUpdate):
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase()
         venue.increase(self.people, self.date)
-        await self._update_both(db, user, venue) 
+        await self._update_both(db, user, venue)
 
-   
+
 
 class StatsUpdate(BaseModel):
     user: str
@@ -64,7 +64,7 @@ class StatsUpdate(BaseModel):
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> 'StatsUpdate':
-        update = cls(user=reservation.user, venue=reservation.venue)
+        update = cls(user=reservation.user.removeprefix("user/"), venue=reservation.venue)
         if reservation.get_status() == Expired().get_status():
             update.expired_reservation()
         elif reservation.get_status() == Assisted().get_status():
@@ -82,8 +82,8 @@ class StatsUpdate(BaseModel):
         self.update_data = UserExpiredUpdate(user=self.user, venue=self.venue)
 
     def assisted_reservation(self):
-        self.update_data = UserTotalUpdate(user=self.user, 
-                                           venue=self.venue, 
+        self.update_data = UserTotalUpdate(user=self.user,
+                                           venue=self.venue,
                                            people=self.people,
                                            date=self.date)
 
