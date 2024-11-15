@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 
+from src.model.commons.logger import Logger
 from src.model.points.point import Point
 from src.model.points.provider import PointsProvider
 from src.model.reservations.reservation import Reservation
@@ -35,9 +36,9 @@ class Update(BaseModel):
         if self.people:
             reservation.people = self.people
             reservation.modified()
-
+        Logger.info(f"update: {reservation.status} && {reservation.notifiable()}")
         if reservation.notifiable():
-            await stats.update(StatsUpdate.from_reservation(reservation))
+            await stats.update(reservation)
             await points.update_points(Point.from_reservation(reservation, updater=self.user))
 
         return reservation

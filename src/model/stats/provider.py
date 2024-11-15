@@ -1,6 +1,7 @@
 from src.model.commons.caller import get, post, recover_json_data
 from src.model.commons.logger import Logger
 from src.model.communications import user
+from src.model.reservations.reservation import Reservation
 from src.model.stats.data.base import StatsDB
 from src.model.stats.data.user_data import UserDataDocument
 from src.model.stats.stats_query import StatsQuery
@@ -14,8 +15,8 @@ GET_USER_DATA_ENDPOINT = "/user"
 
 
 class StatsProvider():
-    
-    async def update(self, update: StatsUpdate):
+
+    async def update(self, update: Reservation):
         raise Exception("Interface method should not be called")
 
     async def get_user(self, user: str) -> UserStatData:
@@ -29,17 +30,17 @@ class HttpStatsProvider(StatsProvider):
     def __init__(self, url: str):
         self.url = url
 
-    async def update(self, update: StatsUpdate):
+    async def update(self, update: Reservation):
         endpoint = f"{self.url}{UPDATE_ENDPOINT}"
         body = update.model_dump()
-        if body.get('date'):
-            body['date'] = body['date'].__str__()
+        if body.get('time'):
+            body['time'] = body['time'].__str__()
         await post(endpoint, body=body)
 
     async def get_user(self, user: str) -> UserStatData:
         endpoint = f"{self.url}{GET_USER_DATA_ENDPOINT}/{user}"
         user_data = await get(endpoint)
-        return await recover_json_data(user_data) 
+        return await recover_json_data(user_data)
 
     async def get_venue(self, query: str) -> VenueStatData:
         endpoint = f"{self.url}{GET_VENUE_DATA_ENDPOINT}/{query}"
@@ -47,17 +48,18 @@ class HttpStatsProvider(StatsProvider):
         return await recover_json_data(venue_data)
 
 class LocalStatsProvider(StatsProvider):
-    
+
     def __init__(self, db: StatsDB):
         self.db = db
 
     def __calculate_alerts(self,user: UserStatData, expired_threshold: float, canceled_threshold: float):
        user.canceled_alert = user.canceled > canceled_threshold
-       user.expired_alert = user.expired > expired_threshold 
+       user.expired_alert = user.expired > expired_threshold
 
-    async def update(self, update: StatsUpdate):
+    async def update(self, update: Reservation):
         Logger.info(f"Updating stats with update: {update}")
-        await update.update(self.db)
+        stats_update = StatsUpdate.from_reservation(update)
+        await stats_update.update(self.db)
 
     async def get_venue(self, query: str) -> VenueStatData:
         Logger.info(f"Looking for venue ==> {query} stats")
