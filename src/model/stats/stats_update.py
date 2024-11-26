@@ -10,7 +10,7 @@ from src.model.stats.venue_data import VenueStatData
 
 class DataUpdate(BaseModel):
 
-    async def update(self, db: StatsDB):
+    async def update(self, db: StatsDB) -> None:
         raise Exception("Tried to do an invalid update")
 
     async def _update_both(self, db: StatsDB, user: UserStatData, venue: VenueStatData):
@@ -24,7 +24,7 @@ class UserCancelUpdate(DataUpdate):
     user: str
     venue: str
 
-    async def update(self, db: StatsDB):
+    async def update(self, db: StatsDB) -> None:
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase_canceled()
         venue.increase_canceled()
@@ -34,7 +34,7 @@ class UserExpiredUpdate(DataUpdate):
     user: str
     venue: str
 
-    async def update(self, db: StatsDB):
+    async def update(self, db: StatsDB) -> None:
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase_expired()
         venue.increase_expired()
@@ -46,7 +46,7 @@ class UserTotalUpdate(DataUpdate):
     people: int
     date: datetime.datetime
 
-    async def update(self, db: StatsDB):
+    async def update(self, db: StatsDB) -> None:
         user, venue = await db.get_venue_user(self.user, self.venue)
         user.increase()
         venue.increase(self.people, self.date)

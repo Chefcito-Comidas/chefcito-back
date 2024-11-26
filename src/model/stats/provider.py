@@ -1,10 +1,7 @@
 from src.model.commons.caller import get, post, recover_json_data
 from src.model.commons.logger import Logger
-from src.model.communications import user
 from src.model.reservations.reservation import Reservation
 from src.model.stats.data.base import StatsDB
-from src.model.stats.data.user_data import UserDataDocument
-from src.model.stats.stats_query import StatsQuery
 from src.model.stats.stats_update import StatsUpdate
 from src.model.stats.user_data import UserStatData
 from src.model.stats.venue_data import VenueStatData
@@ -16,7 +13,7 @@ GET_USER_DATA_ENDPOINT = "/user"
 
 class StatsProvider():
 
-    async def update(self, update: Reservation):
+    async def update(self, update: Reservation) -> None:
         raise Exception("Interface method should not be called")
 
     async def get_user(self, user: str) -> UserStatData:
@@ -30,7 +27,7 @@ class HttpStatsProvider(StatsProvider):
     def __init__(self, url: str):
         self.url = url
 
-    async def update(self, update: Reservation):
+    async def update(self, update: Reservation) -> None:
         endpoint = f"{self.url}{UPDATE_ENDPOINT}"
         body = update.model_dump()
         if body.get('time'):
@@ -65,8 +62,8 @@ class LocalStatsProvider(StatsProvider):
         Logger.info(f"Looking for venue ==> {query} stats")
         return await self.db.get_by_venue(query)
 
-    async def get_user(self, query: str, expired_threshold: float = 0.5, canceled_threshold: float = 0.5) -> UserStatData:
+    async def get_user(self, user: str, expired_threshold: float = 0.5, canceled_threshold: float = 0.5) -> UserStatData:
         Logger.info("Looking for user ==> {query} stats")
-        user = await self.db.get_by_user(query)
-        self.__calculate_alerts(user, expired_threshold, canceled_threshold)
-        return user
+        result = await self.db.get_by_user(user)
+        self.__calculate_alerts(result, expired_threshold, canceled_threshold)
+        return result
