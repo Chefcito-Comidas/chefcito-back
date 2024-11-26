@@ -24,6 +24,8 @@ class Point(BaseModel):
         the following inequality holds
         2^n > (total/100)+1
         """
+        if self.total < 0:
+            return 0
         #Take the log2 to get just n
         #then return the floor
         level = math.log2((self.total/100) + 1)
@@ -34,7 +36,7 @@ class Point(BaseModel):
         level = level if level < len(levels) else len(levels)-1
         return PointResponse(
                 user=self.user,
-                total=self.total,
+                total=max(self.total, 0),
                 level=levels[level]
                 )
 
