@@ -328,6 +328,7 @@ class LocalReservationsProvider(ReservationsProvider):
                 update = Update(user="", advance_forward=False)
                 await self.update_reservation(reservation.id, update)
                 reservation.status = Expired()
+            reservation.time = reservation.time - timedelta(hours=3)
         return response
 
     async def delete_reservation(self, reservation_id: str) -> None:
