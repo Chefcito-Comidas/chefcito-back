@@ -10,7 +10,7 @@ def create_reservation(user: str, venue: str, time: datetime, people: int) -> 'R
     return Reservation(id="",
                         user=user,
                         venue=venue,
-                        time=time - timedelta(hours=-3),
+                        time=time,
                         people=people,
                         status=Uncomfirmed())
 

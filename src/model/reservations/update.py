@@ -29,7 +29,7 @@ class Update(BaseModel):
             reservation.advance(self.advance_forward, self.user)
 
         if self.time:
-            self.time = self.time - timedelta(hours=-3)
+            self.time = self.time
             reservation.time = self.time
             reservation.modified()
 
