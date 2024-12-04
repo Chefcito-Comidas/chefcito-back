@@ -6,7 +6,7 @@ from src.model.users.update import UserUpdate
 
 
 # TODO: This pool size makes more sense if it is configurable
-DEFAULT_POOL_SIZE = 1
+DEFAULT_POOL_SIZE = 5
 
 class Database():
 
@@ -44,6 +44,7 @@ class DBEngine(Database):
     def __init__(self, conn_string: str, **kwargs):
         super().__init__()
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
+        kwargs["pool_recyle"] = 30
         self.__engine = create_engine(conn_string, **kwargs)
 
     def get_user(self, uid: str) -> Tuple[User | None,AssociatedData | None]:

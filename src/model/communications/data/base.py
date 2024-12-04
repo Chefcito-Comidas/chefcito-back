@@ -6,23 +6,24 @@ from src.model.communications.user import User
 from sqlalchemy.orm import Session
 
 
-DEFAULT_POOL_SIZE = 1
+DEFAULT_POOL_SIZE = 5
 
 class CommunicationsBase():
 
     async def store_user(self, user: User) -> None:
         raise Exception("Interface method should not be called")
-    
+
     async def get_user(self, user_id: str) -> User | None:
         raise Exception("Interface method should not be called")
-    
+
     async def update_user(self, user: User) -> None:
         raise Exception("Interface method should not be called")
 
 class RelCommunicationsBase(CommunicationsBase):
-    
+
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
+        kwargs["pool_recyle"] = 30
         self.__engine = create_engine(conn_string, pool_pre_ping=True, **kwargs)
 
     def __store_call(self, user: User) -> Callable[[Session], None]:
@@ -37,8 +38,8 @@ class RelCommunicationsBase(CommunicationsBase):
             result = session.execute(query).scalar()
             return User.from_schema(result)
 
-        return call 
-    
+        return call
+
     def __update_call(self, user: User) -> Callable[[Session], None]:
         def call(session: Session) -> None:
             query = select(UserSchema).where(UserSchema.id.__eq__(user.localid))
@@ -49,18 +50,18 @@ class RelCommunicationsBase(CommunicationsBase):
 
     async def store_user(self, user: User) -> None:
         call = self.__store_call(user)
-        with_session(call)(self.__engine) 
+        with_session(call)(self.__engine)
 
     async def get_user(self, user_id: str) -> User | None:
         call = self.__get_call(user_id)
-        return with_no_commit(call)(self.__engine) 
-    
+        return with_no_commit(call)(self.__engine)
+
     async def update_user(self, user: User) -> None:
         call = self.__update_call(user)
         with_session(call)(self.__engine)
 
 class MockedCommunicationsBase(CommunicationsBase):
-    
+
     def __init__(self):
         self.base = {}
 

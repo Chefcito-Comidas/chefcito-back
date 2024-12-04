@@ -7,7 +7,7 @@ from src.model.reservations.data.schema import ReservationSchema
 from sqlalchemy import Select, create_engine, delete, select, update
 
 # TODO: try to add this to configuration options
-DEFAULT_POOL_SIZE = 1
+DEFAULT_POOL_SIZE = 5
 
 class ReservationsBase:
 
@@ -52,6 +52,7 @@ class RelBase(ReservationsBase):
 
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
+        kwargs["pool_recyle"] = 30
         self.__engine = create_engine(conn_string, pool_pre_ping=True, **kwargs)
 
     def __get_by_eq(self, query: Select) -> Callable[[Session], List[ReservationSchema]]:
