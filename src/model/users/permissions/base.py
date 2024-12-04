@@ -6,7 +6,7 @@ from src.model.users.update import UserUpdate
 
 
 # TODO: This pool size makes more sense if it is configurable
-DEFAULT_POOL_SIZE = 10
+DEFAULT_POOL_SIZE = 1
 
 class Database():
 

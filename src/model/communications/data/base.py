@@ -6,7 +6,7 @@ from src.model.communications.user import User
 from sqlalchemy.orm import Session
 
 
-DEFAULT_POOL_SIZE = 10
+DEFAULT_POOL_SIZE = 1
 
 class CommunicationsBase():
 

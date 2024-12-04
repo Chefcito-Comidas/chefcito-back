@@ -8,7 +8,7 @@ from src.model.points.data.schema import PointSchema
 from src.model.points.point import Point
 from sqlalchemy.orm import Session
 
-DEFAULT_POOL_BASE = 10
+DEFAULT_POOL_BASE = 1
 DEFAULT_POINT_REBASE = timedelta(days=14)
 DEFAULT_POINT_DISCOUNT = 200
 

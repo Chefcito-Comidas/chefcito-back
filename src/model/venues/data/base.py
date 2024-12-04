@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 # TODO: try to add this to configuration options
-DEFAULT_POOL_SIZE = 10
+DEFAULT_POOL_SIZE = 1
 
 class VenuesBase:
 

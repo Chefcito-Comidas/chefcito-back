@@ -7,7 +7,7 @@ from src.model.reservations.data.schema import ReservationSchema
 from sqlalchemy import Select, create_engine, delete, select, update
 
 # TODO: try to add this to configuration options
-DEFAULT_POOL_SIZE = 10
+DEFAULT_POOL_SIZE = 1
 
 class ReservationsBase:
 
