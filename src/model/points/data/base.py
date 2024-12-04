@@ -25,7 +25,7 @@ class RelPointBase(PointBase):
     def __init__(self, url: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_BASE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(url, pool_pre_ping=True, **kwargs)
+        self.__engine = create_engine(url)
 
     def __update_if_nedeed(self, value: PointSchema):
         if datetime.now() - value.last_updated >= DEFAULT_POINT_REBASE:

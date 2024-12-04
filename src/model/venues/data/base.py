@@ -48,7 +48,7 @@ class RelBase(VenuesBase):
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(conn_string, pool_pre_ping=True,**kwargs)
+        self.__engine = create_engine(conn_string)
 
     def __get_runnable_select(self, query: Select) -> Callable[[Engine], Result]:
         def call(session: Session) -> List[Any]:

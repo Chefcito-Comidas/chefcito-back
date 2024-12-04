@@ -45,7 +45,7 @@ class DBEngine(Database):
         super().__init__()
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(conn_string, **kwargs)
+        self.__engine = create_engine(conn_string)
 
     def get_user(self, uid: str) -> Tuple[User | None,AssociatedData | None]:
         session = Session(self.__engine)
