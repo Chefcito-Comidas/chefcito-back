@@ -1,4 +1,6 @@
 from typing import Any, Callable, List, Tuple
+
+from sqlalchemy.pool import NullPool
 from src.model.commons.session import with_no_commit
 from src.model.venues.data.schema import VenueSchema
 from sqlalchemy import Engine, Result, Select, create_engine, select, update, delete
@@ -48,7 +50,7 @@ class RelBase(VenuesBase):
     def __init__(self, conn_string: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(conn_string)
+        self.__engine = create_engine(conn_string, poolclass=NullPool)
 
     def __get_runnable_select(self, query: Select) -> Callable[[Engine], Result]:
         def call(session: Session) -> List[Any]:

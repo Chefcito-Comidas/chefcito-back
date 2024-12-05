@@ -1,5 +1,6 @@
 from typing import Callable
 from sqlalchemy import create_engine, select
+from sqlalchemy.pool import NullPool
 from src.model.commons.session import with_no_commit, with_session
 from src.model.communications.data.user_schema import UserSchema
 from src.model.communications.user import User
@@ -22,7 +23,7 @@ class CommunicationsBase():
 class RelCommunicationsBase(CommunicationsBase):
 
     def __init__(self, conn_string: str, **kwargs):
-        self.__engine = create_engine(conn_string)
+        self.__engine = create_engine(conn_string, poolclass=NullPool)
 
     def __store_call(self, user: User) -> Callable[[Session], None]:
         def call(session: Session):

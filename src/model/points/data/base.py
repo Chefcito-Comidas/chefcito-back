@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Optional, Tuple
 
 from sqlalchemy import Select, create_engine, select
+from sqlalchemy.pool import NullPool
 from src.model.commons.session import with_no_commit, with_session
 from src.model.points.data.schema import PointSchema
 from src.model.points.point import Point
@@ -25,7 +26,7 @@ class RelPointBase(PointBase):
     def __init__(self, url: str, **kwargs):
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_BASE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(url)
+        self.__engine = create_engine(url, poolclass=NullPool)
 
     def __update_if_nedeed(self, value: PointSchema):
         if datetime.now() - value.last_updated >= DEFAULT_POINT_REBASE:

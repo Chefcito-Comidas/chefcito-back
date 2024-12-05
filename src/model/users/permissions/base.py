@@ -1,6 +1,7 @@
 from typing import Tuple
 from sqlalchemy import BinaryExpression, Column, create_engine, select
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import NullPool
 from src.model.users.permissions.schema import AssociatedData, User, Permission
 from src.model.users.update import UserUpdate
 
@@ -45,7 +46,7 @@ class DBEngine(Database):
         super().__init__()
         kwargs["pool_size"] = kwargs.get("pool_size", DEFAULT_POOL_SIZE)
         kwargs["pool_recyle"] = 30
-        self.__engine = create_engine(conn_string)
+        self.__engine = create_engine(conn_string, poolclass=NullPool)
 
     def get_user(self, uid: str) -> Tuple[User | None,AssociatedData | None]:
         session = Session(self.__engine)
