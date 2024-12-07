@@ -7,7 +7,7 @@ from src.model.reservations.reservation import Expired
 
 class VenueMeanPerDay(BaseModel):
     """
-        I store days based on datetime.weekday 
+        I store days based on datetime.weekday
         monday is 0 and sunday is 6.
         On each day I have a Tuple with the reservations
         made for that particular day that were succesful
@@ -38,7 +38,7 @@ class VenueStatData(BaseModel):
     canceled: float
     expired: float
     people: float
-    days: VenueMeanPerDay = VenueMeanPerDay() 
+    days: VenueMeanPerDay = VenueMeanPerDay()
     turns: VenueMeanPerTurn = VenueMeanPerTurn()
 
 
@@ -54,7 +54,7 @@ class VenueStatData(BaseModel):
 
     def __update_people(self, people: float):
         people += self.people * self.__accepted()
-        self.people = people / self.total 
+        self.people = people / (self.total * (1 - self.canceled - self.expired))
 
     def increase(self, people: int, day: datetime.datetime):
         self.__increase(0, 0)
@@ -79,4 +79,4 @@ class VenueStatData(BaseModel):
         )
 
     def get_day(self, day: int) -> float:
-        return self.days.get_day(day) / self.total 
+        return self.days.get_day(day) / self.total
