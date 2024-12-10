@@ -48,14 +48,11 @@ def init(private_key: str, private_key_id: str, model: str = 'gemini-1.0-pro'):
             )
 
 def get_template() -> PromptTemplate:
-    map_template = """The following is a set of opinions about a single restaurant
+    map_template = """A continuacion, hay un conjunto de opiniones sobre un local gastronomico
     {opinions}
-    Based on this list of opinions, please generate a summarized
-    opinion. The summary should take into account the date of the opinions and
-    show how to they changed over time without being explicit the time at which each
-    opinion was given. If the opinions contain no relevant information for a restaurant, don't use them to create a summary.
-    the output should be in spanish and it shouldn't be a longer than a paragraph.
-    The output must not contain the name of the restaurant and it should be written in plain spanish and only using letters and punctiation marks.
+    hace un resumen de no mas de un parrafo y utilizando unicamente lenguaje coloquial y sencillo
+    de las opiniones anteriores, deberias tomar en cuenta la fecha de las mismas y darle mayor importancia 
+    a las opiniones mas recientes.
     """
     return PromptTemplate.from_template(map_template)
 
