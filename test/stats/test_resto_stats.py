@@ -107,6 +107,9 @@ def test_on_many_reservations_updates():
     asyncio.run(stats.update(update))
     update.status = Canceled()
     asyncio.run(stats.update(update))
+    venue = asyncio.run(stats.get_venue("SomeVenue"))
+    assert round(venue.people) == 8
+
     update.status = Assisted()
     update.people = 9
     asyncio.run(stats.update(update))
@@ -119,7 +122,7 @@ def test_on_many_reservations_updates():
     venue = asyncio.run(stats.get_venue("SomeVenue"))
 
     assert venue.total == 5
-    assert round(venue.people) == 6
+    assert round(venue.people) == 17
 
 def test_on_reservations_each_day():
     db = MockedStatsDB()

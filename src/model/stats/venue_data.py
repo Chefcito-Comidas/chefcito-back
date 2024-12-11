@@ -49,12 +49,9 @@ class VenueStatData(BaseModel):
         self.canceled = canceled / self.total
         self.expired = expired / self.total
 
-    def __accepted(self) -> float:
-        return (self.total-1) * (1 - self.canceled - self.expired)
-
     def __update_people(self, people: float):
-        people += self.people * self.__accepted()
-        self.people = people / (self.total * (1 - self.canceled - self.expired))
+        self.people += people
+
 
     def increase(self, people: int, day: datetime.datetime):
         self.__increase(0, 0)

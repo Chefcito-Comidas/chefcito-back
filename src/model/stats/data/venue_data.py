@@ -38,17 +38,17 @@ class VenueDataDocument(Document):
             means=VenueMeanPerDayDocument(means={}),
             turns=VenueMeanPerTurnDocument(turns={})
         )
-    
+
     def into_stat_data(self) -> VenueStatData:
         if self.total == 0:
             return VenueStatData(venue=self.venue, total=0, canceled=0, expired=0, people=0)
-        
+
         return VenueStatData(
             venue=self.venue,
             total=self.total,
             canceled=round(self.canceled / self.total, 2),
             expired=round(self.expired/self.total, 2),
-            people=round(self.people/self.total, 2),
+            people=self.people,
             days=self.means.to_days(),
             turns=self.turns.to_turns()
         )
@@ -57,6 +57,6 @@ class VenueDataDocument(Document):
         self.total = stat.total
         self.canceled = round(stat.total * stat.canceled)
         self.expired = round(stat.expired * stat.total)
-        self.people = round(stat.total * stat.people)
+        self.people = round(stat.people)
         self.means = VenueMeanPerDayDocument(means=stat.days.means)
-        self.turns = VenueMeanPerTurnDocument(turns=stat.turns.turns) 
+        self.turns = VenueMeanPerTurnDocument(turns=stat.turns.turns)
