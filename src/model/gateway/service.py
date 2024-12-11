@@ -30,7 +30,7 @@ from src.model.venues.update import Update
 import src.model.gateway.venues_stubs as v_stubs
 import src.model.gateway.users_stubs as u_stubs
 
-PROMOTED_IDS = ["LWir3AiNH8bhv3CJuhob5uet9el1", "LWir3AiNH8bhv3CJuhob5uet9el1", "LWir3AiNH8bhv3CJuhob5uet9el1"]
+PROMOTED_IDS = ["uC4M1ItQEgYLoeb1taxY3co6XED2", "uC4M1ItQEgYLoeb1taxY3co6XED2", "uC4M1ItQEgYLoeb1taxY3co6XED2"]
 
 class GatewayService:
 
